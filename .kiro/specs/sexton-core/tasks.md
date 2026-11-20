@@ -6,8 +6,8 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
 
 ## Engine
 
-- [ ] 1. Project scaffold
-  - `package.json` with Vite, TypeScript, Vitest, fast-check and `marked`. Scripts are `dev`, `build`, `test` (`vitest run`) and `build-register`.
+- [x] 1. Project scaffold
+  - `package.json` with Vite, TypeScript, Vitest, fast-check and `marked`. Scripts are `dev`, `build`, `test` (`tsc --noEmit && vitest run`: typecheck first, then tests; later tasks append the language and contrast checks) and `build-register`.
   - `tsconfig.json`: strict, `erasableSyntaxOnly`, `allowImportingTsExtensions`, `noEmit`, `.ts` import extensions.
   - Folders as in structure.md. `vite.config.ts` with `base: '/sexton/'`.
   - A smoke test that imports `src/engine/config.ts`.

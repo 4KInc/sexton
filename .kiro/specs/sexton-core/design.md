@@ -27,6 +27,14 @@ The site has three layers:
 
 TypeScript runs strict, with `erasableSyntaxOnly`, so Node can strip types: no enums, no namespaces, no parameter properties. It also uses `allowImportingTsExtensions` and `noEmit`, and imports use `.ts` extensions.
 
+### 1.1 Project setup
+Choices the first task made where this design was silent:
+- `package.json` has `"type": "module"` and `engines.node >= 24`. `@types/node` is pinned to the 24 line.
+- `tsconfig.json` adds `verbatimModuleSyntax`, `isolatedModules`, `moduleResolution: bundler` and `lib` ES2023 + DOM. `include` covers `src`, `scripts`, `test`, `vite.config.ts` and `vitest.config.ts`, so `tsc --noEmit` also checks the scripts and tests.
+- `vitest.config.ts` is separate from `vite.config.ts` and runs only `test/**/*.test.ts`.
+- `src/engine/config.ts` was created in task 1 (the smoke test must import it) with the design 2.2 object. Task 2 adds the derived thresholds.
+- `.gitignore` excludes `node_modules/`, `dist/` and `*.tsbuildinfo`. `package-lock.json` is committed, for `npm ci` in the deploy workflow.
+- `npm run build-register` points at `scripts/build-register.ts`, which task 7 creates. It fails until then.
 ## 2. Engine
 
 ### 2.1 Modules
@@ -212,7 +220,7 @@ The values above are illustrative, apart from p, q and e, which come from spike 
 - It scans `src/ui/**`, `data/cases/**`, `docs/**` and `README.md`. It also scans `index.html`, which holds user-facing text but sits outside `src/ui/`. It reads text files only (`.ts`, `.css`, `.html`, `.md`, `.json`, `.svg`).
 - In `docs/methodology.md` it skips the section from the heading `## What we do not say` up to the next `## ` heading.
 - On a hit it prints `file:line: "match"` for each one and exits 1. With no hits it exits 0.
-- `npm test` runs `vitest run && node scripts/check-language.ts`.
+- `npm test` runs `tsc --noEmit && vitest run && node scripts/check-language.ts`. The typecheck always runs first. Task 17 appends the contrast check.
 
 ## 5. Site
 
