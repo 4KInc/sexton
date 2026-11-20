@@ -27,7 +27,7 @@ Tone and honesty rules. A script and a hook will enforce them later, so keep the
 ## Say what is voluntary
 
 - The IADC guidelines are voluntary.
-- The FCC minimum-perigee rule applies only to satellites launched after 18 March 2002.
+- The FCC minimum-perigee rule (47 CFR § 25.283) applies only to satellites the FCC authorizes, launched on or after 18 March 2002.
 - Say both wherever they matter.
 
 ## Never imply a retirement date

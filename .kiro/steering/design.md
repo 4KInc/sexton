@@ -26,10 +26,13 @@ A quiet Victorian churchyard at night. Not a cartoon. Restraint over gimmicks.
 
 | Element | Data |
 | --- | --- |
-| Headstone height | Perigee |
-| Moss | Data age |
-| Sway | Eccentricity |
-| Road, shallow ground, consecrated ground bands | The zone and the threshold |
+| Headstone height | Perigee above GEO |
+| Moss | Years since launch |
+| Sway | Eccentricity above 0.003 |
+| The road, shallow ground, the churchyard wall, consecrated ground | The protected zone, below the threshold, the IADC threshold band, above the threshold |
+| A headstone lying flat below the road | Fallen: the whole orbit is below the protected zone |
+
+Moss shows years since launch, not data age. SATCAT gives no element date for most graveyard objects, so data age is shown as text next to each object (the GP epoch, or "SATCAT, element date not given"). Moss must never suggest a retirement date.
 
 If a decoration carries no data, leave it out.
 
@@ -40,6 +43,6 @@ If a decoration carries no data, leave it out.
 
 ## Copy
 
-- Use the churchyard words: unquiet, shallow grave, buried, restless, uncertain.
+- Use the churchyard words: fallen, unquiet, shallow grave, uncertain, buried, restless, unmarked bones.
 - Always pair each one, once, with its plain technical meaning. Example: "Shallow grave (perigee below the IADC threshold)".
 - Follow language.md.

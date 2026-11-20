@@ -71,7 +71,7 @@ Scope: about 5 days of work. Nothing in this spec downloads data. SATCAT is not 
    - "buried" WHEN p ≥ 280 AND e ≤ 0.003.
 4. THE engine SHALL set a "borderline" flag, separate from the verdict, exactly WHEN the closed interval [p − 25, p + 25] contains 200, 247 or 280.
 5. THE engine SHALL attach to each verdict its orbit source ("GP" with epoch, precise; or "SATCAT", whole km, element date not given) and the snapshot date.
-6. WHEN a launch date is before 18 March 2002, THE engine SHALL set the era badge "launched before the FCC rule (18 Mar 2002)". The badge SHALL NOT change the verdict. WHEN the launch date is unknown, THE engine SHALL set no era badge.
+6. WHEN a launch date is before 18 March 2002, THE engine SHALL set the era badge "launched before the FCC rule (18 Mar 2002)". The badge SHALL NOT change the verdict. WHEN the launch date is unknown, THE engine SHALL set no era badge. The era badge SHALL need a full launch date.
 7. THE engine SHALL be a pure module: no DOM, no network, no clock. The snapshot date SHALL be passed in.
 8. THE config SHALL hold every number in this requirement (−200, 200, 235, 1000, 0.012, 0.045, 0.003, 25, 2002-03-18), and docs/methodology.md SHALL list the same values with sources.
 
@@ -95,7 +95,7 @@ Scope: about 5 days of work. Nothing in this spec downloads data. SATCAT is not 
 
 1. THE engine SHALL count classified objects by verdict, by borderline flag, by era badge, by owner, and by status disagreement, and SHALL include the snapshot date, the number of rejected rows and the "no orbit data" total.
 2. THE counts for each grouping SHALL add up to the number of objects in that grouping's population.
-3. WHEN the census is shown, THE site SHALL show next to it ESA's 70–95% success figure (ESA Space Environment Report 2025) and Roberts' 73% (Georgia Tech, 2025), each with a link.
+3. WHEN the census is shown, THE site SHALL show next to it ESA's 70–95% success figure (ESA Space Environment Report 2025) and Roberts' 73% (Georgia Tech, 2025), each with a link. IF a figure has not been checked against its source when the census page is built or at the final audit, THEN THE site SHALL omit that figure and SHALL say that the comparison is pending a checked source.
 4. Every source link SHALL be one that has been checked to exist. WHERE a link has not been checked, THE text SHALL say "LINK NEEDED" in its place. No URL or citation SHALL be invented.
 5. WHEN totals or percentages are shown, THE site SHALL say they are not directly comparable to those figures because Sexton has no retirement dates and cannot see objects that were sent much higher or left GEO.
 
@@ -106,18 +106,19 @@ Scope: about 5 days of work. Nothing in this spec downloads data. SATCAT is not 
 ### Acceptance criteria
 
 1. THE site SHALL draw an SVG whose vertical axis is p, on a scale where −200 to +400 km is readable on a phone and a laptop.
-2. WHEN an object's p is outside the drawn range, THE site SHALL place it at the nearest edge with an arrow and its true value.
-3. THE site SHALL draw four bands that match the verdicts, each labelled once with its plain meaning:
+2. WHEN an object's launch date is unknown, THE site SHALL take its launch year for the x-axis from the first four digits of its international designator (for example 2002-006A gives 2002). This year SHALL be used for placement only, not for the era badge or moss.
+3. WHEN an object's p is outside the drawn range, THE site SHALL place it at the nearest edge with an arrow and its true value.
+4. THE site SHALL draw four bands that match the verdicts, each labelled once with its plain meaning:
    - "the road" (p ≤ 200): the GEO protected zone;
    - "shallow ground" (200 < p < 247): above the zone, below the IADC threshold for every assumed C_R·A/m;
    - "the churchyard wall" (247 ≤ p < 280): the IADC threshold band, whose height depends on the unknown C_R·A/m;
    - "consecrated ground" (p ≥ 280): above the threshold for every assumed C_R·A/m.
-4. THE site SHALL draw each retired payload as a headstone at its true p. A "fallen" headstone SHALL be drawn below the road, or at the bottom edge with an arrow and its true value if off scale.
-5. THE site SHALL grow moss on a headstone with years since launch, and SHALL show data age as text (GP epoch, or "SATCAT, element date not given").
-6. WHEN e > 0.003, THE site SHALL make the headstone sway slowly. WHILE prefers-reduced-motion is set, THE site SHALL show no motion.
-7. THE site SHALL offer filters by owner, verdict and era, and search by name or NORAD id.
-8. THE site SHALL offer a table view with the same data, reachable and usable by keyboard and screen reader.
-9. THE site SHALL never use colour as the only cue, and every text pair SHALL meet WCAG AA contrast.
+5. THE site SHALL draw each retired payload as a headstone at its true p. A "fallen" headstone SHALL be drawn below the road, or at the bottom edge with an arrow and its true value if off scale.
+6. THE site SHALL grow moss on a headstone with years since launch, and SHALL show data age as text (GP epoch, or "SATCAT, element date not given").
+7. WHEN e > 0.003, THE site SHALL make the headstone sway slowly. WHILE prefers-reduced-motion is set, THE site SHALL show no motion.
+8. THE site SHALL offer filters by owner, verdict and era, and search by name or NORAD id.
+9. THE site SHALL offer a table view with the same data, reachable and usable by keyboard and screen reader.
+10. THE site SHALL never use colour as the only cue, and every text pair SHALL meet WCAG AA contrast.
 
 ## Requirement 7: Ledger page
 
@@ -149,7 +150,7 @@ Scope: about 5 days of work. Nothing in this spec downloads data. SATCAT is not 
 ### Acceptance criteria
 
 1. THE site SHALL publish docs/methodology.md as a page, with every formula, constant, assumption and source, with links, and credit to Roberts for the audit method. Links SHALL follow Requirement 5.4: checked, or "LINK NEEDED".
-2. THE page SHALL state that the IADC guidelines are voluntary and that the FCC minimum-perigee rule applies only to satellites launched after 18 March 2002.
+2. THE page SHALL state that the IADC guidelines are voluntary and that the FCC minimum-perigee rule applies only to satellites the FCC authorizes, launched on or after 18 March 2002.
 3. THE page SHALL state what the register cannot see and that retirement dates are unknown.
 4. THE page SHALL have a "what we do not say" section listing the phrases Sexton avoids.
 
