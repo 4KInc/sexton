@@ -8,8 +8,16 @@ Tone and honesty rules. A script and a hook will enforce them later, so keep the
 
 ## Never judge
 
-- Never say a satellite or operator "violated", "broke the law", is "illegal" or "non-compliant".
+- Never say a satellite or operator violated a rule, broke the law, acted illegally or unlawfully, was in breach, or was non-compliant.
 - Say: "below the IADC disposal threshold under the stated assumptions".
+- `scripts/check-language.ts` matches these stems, case-insensitive. Keep this list and the script's list the same:
+  - `violat` (violated, violation, violates)
+  - `illegal`
+  - `non-compliant`, `noncompliant`, `non compliant`
+  - `broke the law`
+  - `breach`
+  - `unlawful`
+- The only place these words may appear is the "what we do not say" section of docs/methodology.md.
 
 ## Show assumptions
 
