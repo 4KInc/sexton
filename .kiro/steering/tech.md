@@ -14,18 +14,20 @@ inclusion: always
 
 ## Data
 
-- A committed snapshot in `data/`:
-  - CelesTrak GPZ and GPZ-PLUS OMM CSV.
-  - The GPZ and GPZ-PLUS status tables.
-  - SATCAT.
+- A committed snapshot in `data/raw/<date>/`, with a `manifest.json`. Sources:
+  - **SATCAT** (`https://celestrak.org/pub/satcat.csv`): the main source. It says which objects exist near GEO, and gives their type, status, owner, launch date, apogee and perigee. It covers the graveyard orbit.
+  - **GPZ OMM CSV** (`gp.php?SPECIAL=GPZ&FORMAT=csv`): precise mean elements for objects inside the GEO protected zone (perigee and apogee within ±200 km of GEO). It is the precision cross-check for SATCAT.
+  - **GPZ status table** (`table.php?SPECIAL=gpz&FORMAT=csv`): returns HTML, not CSV. It holds the PAY+/PAY-/R/B/DEB status of each GPZ object.
+- GPZ-PLUS and the GPZ-PLUS table are not sources. GPZ-PLUS does not reach the graveyard: no object in it has a perigee above +200 km. The 2026-11-20 `gpz-plus.csv` is kept only as evidence for docs/spike.md.
+- Join sources by NORAD id.
 - Only `scripts/snapshot.ts` fetches data. The site never calls CelesTrak.
 - `scripts/snapshot.ts` obeys the CelesTrak usage policy:
-  - At most one download per data set per 2 hours.
+  - At most one download per data set per 2 hours. A failed partial body counts as one download.
   - Request gzip.
   - Use `FORMAT=csv`.
   - Stop on any non-200 response. No retries.
   - After a 500 or 503, wait at least 15 minutes before trying again.
-- GPZ and GPZ-PLUS overlap. Always merge them and de-duplicate by NORAD id, keeping the newer epoch.
+  - Resume: fetch only data sets with no download in the last 2 hours.
 
 ## Physics constants (WGS-72)
 
