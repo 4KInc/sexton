@@ -216,6 +216,17 @@ Choices made in task 6:
 4. Calls `runEngine` with `snapshotDate` = the set's folder date, never the clock.
 5. Writes `register.json` (5.1) with two-space JSON. Keys are in a fixed order and records are sorted by NORAD id, so two runs give byte-identical output (R4.4).
 
+Choices made in task 7:
+- Options are `--set <dir>`, `--out <file>` and `--cases <dir>` (default `data/cases`). A missing cases folder means no case files. Relative paths are resolved against the current directory. Exit codes: 0 done, 1 the snapshot is not usable (nothing is written), 2 bad arguments.
+- The script exports `main(argv, io)` and `buildRegisterText(setDir, casesDir)`, so tests can call it in-process. It runs as a command only when it is the entry file.
+- Newest set: folders in `data/raw/` named `YYYY-MM-DD`, newest first, the first whose manifest has `complete: true`. `--set` skips that search but still needs `complete: true`.
+- A required file is usable when the folder has it and the manifest has an entry for it with `httpStatus` 200. If there are several, the last one is used. Failed entries are ignored.
+- Error messages. No complete set: the message in step 2 above. A required file missing from the folder or the manifest: `<set> has no <file> (it needs the file and a manifest entry with httpStatus 200). Run scripts/snapshot.ts when CelesTrak allows it, or add <file> by hand with a manifest entry. This script never downloads.` A hash difference: `sha256 mismatch for <file> in <set>: manifest says <x>, the file is <y>. Nothing was written.`
+- `snapshotDate` is the folder name when that is a real `YYYY-MM-DD` date. Otherwise it is the date part of the manifest's `startedAt` (this is how the fixture folder `snapshot/` gets 2026-11-20). With neither, the script exits 1. `snapshot.set` holds the same date.
+- `register.json` has the keys, in this order: `schema`, `sample` (always false here; the Vite copy sets it for the fixture), `snapshot`, `config` (the whole `CONFIG`, including the two thresholds), `records`, `rejections`, `noOrbitDataCount`, `census`. `snapshot.sources` lists `satcat.csv`, `gpz.csv`, `table-gpz.csv` with `file`, `url`, `fetchedAt`, `sha256`, `bytes` from the manifest. It has no timestamp, so two runs match byte for byte.
+- The file is written only after every check passes.
+- The fixture register is built with `node scripts/build-register.ts --set test/fixtures/snapshot --out test/fixtures/register.json --cases test/fixtures/cases`. Passing `--cases` keeps it independent of `data/cases/`. The fixture has no Luch/Olymp (40258), so no record in it has `caseFile: true`. Task 14 can add a row if the UI needs one.
+- The two tests on the real `data/raw/` skip themselves once a complete set with SATCAT exists (task 20). Task 20 should replace them with a check on the real register.
 **Fixture register.** `--set test/fixtures/snapshot --out test/fixtures/register.json` builds a small register from the hand-made fixtures, using the same code path. The UI is developed against it while SATCAT is missing.
 
 **Which register the site uses.** At build time, Vite copies `data/register.json` into the output as `register.json`. If that file doesn't exist, it copies `test/fixtures/register.json` instead and sets `"sample": true` in it. The site then shows a fixed banner on every page: "Sample data for layout only. This is not the register." So the early deploy (tasks.md) is live without pretending to show real results.

@@ -64,7 +64,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
 
 ## Build-time register
 
-- [ ] 7. `scripts/build-register.ts`
+- [x] 7. `scripts/build-register.ts`
   - Newest complete set, required files, sha256 check, `snapshotDate` from the folder name, deterministic `register.json` (design 3, 3.1), and `caseFile` flags.
   - Build `test/fixtures/register.json` from `test/fixtures/snapshot/`.
   - Tests:

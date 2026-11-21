@@ -103,3 +103,24 @@ export interface Census {
   };
   disagreements: { total: number; pairs: Record<string, number> };
 }
+
+/** One source file in a register, copied from the snapshot manifest (design 3.1). */
+export interface RegisterSource {
+  file: string;
+  url: string;
+  fetchedAt: string;
+  sha256: string;
+  bytes: number;
+}
+
+/** The shape of data/register.json (design 3.1). Keys are written in this order. */
+export interface Register {
+  schema: 1;
+  sample: boolean;
+  snapshot: { set: string; sources: RegisterSource[] };
+  config: unknown;
+  records: SatRecord[];
+  rejections: Rejection[];
+  noOrbitDataCount: number;
+  census: Census;
+}

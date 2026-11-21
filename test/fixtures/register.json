@@ -1,0 +1,1311 @@
+{
+  "schema": 1,
+  "sample": false,
+  "snapshot": {
+    "set": "2026-11-20",
+    "sources": [
+      {
+        "file": "satcat.csv",
+        "url": "https://celestrak.org/pub/satcat.csv",
+        "fetchedAt": "2026-11-20T00:00:00.000Z",
+        "sha256": "5f9331e121fa0c6eb776bac8e0175d1efa57cfa2ebb2a57c642905630a56e441",
+        "bytes": 4193
+      },
+      {
+        "file": "gpz.csv",
+        "url": "https://celestrak.org/NORAD/elements/gp.php?SPECIAL=GPZ&FORMAT=csv",
+        "fetchedAt": "2026-11-20T00:00:00.000Z",
+        "sha256": "9dd1a73443df63cf2166d688e3c3e4a123127c69b82ecc0f2f8a356f8fc71773",
+        "bytes": 1170
+      },
+      {
+        "file": "table-gpz.csv",
+        "url": "https://celestrak.org/NORAD/elements/table.php?SPECIAL=gpz&FORMAT=csv",
+        "fetchedAt": "2026-11-20T00:00:00.000Z",
+        "sha256": "c8ab958ddf8073a64609938714f626b1ddeaea9212d9e975b860109e762f31d4",
+        "bytes": 15119
+      }
+    ]
+  },
+  "config": {
+    "earth": {
+      "radiusKm": 6378.135,
+      "muKm3PerS2": 398600.8,
+      "secondsPerDay": 86400
+    },
+    "geoAltitudeKm": 35786,
+    "nearGeo": {
+      "lowerKm": -2000,
+      "upperKm": 2000,
+      "orbitCenter": "EA"
+    },
+    "protectedZoneKm": 200,
+    "firstLaunchYear": 1957,
+    "iadc": {
+      "baseKm": 235,
+      "factorKm": 1000,
+      "crAmMin": 0.012,
+      "crAmMax": 0.045,
+      "crRange": [
+        1.2,
+        1.5
+      ],
+      "amRange": [
+        0.01,
+        0.03
+      ],
+      "eccentricityMax": 0.003
+    },
+    "thresholdLowKm": 247,
+    "thresholdHighKm": 280,
+    "uncertaintyKm": 25,
+    "fccRuleDate": "2002-03-18",
+    "satcatTypes": {
+      "payload": "PAY",
+      "rocketBody": "R/B",
+      "debris": "DEB"
+    },
+    "status": {
+      "retired": [
+        "-"
+      ],
+      "living": [
+        "+",
+        "P",
+        "B",
+        "S",
+        "X"
+      ]
+    },
+    "gpzTableStatus": {
+      "PAY-": "retired",
+      "PAY+": "living",
+      "R/B": "rocket body",
+      "DEB": "debris"
+    }
+  },
+  "records": [
+    {
+      "norad": 858,
+      "name": "SYNCOM 3",
+      "intlDes": "1964-047A",
+      "objectType": "PAY",
+      "status": "living payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "1964-08-19",
+      "launchYear": 1964,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35748.425001095384,
+      "apogeeKm": 35791.75590575503,
+      "pKm": -37.57499890461622,
+      "qKm": 5.755905755031563,
+      "e": 0.00051403,
+      "inclinationDeg": 7.3429,
+      "orbitSource": {
+        "kind": "GP",
+        "epoch": "2026-11-20T12:36:51.203232"
+      },
+      "disagreement": {
+        "satcat": "living payload",
+        "gpzTable": "retired payload"
+      },
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "living payload"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 1317,
+      "name": "INTELSAT 1-F1",
+      "intlDes": "1965-028A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "GPZ table",
+      "owner": null,
+      "launchDate": null,
+      "launchYear": 1965,
+      "launchYearSource": "designator",
+      "decayDate": null,
+      "perigeeKm": 35756.816714317014,
+      "apogeeKm": 35829.674521755565,
+      "pKm": -29.183285682986025,
+      "qKm": 43.674521755565365,
+      "e": 0.00086383,
+      "inclinationDeg": 7.5333,
+      "orbitSource": {
+        "kind": "GP",
+        "epoch": "2026-11-20T12:42:26.391168"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "unquiet",
+        "borderline": false,
+        "margins": {
+          "zone": -229.18328568298602,
+          "low": -276.183285682986,
+          "high": -309.183285682986
+        },
+        "era": "unknown",
+        "yearsSinceLaunch": null
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 4511,
+      "name": "ATLAS AGENA D R/B",
+      "intlDes": "1970-046B",
+      "objectType": "R/B",
+      "status": "rocket body",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "1970-06-18",
+      "launchYear": 1970,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35610.34509687499,
+      "apogeeKm": 35868.680428250314,
+      "pKm": -175.6549031250106,
+      "qKm": 82.68042825031443,
+      "e": 0.00306683,
+      "inclinationDeg": 2.0974,
+      "orbitSource": {
+        "kind": "GP",
+        "epoch": "2026-11-20T07:05:19.340736"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "unmarked bones"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 11581,
+      "name": "EKRAN 2 DEB",
+      "intlDes": "1977-092H",
+      "objectType": "DEB",
+      "status": "debris",
+      "statusSource": "SATCAT",
+      "owner": "CIS",
+      "launchDate": "1977-09-20",
+      "launchYear": 1977,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35690.0026691074,
+      "apogeeKm": 35842.166058889896,
+      "pKm": -95.99733089259826,
+      "qKm": 56.166058889895794,
+      "e": 0.00180527,
+      "inclinationDeg": 3.7429,
+      "orbitSource": {
+        "kind": "GP",
+        "epoch": "2026-11-20T07:25:57.127872"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "unmarked bones"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 15873,
+      "name": "INTELSAT 511",
+      "intlDes": "1985-055A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "ITSO",
+      "launchDate": "1985-06-29",
+      "launchYear": 1985,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35803.61865301339,
+      "apogeeKm": 35868.21712959084,
+      "pKm": 17.61865301339276,
+      "qKm": 82.21712959084107,
+      "e": 0.00076513,
+      "inclinationDeg": 13.0653,
+      "orbitSource": {
+        "kind": "GP",
+        "epoch": "2026-11-20T04:44:18.847104"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "unquiet",
+        "borderline": false,
+        "margins": {
+          "zone": -182.38134698660724,
+          "low": -229.38134698660724,
+          "high": -262.38134698660724
+        },
+        "era": "before FCC rule",
+        "yearsSinceLaunch": 41
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 19548,
+      "name": "TDRS 3",
+      "intlDes": "1988-091B",
+      "objectType": "PAY",
+      "status": "living payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "1988-09-29",
+      "launchYear": 1988,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35610.22843405785,
+      "apogeeKm": 35965.22958971215,
+      "pKm": -175.77156594215194,
+      "qKm": 179.2295897121512,
+      "e": 0.00420958,
+      "inclinationDeg": 12.4862,
+      "orbitSource": {
+        "kind": "GP",
+        "epoch": "2026-11-20T10:05:16.378080"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "living payload"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 27378,
+      "name": "ECHOSTAR 7",
+      "intlDes": "2002-006A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2002-02-21",
+      "launchYear": 2002,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35896.376692387494,
+      "apogeeKm": 35922.151707947975,
+      "pKm": 110.37669238749368,
+      "qKm": 136.1517079479745,
+      "e": 0.00030476,
+      "inclinationDeg": 4.4101,
+      "orbitSource": {
+        "kind": "GP",
+        "epoch": "2026-11-20T12:07:02.320608"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "unquiet",
+        "borderline": false,
+        "margins": {
+          "zone": -89.62330761250632,
+          "low": -136.62330761250632,
+          "high": -169.62330761250632
+        },
+        "era": "before FCC rule",
+        "yearsSinceLaunch": 24
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90001,
+      "name": "FIXTURE FALLEN",
+      "intlDes": "1990-001A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "1990-01-01",
+      "launchYear": 1990,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35400,
+      "apogeeKm": 35500,
+      "pKm": -386,
+      "qKm": -286,
+      "e": 0.0011953676634160236,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "fallen",
+        "borderline": false,
+        "margins": {
+          "zone": -586,
+          "low": -633,
+          "high": -666
+        },
+        "era": "before FCC rule",
+        "yearsSinceLaunch": 36
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90002,
+      "name": "FIXTURE BURIED",
+      "intlDes": "2010-020A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "FR",
+      "launchDate": "2010-05-05",
+      "launchYear": 2010,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36190,
+      "apogeeKm": 36200,
+      "pKm": 404,
+      "qKm": 414,
+      "e": 0.00011744495677849422,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": false,
+        "margins": {
+          "zone": 204,
+          "low": 157,
+          "high": 124
+        },
+        "era": null,
+        "yearsSinceLaunch": 16
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90003,
+      "name": "FIXTURE EDGE P247",
+      "intlDes": "2008-010A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "FR",
+      "launchDate": "2008-02-02",
+      "launchYear": 2008,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36033,
+      "apogeeKm": 36035,
+      "pKm": 247,
+      "qKm": 249,
+      "e": 0.00002357815752496308,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "uncertain",
+        "borderline": true,
+        "margins": {
+          "zone": 47,
+          "low": 0,
+          "high": -33
+        },
+        "era": null,
+        "yearsSinceLaunch": 18
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90004,
+      "name": "FIXTURE EDGE P280",
+      "intlDes": "2008-011A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "FR",
+      "launchDate": "2008-02-03",
+      "launchYear": 2008,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36066,
+      "apogeeKm": 36068,
+      "pKm": 280,
+      "qKm": 282,
+      "e": 0.00002355982611434738,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": true,
+        "margins": {
+          "zone": 80,
+          "low": 33,
+          "high": 0
+        },
+        "era": null,
+        "yearsSinceLaunch": 18
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90005,
+      "name": "FIXTURE EDGE P200",
+      "intlDes": "2008-012A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "FR",
+      "launchDate": "2008-02-04",
+      "launchYear": 2008,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35986,
+      "apogeeKm": 35988,
+      "pKm": 200,
+      "qKm": 202,
+      "e": 0.00002360431519927884,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "unquiet",
+        "borderline": true,
+        "margins": {
+          "zone": 0,
+          "low": -47,
+          "high": -80
+        },
+        "era": null,
+        "yearsSinceLaunch": 18
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90006,
+      "name": "FIXTURE P175",
+      "intlDes": "2008-013A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "JP",
+      "launchDate": "2008-02-05",
+      "launchYear": 2008,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35961,
+      "apogeeKm": 35963,
+      "pKm": 175,
+      "qKm": 177,
+      "e": 0.000023618252516200055,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "unquiet",
+        "borderline": true,
+        "margins": {
+          "zone": -25,
+          "low": -72,
+          "high": -105
+        },
+        "era": null,
+        "yearsSinceLaunch": 18
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90007,
+      "name": "FIXTURE P174",
+      "intlDes": "2008-014A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "JP",
+      "launchDate": "2008-02-06",
+      "launchYear": 2008,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35960,
+      "apogeeKm": 35962,
+      "pKm": 174,
+      "qKm": 176,
+      "e": 0.000023618810351227062,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "unquiet",
+        "borderline": false,
+        "margins": {
+          "zone": -26,
+          "low": -73,
+          "high": -106
+        },
+        "era": null,
+        "yearsSinceLaunch": 18
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90008,
+      "name": "FIXTURE P305",
+      "intlDes": "2008-015A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "JP",
+      "launchDate": "2008-02-07",
+      "launchYear": 2008,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36091,
+      "apogeeKm": 36093,
+      "pKm": 305,
+      "qKm": 307,
+      "e": 0.00002354595764765052,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": true,
+        "margins": {
+          "zone": 105,
+          "low": 58,
+          "high": 25
+        },
+        "era": null,
+        "yearsSinceLaunch": 18
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90009,
+      "name": "FIXTURE P306",
+      "intlDes": "2008-016A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "JP",
+      "launchDate": "2008-02-08",
+      "launchYear": 2008,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36092,
+      "apogeeKm": 36094,
+      "pKm": 306,
+      "qKm": 308,
+      "e": 0.00002354540324858283,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": false,
+        "margins": {
+          "zone": 106,
+          "low": 59,
+          "high": 26
+        },
+        "era": null,
+        "yearsSinceLaunch": 18
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90010,
+      "name": "FIXTURE E LOW",
+      "intlDes": "2009-001A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "DE",
+      "launchDate": "2009-01-01",
+      "launchYear": 2009,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36100,
+      "apogeeKm": 36354,
+      "pKm": 314,
+      "qKm": 568,
+      "e": 0.0029808613445304185,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": false,
+        "margins": {
+          "zone": 114,
+          "low": 67,
+          "high": 34
+        },
+        "era": null,
+        "yearsSinceLaunch": 17
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90011,
+      "name": "FIXTURE E HIGH",
+      "intlDes": "2009-002A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "DE",
+      "launchDate": "2009-01-02",
+      "launchYear": 2009,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36100,
+      "apogeeKm": 36356,
+      "pKm": 314,
+      "qKm": 570,
+      "e": 0.003004262179613335,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "restless",
+        "borderline": false,
+        "margins": {
+          "zone": 114,
+          "low": 67,
+          "high": 34
+        },
+        "era": null,
+        "yearsSinceLaunch": 17
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90014,
+      "name": "FIXTURE LOW EDGE IN",
+      "intlDes": "2006-003A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2006-01-03",
+      "launchYear": 2006,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 33786,
+      "apogeeKm": 33800,
+      "pKm": -2000,
+      "qKm": -1986,
+      "e": 0.0001742544740147372,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "fallen",
+        "borderline": false,
+        "margins": {
+          "zone": -2200,
+          "low": -2247,
+          "high": -2280
+        },
+        "era": null,
+        "yearsSinceLaunch": 20
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90016,
+      "name": "FIXTURE HIGH EDGE IN",
+      "intlDes": "2006-005A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2006-01-05",
+      "launchYear": 2006,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 37700,
+      "apogeeKm": 37786,
+      "pKm": 1914,
+      "qKm": 2000,
+      "e": 0.0009745896156116564,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": false,
+        "margins": {
+          "zone": 1714,
+          "low": 1667,
+          "high": 1634
+        },
+        "era": null,
+        "yearsSinceLaunch": 20
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90020,
+      "name": "FIXTURE QUOTED, NAME",
+      "intlDes": "2007-003A",
+      "objectType": "PAY",
+      "status": "living payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2007-01-03",
+      "launchYear": 2007,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "living payload"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90021,
+      "name": "FIXTURE STATUS +",
+      "intlDes": "2011-001A",
+      "objectType": "PAY",
+      "status": "living payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2011-01-01",
+      "launchYear": 2011,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "living payload"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90022,
+      "name": "FIXTURE STATUS P",
+      "intlDes": "2011-002A",
+      "objectType": "PAY",
+      "status": "living payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2011-01-01",
+      "launchYear": 2011,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "living payload"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90023,
+      "name": "FIXTURE STATUS B",
+      "intlDes": "2011-003A",
+      "objectType": "PAY",
+      "status": "living payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2011-01-01",
+      "launchYear": 2011,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "living payload"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90024,
+      "name": "FIXTURE STATUS S",
+      "intlDes": "2011-004A",
+      "objectType": "PAY",
+      "status": "living payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2011-01-01",
+      "launchYear": 2011,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "living payload"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90025,
+      "name": "FIXTURE STATUS X",
+      "intlDes": "2011-005A",
+      "objectType": "PAY",
+      "status": "living payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2011-01-01",
+      "launchYear": 2011,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "living payload"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90026,
+      "name": "FIXTURE STATUS Q",
+      "intlDes": "2011-006A",
+      "objectType": "PAY",
+      "status": "unknown payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2011-01-01",
+      "launchYear": 2011,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "unknown status"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90027,
+      "name": "FIXTURE STATUS BLANK",
+      "intlDes": "2011-007A",
+      "objectType": "PAY",
+      "status": "unknown payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2011-01-01",
+      "launchYear": 2011,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "unknown status"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90030,
+      "name": "FIXTURE UNKNOWN TYPE",
+      "intlDes": "2011-010A",
+      "objectType": "UNK",
+      "status": "unknown",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2011-01-02",
+      "launchYear": 2011,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 35880,
+      "apogeeKm": 35900,
+      "pKm": 94,
+      "qKm": 114,
+      "e": 0.00023658484103923676,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "no verdict",
+        "reason": "unknown type"
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90031,
+      "name": "FIXTURE BEFORE RULE",
+      "intlDes": "2002-004A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2002-03-17",
+      "launchYear": 2002,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36086,
+      "apogeeKm": 36100,
+      "pKm": 300,
+      "qKm": 314,
+      "e": 0.0001648178227400798,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": true,
+        "margins": {
+          "zone": 100,
+          "low": 53,
+          "high": 20
+        },
+        "era": "before FCC rule",
+        "yearsSinceLaunch": 24
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90032,
+      "name": "FIXTURE ON RULE DATE",
+      "intlDes": "2002-005A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "US",
+      "launchDate": "2002-03-18",
+      "launchYear": 2002,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36086,
+      "apogeeKm": 36100,
+      "pKm": 300,
+      "qKm": 314,
+      "e": 0.0001648178227400798,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": true,
+        "margins": {
+          "zone": 100,
+          "low": 53,
+          "high": 20
+        },
+        "era": null,
+        "yearsSinceLaunch": 24
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90033,
+      "name": "FIXTURE NO LAUNCH DATE",
+      "intlDes": "2002-006A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": null,
+      "launchDate": null,
+      "launchYear": 2002,
+      "launchYearSource": "designator",
+      "decayDate": null,
+      "perigeeKm": 36086,
+      "apogeeKm": 36100,
+      "pKm": 300,
+      "qKm": 314,
+      "e": 0.0001648178227400798,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "buried",
+        "borderline": true,
+        "margins": {
+          "zone": 100,
+          "low": 53,
+          "high": 20
+        },
+        "era": "unknown",
+        "yearsSinceLaunch": null
+      },
+      "caseFile": false
+    },
+    {
+      "norad": 90034,
+      "name": "FIXTURE P230",
+      "intlDes": "2008-017A",
+      "objectType": "PAY",
+      "status": "retired payload",
+      "statusSource": "SATCAT",
+      "owner": "JP",
+      "launchDate": "2008-02-09",
+      "launchYear": 2008,
+      "launchYearSource": "launch date",
+      "decayDate": null,
+      "perigeeKm": 36016,
+      "apogeeKm": 36018,
+      "pKm": 230,
+      "qKm": 232,
+      "e": 0.000023587612116343066,
+      "inclinationDeg": 0.5,
+      "orbitSource": {
+        "kind": "SATCAT"
+      },
+      "disagreement": null,
+      "verdict": {
+        "kind": "verdict",
+        "verdict": "shallow grave",
+        "borderline": true,
+        "margins": {
+          "zone": 30,
+          "low": -17,
+          "high": -50
+        },
+        "era": null,
+        "yearsSinceLaunch": 18
+      },
+      "caseFile": false
+    }
+  ],
+  "rejections": [
+    {
+      "source": "satcat.csv",
+      "line": 40,
+      "reason": "wrong field count: 6, header has 17"
+    },
+    {
+      "source": "satcat.csv",
+      "line": 41,
+      "reason": "APOGEE is not a number"
+    },
+    {
+      "source": "satcat.csv",
+      "line": 42,
+      "reason": "LAUNCH_DATE is not YYYY-MM-DD"
+    },
+    {
+      "source": "satcat.csv",
+      "line": 43,
+      "reason": "NORAD_CAT_ID is missing or not a positive whole number"
+    },
+    {
+      "source": "satcat.csv",
+      "line": 44,
+      "reason": "APOGEE is below PERIGEE"
+    },
+    {
+      "source": "satcat.csv",
+      "line": 45,
+      "reason": "duplicate NORAD id 90002"
+    }
+  ],
+  "noOrbitDataCount": 2,
+  "census": {
+    "snapshotDate": "2026-11-20",
+    "population": {
+      "total": 33,
+      "outsidePopulation": 4,
+      "rejectedRows": 6,
+      "noOrbitData": 2
+    },
+    "byType": {
+      "retired payload": 20,
+      "living payload": 8,
+      "unknown payload": 2,
+      "rocket body": 1,
+      "debris": 1,
+      "unknown": 1
+    },
+    "retired": {
+      "total": 20,
+      "byVerdict": {
+        "fallen": 2,
+        "unquiet": 6,
+        "shallow grave": 1,
+        "restless": 1,
+        "uncertain": 1,
+        "buried": 9
+      },
+      "borderline": {
+        "yes": 9,
+        "no": 11
+      },
+      "era": {
+        "beforeRule": 4,
+        "onOrAfterRule": 14,
+        "unknown": 2
+      },
+      "orbitSource": {
+        "GP": 3,
+        "SATCAT": 17
+      },
+      "byOwner": {
+        "DE": {
+          "fallen": 0,
+          "unquiet": 0,
+          "shallow grave": 0,
+          "restless": 1,
+          "uncertain": 0,
+          "buried": 1
+        },
+        "FR": {
+          "fallen": 0,
+          "unquiet": 1,
+          "shallow grave": 0,
+          "restless": 0,
+          "uncertain": 1,
+          "buried": 2
+        },
+        "ITSO": {
+          "fallen": 0,
+          "unquiet": 1,
+          "shallow grave": 0,
+          "restless": 0,
+          "uncertain": 0,
+          "buried": 0
+        },
+        "JP": {
+          "fallen": 0,
+          "unquiet": 2,
+          "shallow grave": 1,
+          "restless": 0,
+          "uncertain": 0,
+          "buried": 2
+        },
+        "US": {
+          "fallen": 2,
+          "unquiet": 1,
+          "shallow grave": 0,
+          "restless": 0,
+          "uncertain": 0,
+          "buried": 3
+        },
+        "unknown": {
+          "fallen": 0,
+          "unquiet": 1,
+          "shallow grave": 0,
+          "restless": 0,
+          "uncertain": 0,
+          "buried": 1
+        }
+      }
+    },
+    "disagreements": {
+      "total": 1,
+      "pairs": {
+        "living payload | retired payload": 1
+      }
+    }
+  }
+}
