@@ -43,6 +43,7 @@ Choices the first task made where this design was silent:
 | --- | --- |
 | `config.ts` | The one config object (2.2). |
 | `types.ts` | Record, verdict, rejection, census and register types. |
+| `values.ts` | Strict number, integer and date checks for the parsers. |
 | `csv.ts` | RFC 4180 CSV parser: quoted fields, `""` escapes, CRLF and LF. It returns rows with line numbers. It never throws. |
 | `satcat.ts` | SATCAT rows to `SatcatRow`, or a rejection. |
 | `gp.ts` | GPZ OMM rows to `GpRow`, or a rejection. |
@@ -99,7 +100,17 @@ function runEngine(input: EngineInput, config = CONFIG): EngineResult;
 - Duplicate NORAD ids are resolved by rules that don't depend on row order:
   - GP: the newer EPOCH wins. If epochs tie, the smaller raw line wins, compared as strings.
   - SATCAT and the GPZ table: the smaller raw line wins. The others are rejected as "duplicate NORAD id".
-- Every parser wraps its row loop so that an unexpected exception becomes a rejection. `runEngine` never throws (R1.12).
+- Choices made in task 3:
+- Extra module `values.ts`: strict number, whole-number and calendar-date checks. `Number('')` is 0, so blank is never passed to `Number`. Dates are checked by calendar arithmetic, not a Date object.
+- Every parser returns `{ rows, rejections }` (SATCAT also `noOrbitDataCount`). Rows come back sorted by NORAD id and rejections by line. `source` is the file name: `satcat.csv`, `gpz.csv` or `table-gpz.csv`.
+- A file-level problem (empty file, missing required header, no table head or body) is one rejection with `line` 0, or the header's line, and no rows.
+- Required headers. SATCAT: OBJECT_NAME, OBJECT_ID, NORAD_CAT_ID, OBJECT_TYPE, OPS_STATUS_CODE, OWNER, LAUNCH_DATE, DECAY_DATE, INCLINATION, APOGEE, PERIGEE, ORBIT_CENTER. GP: the seven in R1.2. Table: "NORAD Catalog Number" and "Latest Data".
+- Row checks run in this order, and the first failure is the reason: field count, NORAD id, blank APOGEE or PERIGEE (counted as no orbit data and not rejected, so a row that is both blank and otherwise malformed counts as no orbit data), non-numeric APOGEE or PERIGEE, APOGEE below PERIGEE, dates, INCLINATION, then e outside [0, 1) from the altitudes.
+- SATCAT LAUNCH_DATE, DECAY_DATE and INCLINATION may be blank (null). A non-blank value must be valid. A GP EPOCH must be `YYYY-MM-DDTHH:MM:SS` with an optional fraction.
+- The table parser keeps the status code as written. Merge (task 4) maps it with `config.gpzTableStatus`, and an unmapped code becomes "unknown". The parser matches tags in lower case, as CelesTrak writes them, and rejects a row whose cell count differs from the header's. A row's line is the line of its `<tr` in the file.
+- Duplicates are resolved over rows that passed validation. The "raw line" for the tie-break is the row's text, without the line break. The loser becomes a "duplicate NORAD id" rejection.
+- Each parser has an outer try/catch as well as one per row, so an unexpected exception is a rejection with reason "unexpected error: …".
+Every parser wraps its row loop so that an unexpected exception becomes a rejection. `runEngine` never throws (R1.12).
 
 ### 2.5 Merge (R1.4–R1.9)
 
@@ -126,7 +137,7 @@ Choices made in task 2:
 - SATCAT APOGEE and PERIGEE are treated as altitudes above the Earth radius, as the formula above reads. For the SATCAT path, `a = (apogee + perigee)/2 + Re`. Task 19 confirms this against real SATCAT rows.
 - The config is `CONFIG` plus the exported type `Config = typeof CONFIG`. `thresholdLowKm` and `thresholdHighKm` are computed with `baseKm + factorKm·crAmMin` and `…crAmMax`. In floating point these give exactly 247 and 280, and the test checks it.
 - `types.ts` holds the record, verdict, rejection and census types. The `margins` keys are `zone`, `low` and `high`, as in the 3.1 example. The census `byOwner` and `pairs` keys are strings.
-- The golden test reads the committed GPZ files with a small reader inside the test. It moves to the real parsers in task 3.
+- The golden test keeps its own small reader of the committed files. The table parser returns only the status, and the golden test needs the table's perigee.
 
 ### 2.7 Classification (R3)
 

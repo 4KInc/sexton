@@ -23,7 +23,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
     - golden: every object in `data/raw/2026-11-20/gpz.csv` is within 1 km of `table-gpz.csv`.
   - _Requirements: 2.1–2.4, 3.8, 12.2, 12.3_
 
-- [ ] 3. Parsers and fixtures
+- [x] 3. Parsers and fixtures
   - `csv.ts`, `satcat.ts`, `gp.ts` and `gpz-table.ts`, with row rejections (design 2.4). Blank APOGEE or PERIGEE counts as no orbit data.
   - Fixtures in `test/fixtures/snapshot/` as listed in design 7.1, including the blank-launch-date `2002-006A` row. The manifest has real sha256 values.
   - Tests: one example per rejection reason, the quoted-comma name, no-orbit-data counting, and the property "parsers never throw on arbitrary strings".

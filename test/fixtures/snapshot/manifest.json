@@ -1,0 +1,34 @@
+{
+  "startedAt": "2026-11-20T00:00:00.000Z",
+  "complete": true,
+  "fixture": true,
+  "entries": [
+    {
+      "file": "satcat.csv",
+      "url": "https://celestrak.org/pub/satcat.csv",
+      "fetchedAt": "2026-11-20T00:00:00.000Z",
+      "httpStatus": 200,
+      "contentEncoding": "gzip",
+      "bytes": 4193,
+      "sha256": "5f9331e121fa0c6eb776bac8e0175d1efa57cfa2ebb2a57c642905630a56e441"
+    },
+    {
+      "file": "gpz.csv",
+      "url": "https://celestrak.org/NORAD/elements/gp.php?SPECIAL=GPZ&FORMAT=csv",
+      "fetchedAt": "2026-11-20T00:00:00.000Z",
+      "httpStatus": 200,
+      "contentEncoding": "gzip",
+      "bytes": 1170,
+      "sha256": "9dd1a73443df63cf2166d688e3c3e4a123127c69b82ecc0f2f8a356f8fc71773"
+    },
+    {
+      "file": "table-gpz.csv",
+      "url": "https://celestrak.org/NORAD/elements/table.php?SPECIAL=gpz&FORMAT=csv",
+      "fetchedAt": "2026-11-20T00:00:00.000Z",
+      "httpStatus": 200,
+      "contentEncoding": "gzip",
+      "bytes": 15119,
+      "sha256": "c8ab958ddf8073a64609938714f626b1ddeaea9212d9e975b860109e762f31d4"
+    }
+  ]
+}
