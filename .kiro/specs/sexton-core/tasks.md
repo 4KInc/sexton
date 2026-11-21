@@ -13,7 +13,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - A smoke test that imports `src/engine/config.ts`.
   - _Requirements: 12.1_
 
-- [ ] 2. Config and orbit maths
+- [x] 2. Config and orbit maths
   - `src/engine/config.ts` (design 2.2), with the derived `thresholdLowKm` and `thresholdHighKm`.
   - `src/engine/types.ts`.
   - `src/engine/orbit.ts`: mean motion to a, hp, ha, p, q; SATCAT altitudes to e.

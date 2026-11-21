@@ -121,6 +121,12 @@ SATCAT only:  rp = PERIGEE + Re,  ra = APOGEE + Re,  e = (ra − rp)/(ra + rp)
 ```
 
 Fields are stored at full float precision. Rounding happens only in the UI (5.6).
+Choices made in task 2:
+- `orbit.ts` exports `orbitFromMeanMotion(n, e, config)`, `eccentricityFromAltitudes(apogeeKm, perigeeKm, config)` and `orbitFromAltitudes(apogeeKm, perigeeKm, config)`. All take the config as an argument and return an `Orbit` (`semiMajorAxisKm`, `perigeeKm`, `apogeeKm`, `pKm`, `qKm`, `e`).
+- SATCAT APOGEE and PERIGEE are treated as altitudes above the Earth radius, as the formula above reads. For the SATCAT path, `a = (apogee + perigee)/2 + Re`. Task 19 confirms this against real SATCAT rows.
+- The config is `CONFIG` plus the exported type `Config = typeof CONFIG`. `thresholdLowKm` and `thresholdHighKm` are computed with `baseKm + factorKm·crAmMin` and `…crAmMax`. In floating point these give exactly 247 and 280, and the test checks it.
+- `types.ts` holds the record, verdict, rejection and census types. The `margins` keys are `zone`, `low` and `high`, as in the 3.1 example. The census `byOwner` and `pairs` keys are strings.
+- The golden test reads the committed GPZ files with a small reader inside the test. It moves to the real parsers in task 3.
 
 ### 2.7 Classification (R3)
 
