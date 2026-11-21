@@ -199,6 +199,13 @@ Each grouping is built from one pass over the same list, so its counts must add 
 
 The census holds no percentages. The site computes "share buried" etc. and always shows them with the caveats in R5.5.
 
+Choices made in task 6:
+- `buildCensus(records, { snapshotDate, outsidePopulation, rejectedRows, noOrbitData })` takes classified `SatRecord`s. Retired payloads are the records whose verdict is `kind: 'verdict'`. The "unmarked bones" count is `byType['rocket body'] + byType['debris']`. The "no verdict" count is the living, unknown-status and unknown-type kinds in `byType`.
+- Census keys: `byType` has all six kinds, `byVerdict` all six verdicts, each present even when 0. `byOwner` is keyed by the SATCAT owner code, with `unknown` for a record with no owner, and its keys are sorted. A disagreement pair is keyed `"<SATCAT kind> | <GPZ table kind>"`, for example `"living payload | retired payload"`. Disagreements are counted over all records, not only retired payloads.
+- `rejectedRows` is the number of rejections, including file-level ones. `outsidePopulation` comes from merge.
+- `runEngine` sets `caseFile: false` on every record. `build-register.ts` sets it.
+- A `snapshotDate` that is not a real `YYYY-MM-DD` date gives no records and one rejection `{ source: 'engine', line: 0, reason: 'snapshotDate is not YYYY-MM-DD' }`. Any other unexpected exception becomes a rejection with source `engine`.
+- An input that is absent (`undefined`, or not a string) is treated as not given. A given file that fails at file level (for example a missing header) contributes its rejection and no rows.
 ## 3. Build-time register (R4)
 
 `scripts/build-register.ts [--set <dir>] [--out <file>]`:

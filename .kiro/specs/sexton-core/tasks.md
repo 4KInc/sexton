@@ -53,7 +53,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Golden: EchoStar-7 unquiet at +110.4 km, Intelsat 511 unquiet at +17.6 km.
   - _Requirements: 3.1–3.8, 12.2, 12.3_
 
-- [ ] 6. Census and `runEngine`
+- [x] 6. Census and `runEngine`
   - `census.ts` (design 2.8) and `engine.ts` (design 2.3).
   - Tests:
     - property: census counts add up;
