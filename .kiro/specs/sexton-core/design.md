@@ -174,6 +174,12 @@ Each verdict also carries the following:
 - `yearsSinceLaunch`: the snapshot date minus the launch date, in whole years. It drives the moss. It is `null` when the launch date is unknown.
 - `launchYear` and `launchYearSource` are not on the verdict. They are on every record, set by merge (2.5), because the churchyard places every object by launch year, with or without a verdict.
 
+Choices made in task 5:
+- `classify.ts` exports `classifyOrbit`, `classify(record, snapshotDate, config)`, `iadcThresholdKm(x)`, `edgesKm`, `isBorderline`, `marginsOf`, `eraOf` and `yearsSinceLaunch`. The borderline edges are the zone edge (`protectedZoneKm`) and the two thresholds. The "fallen" cut-off is `−protectedZoneKm`. The e limit is `iadc.eccentricityMax`.
+- R3.5 (attach the orbit source and snapshot date to each verdict) is met without copying them onto the verdict. Every record has `orbitSource`, and the register has `snapshot.set`. The verdict holds only the fields listed above, so the register doesn't repeat them for every record.
+- `reason` for "no verdict" is `'living payload'`, `'unknown status'` (a payload whose status code is not a known one) or `'unknown type'` (neither SATCAT nor the GPZ table gives a type).
+- `yearsSinceLaunch` counts whole years by comparing month and day, so a launch on 18 March is a full year old on 18 March. A launch date after the snapshot date (bad data) gives 0.
+- A fallen, unquiet or shallow-grave object can also be borderline. The flag looks only at p, not at the verdict.
 ### 2.8 Census (R5)
 
 The census covers all records in the population:

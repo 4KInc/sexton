@@ -40,7 +40,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
     - properties: order independence, and GP wins over SATCAT.
   - _Requirements: 1.4–1.9, 1.13, 6.2, 12.2_
 
-- [ ] 5. Classification
+- [x] 5. Classification
   - `classify.ts`: `classifyOrbit`, `classify`, borderline flag, margins, era (full launch date only) and `yearsSinceLaunch`.
   - Properties from design 7.2:
     - T non-decreasing;
