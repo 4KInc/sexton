@@ -43,26 +43,30 @@ export type Classification =
       margins: Margins;
       era: Era;
       yearsSinceLaunch: number | null;
-      launchYear: number | null;
-      launchYearSource: 'launch date' | 'designator' | null;
     }
   | { kind: 'unmarked bones' }
   | { kind: 'no verdict'; reason: string };
 
 export interface Disagreement {
+  /** The SATCAT kind. "unknown payload" is written as "unknown" here. */
   satcat: ObjectKind;
   gpzTable: ObjectKind;
 }
 
-export interface SatRecord {
+/** What merge produces: one record per NORAD id, before classification. */
+export interface MergedRecord {
   norad: number;
   name: string;
   intlDes: string | null;
+  /** SATCAT OBJECT_TYPE, or the type implied by the GPZ table, or null. */
   objectType: string | null;
   status: ObjectKind;
   statusSource: 'SATCAT' | 'GPZ table' | null;
   owner: string | null;
   launchDate: string | null;
+  /** Year used only to place the object on the x axis (design 2.7). */
+  launchYear: number | null;
+  launchYearSource: 'launch date' | 'designator' | null;
   decayDate: string | null;
   perigeeKm: number;
   apogeeKm: number;
@@ -72,10 +76,12 @@ export interface SatRecord {
   inclinationDeg: number | null;
   orbitSource: OrbitSource;
   disagreement: Disagreement | null;
+}
+
+export interface SatRecord extends MergedRecord {
   verdict: Classification;
   caseFile: boolean;
 }
-
 export type VerdictCounts = Record<VerdictName, number>;
 
 export interface Census {

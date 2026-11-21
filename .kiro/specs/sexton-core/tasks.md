@@ -29,7 +29,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Tests: one example per rejection reason, the quoted-comma name, no-orbit-data counting, and the property "parsers never throw on arbitrary strings".
   - _Requirements: 1.1–1.3, 1.10–1.12, 12.1, 12.2_
 
-- [ ] 4. Merge
+- [x] 4. Merge
   - `merge.ts`: near-GEO filter from config, population union, GP orbit wins, status from SATCAT or GPZ table, disagreements, owner and launch date `null` without SATCAT, `launchYear` with the designator fallback, and output sorted by NORAD id.
   - Tests:
     - filter edges at exactly ±2,000 km;

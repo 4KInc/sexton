@@ -15,11 +15,13 @@ export const CONFIG = {
   geoAltitudeKm: 35786,
   nearGeo: { lowerKm: -2000, upperKm: 2000, orbitCenter: 'EA' },
   protectedZoneKm: 200,
+  firstLaunchYear: 1957, // earliest year accepted from an international designator
   iadc,
   thresholdLowKm: iadc.baseKm + iadc.factorKm * iadc.crAmMin,
   thresholdHighKm: iadc.baseKm + iadc.factorKm * iadc.crAmMax,
   uncertaintyKm: 25,
   fccRuleDate: '2002-03-18',
+  satcatTypes: { payload: 'PAY', rocketBody: 'R/B', debris: 'DEB' },
   status: { retired: ['-'], living: ['+', 'P', 'B', 'S', 'X'] },
   gpzTableStatus: { 'PAY-': 'retired', 'PAY+': 'living', 'R/B': 'rocket body', 'DEB': 'debris' },
 } as const;

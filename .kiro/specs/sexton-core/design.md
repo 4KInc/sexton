@@ -119,6 +119,14 @@ Every parser wraps its row loop so that an unexpected exception becomes a reject
 3. **Type and status.** If a SATCAT row exists, SATCAT decides (`statusSource: 'SATCAT'`). Otherwise the GPZ table decides (`statusSource: 'GPZ table'`), and owner and launch date are `null`, shown as "unknown". If neither has the object, type and status are "unknown".
 4. **Disagreement.** When SATCAT and the GPZ table both cover an object, the engine maps both to {retired payload, living payload, rocket body, debris, unknown}. If they differ, it stores `disagreement = { satcat, gpzTable }` and keeps the SATCAT value.
 5. **Order.** The output is sorted by NORAD id, which makes it independent of input order (R1.13).
+Choices made in task 4:
+- `mergeSources({ satcat, gp, table }, snapshotDate, config)` returns `{ records, outsidePopulation }`. `satcat` is `null` when SATCAT is absent. Records are `MergedRecord`s (no verdict yet). `SatRecord` adds `verdict` and `caseFile`. The `SatRecord` and `MergedRecord` types are in `types.ts`.
+- `outsidePopulation` counts SATCAT rows that fail the filter and whose id is not in GP. A row that fails the filter but whose object is in GP is in the population, and its SATCAT type, status, owner and dates are still used.
+- Type and status from SATCAT: OBJECT_TYPE `PAY` splits by OPS_STATUS_CODE; `R/B` is a rocket body; `DEB` is debris; any other type is "unknown". The type codes are in `config.satcatTypes`. A table-only record gets `objectType` `PAY`, `R/B` or `DEB` from its mapped kind, or `null` if the code is not in `config.gpzTableStatus`.
+- The disagreement test collapses "unknown payload" into "unknown", so SATCAT `?` against table `PAY-` is a disagreement, stored as `{ satcat: 'unknown', gpzTable: 'retired payload' }`. The record keeps the SATCAT status.
+- Name and designator come from SATCAT if it has the row, else GP. Inclination comes with the orbit source. A blank SATCAT owner is `null`, shown as "unknown".
+- `launchYear` is the launch date's year (`'launch date'`). Without a launch date it is the designator's year, but only if the designator looks like `YYYY-NNN` plus letters and the year is from `config.firstLaunchYear` (1957) to the snapshot year. Otherwise it is `null`. It sits on the record, not the verdict (see 2.7).
+- A SATCAT row with blank APOGEE or PERIGEE never reaches merge (the parser counts it). If that object is also in GP, it takes its type and status from the GPZ table.
 
 ### 2.6 Orbit maths (R2)
 
@@ -164,7 +172,7 @@ Each verdict also carries the following:
 - `margins`: p − 200, p − 247 and p − 280, for the ledger maths.
 - `era`: `'before FCC rule'` when the launch date is before 2002-03-18, `null` when it is on or after that date, and `'unknown'` when there is no launch date. Only the first shows a badge. Launch dates are compared as ISO strings, so there's no Date object and no clock.
 - `yearsSinceLaunch`: the snapshot date minus the launch date, in whole years. It drives the moss. It is `null` when the launch date is unknown.
-- `launchYear` and `launchYearSource`: the year of the launch date (`'launch date'`). When the launch date is unknown, it is the first four digits of the international designator (`'designator'`), if they form a year from 1957 to the snapshot year. Otherwise both are `null`. This year is used only for x placement (5.4), never for the era badge or moss.
+- `launchYear` and `launchYearSource` are not on the verdict. They are on every record, set by merge (2.5), because the churchyard places every object by launch year, with or without a verdict.
 
 ### 2.8 Census (R5)
 
@@ -210,15 +218,15 @@ The census holds no percentages. The site computes "share buried" etc. and alway
   "records": [ {
     "norad": 27378, "name": "ECHOSTAR 7", "intlDes": "2002-006A",
     "objectType": "PAY", "status": "retired", "statusSource": "SATCAT",
-    "owner": "US", "launchDate": "2002-02-21", "decayDate": null,
+    "owner": "US", "launchDate": "2002-02-21",
+    "launchYear": 2002, "launchYearSource": "launch date", "decayDate": null,
     "perigeeKm": 35896.4, "apogeeKm": 35922.2, "pKm": 110.4, "qKm": 136.2,
     "e": 0.00030476, "inclinationDeg": 0.03,
     "orbitSource": { "kind": "GP", "epoch": "2026-11-20T12:07:02.320608" },
     "disagreement": null,
     "verdict": { "kind": "verdict", "verdict": "unquiet", "borderline": false,
                  "margins": { "zone": -89.6, "low": -136.6, "high": -169.6 },
-                 "era": "before FCC rule", "yearsSinceLaunch": 24,
-                 "launchYear": 2002, "launchYearSource": "launch date" },
+                 "era": "before FCC rule", "yearsSinceLaunch": 24 },
     "caseFile": true
   } ],
   "rejections": [ { "source": "satcat.csv", "line": 1234, "reason": "APOGEE is not a number" } ],
