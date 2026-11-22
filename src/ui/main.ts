@@ -1,0 +1,87 @@
+// Fetches register.json, then starts the router. The site loads no other data (R4.5).
+import './styles/tokens.css';
+import './styles/base.css';
+import './styles/churchyard.css';
+import { NAV, PAGE_TITLES, SITE } from './copy.ts';
+import { esc, withSansDigits } from './html.ts';
+import { isRegister } from './register.ts';
+import type { UiRegister } from './register.ts';
+import { navRouteOf, parseHash, startRouter } from './router.ts';
+import type { Route } from './router.ts';
+import { mountChurchyard } from './views/churchyard.ts';
+
+const NARROW = '(max-width: 600px)';
+
+function el<T extends HTMLElement>(id: string): T {
+  const found = document.getElementById(id);
+  if (found === null) throw new Error(`index.html has no #${id}`);
+  return found as T;
+}
+
+function renderNav(route: Route): void {
+  const current = navRouteOf(route);
+  el('nav-list').innerHTML = NAV.map(
+    (item) => `<li><a href="${item.href}"${item.route === current ? ' aria-current="page"' : ''}>${esc(item.label)}</a></li>`,
+  ).join('');
+}
+
+function heading(route: Route): string {
+  if (route.name === 'sat') return `${PAGE_TITLES.sat}: NORAD ${route.norad}`;
+  return PAGE_TITLES[route.name];
+}
+
+let stopView: (() => void) | null = null;
+let drawnNarrow: boolean | null = null;
+
+function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
+  stopView?.();
+  stopView = null;
+  const main = el('main');
+  document.title = `${heading(route)} · ${SITE.title}`;
+  renderNav(route);
+  main.innerHTML = `<h1 id="page-title" tabindex="-1">${withSansDigits(heading(route))}</h1><div id="view"></div>`;
+  const view = el('view');
+  if (route.name === 'churchyard') {
+    drawnNarrow = window.matchMedia(NARROW).matches;
+    stopView = mountChurchyard(view, reg, drawnNarrow);
+  } else if (route.name === 'notfound') {
+    view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
+  } else {
+    view.innerHTML = `<p>${esc(SITE.notBuilt)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
+  }
+  // After a navigation, move keyboard and screen-reader focus to the new page title.
+  if (!isFirst) el('page-title').focus({ preventScroll: false });
+}
+
+async function boot(): Promise<void> {
+  const main = el('main');
+  // "#main" would be read as a route, so the skip link moves focus itself.
+  el('skip-main').addEventListener('click', (event) => {
+    event.preventDefault();
+    main.focus();
+  });
+  main.innerHTML = `<p>${esc(SITE.loading)}</p>`;
+  let reg: UiRegister;
+  try {
+    const response = await fetch(`${import.meta.env.BASE_URL}register.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data: unknown = await response.json();
+    if (!isRegister(data)) throw new Error('register.json is not the expected shape');
+    reg = data;
+  } catch {
+    renderNav({ name: 'churchyard', query: new URLSearchParams() });
+    main.innerHTML = `<h1>${esc(SITE.title)}</h1><p role="alert">${esc(SITE.loadError)}</p>`;
+    return;
+  }
+  const banner = el('sample-banner');
+  banner.hidden = !reg.sample;
+  banner.textContent = reg.sample ? SITE.sampleBanner : '';
+  el('skip-main').textContent = SITE.skipToMain;
+  startRouter((route, isFirst) => renderRoute(reg, route, isFirst));
+  // Redraw when the screen crosses the phone width, because the columns change.
+  window.matchMedia(NARROW).addEventListener('change', () => {
+    if (window.matchMedia(NARROW).matches !== drawnNarrow) renderRoute(reg, parseHash(window.location.hash), true);
+  });
+}
+
+void boot();

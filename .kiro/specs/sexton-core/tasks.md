@@ -76,7 +76,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
 
 ## First UI and deploy
 
-- [ ] 8. Site shell and churchyard on the fixture register
+- [x] 8. Site shell and churchyard on the fixture register
   - `index.html`, `main.ts`, `router.ts` (hash routes, design 5.1) and `copy.ts`.
   - `tokens.css` with the design 5.3 palette, plus the self-hosted IM FELL English and `OFL.txt`.
   - The build-time copy of `data/register.json`, falling back to the fixture with `sample: true`, and the sample banner (design 3).
@@ -92,7 +92,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
     - the selection card;
     - SVG links with `aria-label`;
     - the skip link.
-  - Manual checks: phone and laptop width, keyboard, VoiceOver, reduced motion, and legibility of headstone numbers in the serif.
+  - [ ] Manual checks (owner to finish): phone and laptop width, keyboard, VoiceOver, reduced motion, and legibility of headstone numbers in the serif. Done so far, in headless Chrome only: laptop 1280 px and phone 390 px emulated, keyboard path, reduced-motion emulation, digit legibility (see the journal). Not checked: VoiceOver, a real phone, Safari and Firefox, the animation by eye.
   - _Requirements: 4.5, 6.1–6.7, 6.10_
 
 - [ ] 9. Deploy to GitHub Pages

@@ -365,6 +365,20 @@ The verdict uses p only when q ≥ −200. So an unquiet stone can stand below t
 
 **Small screens.** The SVG uses a `viewBox` and fills the width. Below 600 px, year columns merge into 5-year columns and labels move into a legend under the chart.
 
+Choices made in task 8:
+- **Files built.** `index.html`, `main.ts`, `router.ts`, `copy.ts`, `format.ts`, `html.ts`, `register.ts`, `views/churchyard.ts`, `svg/{scale,headstone,bands}.ts`, `styles/{tokens,base,churchyard}.css`, `fonts/`. `state.ts`, the other views, `content.ts`, `markdown.ts`, `print.css` come in their own tasks. Until then `#/table`, `#/sat/<id>`, `#/census` and `#/method` show "This page is not built yet." The `Table` nav item is also lit for a ledger page.
+- **Register at build time.** `scripts/register-source.ts` picks `data/register.json`, or the fixture with `sample: true`. A Vite plugin in `vite.config.ts` emits it as `register.json` and serves it in dev. The page fetches `${BASE_URL}register.json` and nothing else. `index.html` has an empty-data icon (`data:,`) so the browser asks for no favicon.
+- **Not in this task.** Filters and search (task 11), and the "show unmarked bones" switch. Rocket bodies, debris and objects with no verdict are not drawn.
+- **Scale and size.** y runs from −300 to +450 km at 0.8 px per km. A stone is 14 × 19 units, one column per launch year is 22 units wide, with one empty column at each end of the range. Below 600 px wide the columns cover five years and the in-chart band names and the 18 March label are dropped. The legend carries the full band labels at every width. The page redraws when the screen crosses 600 px, and keeps the selected stone.
+- **Lanes.** Stones in one column sit in 3 lanes (4 when narrow) by NORAD id modulo the lane count. Stones with a similar p and year still overlap. A real register will have more stones than the fixture, so a crowded year may need a fix (task 17 or later).
+- **Off-scale.** A stone above +450 sits near the top edge with "▲ +1,914 km" above it. A stone below −300 sits near the bottom edge with "▼ −386 km" under it.
+- **Glyphs.** Buried: upright stone on a ground line. Uncertain: "?" carved in it. Shallow grave: the stone sunk and cut off at the ground line, a low mound over its base. Unquiet: outlined, no fill, no ground line. Restless: an upright stone with a crack line, which I added so it differs from "buried" even when the tilt is only 1°. Fallen: lying on its side on the base line. Moss is clipped to the stone: four steps cover 15, 30, 50 and 75% of its height. Under 10 years is step 1. No launch date means no moss.
+- **Sway.** Only stones with e above `iadc.eccentricityMax` sway. `--sway-angle` is 1° at 0.003 and 4° at 0.03, and 8 s per cycle, out of phase by NORAD id. The tilt is always drawn. The animation runs only inside `prefers-reduced-motion: no-preference`.
+- **Selection.** A click or Enter on a stone selects it (lantern outline) and fills the card under the chart. It does not change the hash. The card's "Open the ledger" link goes to `#/sat/<id>`. The stone links still carry that `href`.
+- **Skip links.** One at the top of the page ("Skip to main content", handled in script because `#main` would read as a route) and one before the chart ("Skip the churchyard drawing and go to the table view"). The second goes to `#/table`, which is a placeholder until task 11.
+- **Numbers in the serif.** IM FELL English has old-style figures. A 7 drops below the line in "ECHOSTAR 7". So digits in names and headings are wrapped in `<span class="num">` and set in the sans. Stones carry no numbers, only the "?" carving, and off-scale values are in the sans.
+- **p display.** `format.ts` has the rule from 5.6: GP to 0.1 km, SATCAT to whole km, and 2 decimals when rounding would reach a band edge. Task 12 adds the tests it names.
+- **Moss tests.** The card says "Launch year from the international designator. Moss is not shown." for a stone placed by designator year.
 ### 5.5 Table view (R6.9)
 
 - A real `<table>` with `<caption>` and `scope` headers. Its columns are name, NORAD, owner, launch date, verdict, borderline, p, q, e, orbit source and data age.

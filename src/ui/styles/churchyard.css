@@ -1,0 +1,277 @@
+/* The churchyard view. Colours come from tokens.css. */
+
+.terms {
+  padding-left: 1.2rem;
+}
+.count {
+  color: var(--bone);
+}
+
+.chart-wrap {
+  margin: var(--space-3) 0;
+  border: 1px solid var(--stone);
+  background: var(--ground);
+}
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* The ground */
+.band--below {
+  fill: var(--ground);
+}
+.band--road {
+  fill: var(--road);
+}
+.band--shallow {
+  fill: var(--stone);
+  fill-opacity: 0.8;
+}
+.band--wall {
+  fill: url(#wall-shade);
+}
+.band--consecrated {
+  fill: var(--bone);
+  fill-opacity: 0.07;
+}
+.wall-stop-low {
+  stop-color: var(--stone);
+  stop-opacity: 1;
+}
+.wall-stop-high {
+  stop-color: var(--stone);
+  stop-opacity: 0.1;
+}
+.edge {
+  stroke: var(--bone-muted);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 4;
+}
+.edge--geo {
+  stroke-dasharray: 6 3;
+}
+.band-name,
+.tick,
+.axis-title {
+  fill: var(--bone-muted);
+  font: 12px var(--font-body);
+}
+.band-name {
+  fill: var(--bone);
+}
+.axis-title {
+  font-style: italic;
+}
+.tick--geo {
+  fill: var(--bone);
+}
+
+.fcc-line {
+  stroke: var(--bone);
+  stroke-width: 1;
+  stroke-dasharray: 1 3;
+}
+.fcc-label {
+  fill: var(--bone);
+  font: 12px var(--font-body);
+  stroke: var(--ground);
+  stroke-width: 3px;
+  paint-order: stroke;
+}
+
+/* Stones */
+.stone-link {
+  cursor: pointer;
+  outline: none;
+}
+.hit {
+  fill: transparent;
+}
+.stone-body {
+  fill: var(--stone);
+  stroke: var(--bone);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+.stone--unquiet .stone-body {
+  fill: none;
+}
+.moss {
+  fill: var(--moss);
+}
+.ground-line {
+  stroke: var(--bone-muted);
+  stroke-width: 1.2;
+}
+.mound {
+  fill: var(--road);
+  stroke: var(--bone-muted);
+  stroke-width: 1;
+}
+.carving {
+  fill: var(--bone);
+  font: 11px var(--font-display);
+}
+.crack {
+  fill: none;
+  stroke: var(--bone);
+  stroke-width: 1;
+}
+.whisker line {
+  stroke: var(--bone);
+  stroke-width: 1.2;
+  stroke-dasharray: 1.5 2;
+}
+.whisker line:nth-child(n + 2) {
+  stroke-dasharray: none;
+}
+.off-label {
+  fill: var(--bone);
+  font: 11px var(--font-body);
+  stroke: var(--ground);
+  stroke-width: 3px;
+  paint-order: stroke;
+}
+
+.stone-link:hover .stone-body {
+  stroke-width: 2;
+}
+.stone-link:focus-visible .hit {
+  stroke: var(--lantern);
+  stroke-width: 2;
+}
+.stone-link.selected .stone-body {
+  stroke: var(--lantern);
+  stroke-width: 2.4;
+}
+
+/* Sway. Without motion, or with reduced motion, the stone is drawn at its sway angle and stays put. */
+.sway {
+  transform-origin: 0 0;
+  transform: rotate(var(--sway-angle));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sway {
+    animation: sway 8s ease-in-out infinite;
+    animation-delay: var(--sway-delay);
+  }
+}
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(calc(var(--sway-angle) * -1));
+  }
+  50% {
+    transform: rotate(var(--sway-angle));
+  }
+}
+
+/* Card */
+.card {
+  max-width: 44rem;
+  padding: var(--space-3);
+  border: 1px solid var(--bone-muted);
+  background: var(--stone);
+}
+.card:has(.card-name) {
+  border-color: var(--lantern);
+}
+.card-name {
+  margin-top: 0;
+}
+.card-id {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--bone-muted);
+}
+.card-verdict {
+  font-weight: 600;
+}
+.card-data {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0;
+}
+.card-data div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+}
+.card-data dt {
+  min-width: 11rem;
+  color: var(--bone-muted);
+}
+.card-data dd {
+  margin: 0;
+}
+.card-notes {
+  padding-left: 1.2rem;
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.card-empty {
+  margin: 0;
+  color: var(--bone-muted);
+}
+
+/* Legend */
+.legend-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-2);
+  display: grid;
+  gap: var(--space-2);
+}
+.legend-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.legend-list--glyphs li {
+  align-items: flex-start;
+}
+.glyph {
+  flex: none;
+  overflow: visible;
+}
+.swatch {
+  flex: none;
+  width: 1.5rem;
+  height: 1rem;
+  border: 1px solid var(--bone-muted);
+}
+.swatch--below {
+  background: var(--ground);
+}
+.swatch--road {
+  background: var(--road);
+}
+.swatch--shallow {
+  background: var(--stone);
+}
+.swatch--wall {
+  background: linear-gradient(to top, var(--stone), var(--ground));
+}
+.swatch--consecrated {
+  background: var(--bone);
+  opacity: 0.25;
+}
+.legend-notes li {
+  display: list-item;
+  margin-left: 1.2rem;
+  list-style: disc;
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+  .card-data dt {
+    min-width: 0;
+  }
+}
