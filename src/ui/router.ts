@@ -46,3 +46,20 @@ export function startRouter(render: (route: Route, isFirst: boolean) => void): (
   run();
   return () => window.removeEventListener('hashchange', run);
 }
+/** Fired after replaceQuery, so the nav can carry the new query. */
+export const QUERY_EVENT = 'sexton:query';
+/**
+ * Writes a new query into the current hash without a navigation. The page is not redrawn, so the
+ * focus stays where it is. The back button skips these changes on purpose.
+ */
+export function replaceQuery(query: URLSearchParams): void {
+  const { path } = splitHash(window.location.hash);
+  const qs = query.toString();
+  window.history.replaceState(null, '', `#${path}${qs === '' ? '' : `?${qs}`}`);
+  window.dispatchEvent(new Event(QUERY_EVENT));
+}
+function splitHash(hash: string): { path: string } {
+  const raw = hash.startsWith('#') ? hash.slice(1) : hash;
+  const q = raw.indexOf('?');
+  return { path: q < 0 ? raw : raw.slice(0, q) };
+}

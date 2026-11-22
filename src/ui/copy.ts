@@ -124,6 +124,7 @@ export const LEGEND = {
   sway: (config: Config): string => `A swaying stone: eccentricity above ${config.iadc.eccentricityMax}. The wider the sway, the higher the eccentricity.`,
   whisker: (config: Config): string => `Dotted bar: the verdict is within ${config.uncertaintyKm} km of a band edge, the mean-element uncertainty.`,
   fccLine: 'Vertical line: 18 March 2002, the date from which the FCC minimum-perigee rule applies to the satellites the FCC authorizes.',
+  bones: 'Small diamond: unmarked bones, a rocket body or a piece of debris. They carry no name or verdict and show only when switched on.',
   offScale: 'An arrow at the top or bottom edge: the object is off the drawn scale. Its true value is written beside it.',
 } as const;
 
@@ -168,6 +169,52 @@ export function stoneLabel(
   return parts.join(', ');
 }
 
+export const FILTERS = {
+  legend: 'Filter the register',
+  note: 'The churchyard and the table share these filters. They are saved in the address, so you can share a filtered view.',
+  search: 'Search by name or NORAD id',
+  searchHint: 'For example "echostar" or "27378".',
+  owner: 'Owner',
+  anyOwner: 'Any owner',
+  noOwner: 'Owner not given',
+  verdict: 'Verdict',
+  era: 'Launch era',
+  anyEra: 'Any era',
+  eraBefore: 'Launched before 18 March 2002',
+  eraAfter: 'Launched on or after 18 March 2002',
+  eraUnknown: 'Launch date unknown',
+  bones: 'Show unmarked bones (rocket bodies and debris)',
+  clear: 'Clear filters',
+  none: 'No objects match these filters.',
+  drawn: (n: number): string => `${n} drawn in the churchyard. Living and unknown-status payloads are in the table only.`,
+  count: (shown: number, total: number): string => `${shown} of ${total} ${total === 1 ? 'object' : 'objects'} match.`,
+} as const;
+export const TABLE = {
+  intro: 'Every object the register holds, with the same numbers as the churchyard. Sort a column with its button.',
+  verdictKey: 'The verdict words',
+  caption: 'Objects near GEO in the register',
+  sortedBy: (label: string, dir: 'asc' | 'desc'): string => `Sorted by ${label}, ${dir === 'asc' ? 'ascending' : 'descending'}.`,
+  columns: {
+    name: 'Name',
+    norad: 'NORAD id',
+    owner: 'Owner',
+    launch: 'Launch date',
+    verdict: 'Verdict',
+    borderline: 'Borderline',
+    p: 'Perigee above GEO, km',
+    q: 'Apogee above GEO, km',
+    e: 'Eccentricity',
+    source: 'Orbit source',
+    age: 'Data age',
+  },
+  unknown: 'unknown',
+  notApplicable: 'n/a',
+  yes: 'Yes',
+  no: 'No',
+  bones: (kind: string): string => `No verdict: unmarked bones (${kind})`,
+  noVerdict: (reason: string): string => `No verdict: ${reason}`,
+  scrollLabel: 'Table of objects. Scroll sideways to see every column.',
+} as const;
 export const OFF_SCALE_ARROW = { above: '\u25B2', below: '\u25BC' } as const;
 export const offScaleText = (side: 'above' | 'below', p: number): string => `${OFF_SCALE_ARROW[side]} ${formatSigned(p, 0)} km`;
 export { MINUS };

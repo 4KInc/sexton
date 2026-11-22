@@ -393,6 +393,16 @@ Choices made in task 8:
 - Sortable column headers are `<button>`s with `aria-sort`.
 - The same filters as the churchyard apply. The table also lists living, unknown and unmarked-bones objects, with "no verdict" and the reason.
 
+Choices made in task 11:
+- **Files.** `state.ts` (pure: parse, canonical query, `applyFilters`, `sortRecords`), `views/filters.ts` (the form), `views/table.ts`. `router.ts` gains `replaceQuery`.
+- **One filtered set.** Both views call `applyFilters(register.records, filters)`. The churchyard then draws the part it can draw (retired payloads, plus unmarked bones when on). The table lists the whole set. Living, unknown-status and unknown-type payloads are in the table only, and the churchyard status line says so.
+- **Query keys.** `owner` (a code, or `(not given)`), `verdict` (repeated), `era` (`before`, `after`, `unknown`), `bones=1`, `q`, and for the table `sort` (a column key) and `dir=desc`. Defaults are left out, and keys come in a fixed order, so one state gives one address. Search text is trimmed and its spaces collapsed.
+- **Rules.** Filters combine with AND. A verdict or era filter keeps only objects that have a verdict. Search matches the name anywhere (any case) or the start of the NORAD id. The owner list is built from the register, plus an owner named in the address.
+- **Unmarked bones are off by default in both views.** So the table does not list rocket bodies and debris until "Show unmarked bones" is on. This keeps the two views on one set. Bones are small diamonds in the churchyard, not links, with a spoken label.
+- **Columns do not move when filtering.** Year columns come from all retired payloads, plus the bones that are shown.
+- **No redraw while typing.** A change writes the query with `history.replaceState` and redraws only the results, so focus stays in the form. Back does not undo a filter change. The nav links for the churchyard and the table carry the current query.
+- **Verdict words.** The filter shows the bare word. Each page pairs the words with their meaning once: the legend on the churchyard, a key above the table.
+- **Table.** Sort buttons in the headers, `aria-sort` on the sorted column only (ascending first, a second press reverses), missing values last, ties by NORAD id. A status line (`role="status"`) gives the count and the sort. The table sits in a keyboard-focusable scroll region, because it is wider than a phone. Only objects with a verdict link to a ledger.
 ### 5.6 Ledger (R7)
 
 The ledger is `#/sat/<norad>` and has these sections, in this order:

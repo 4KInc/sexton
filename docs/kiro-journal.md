@@ -12,6 +12,7 @@
 2026-11-21: Task 9 done. deploy.yml (SHA-pinned actions, per-job permissions) runs npm test and build, then deploys; Pages enabled with the GitHub Actions source; live at https://4kinc.github.io/sexton/ with the sample banner served.
 2026-11-21: Task 10 done. scripts/check-language.ts with one exported stem list, skips the methodology "What we do not say" section, runs last in npm test; 30 new tests; no hits in existing files; 259 tests pass.
 2026-11-22: Added three Kiro hooks (engine tests, census on data/raw, language check) and scripts/census.ts with npm run census; README census markers; 267 tests pass; hooks not yet seen firing live.
+2026-11-22: Task 11 done. state.ts (filters, search and sort in the hash query), filter form, table view with aria-sort, unmarked-bones markers in the churchyard; 307 tests pass and npm run build works; keyboard path checked in headless Chrome only, VoiceOver not checked.
 
 ## Agent hooks
 Format: Kiro v1 hook files, one JSON file per hook group in `.kiro/hooks/` (`{ "version": "v1", "hooks": [ { name, trigger, matcher, timeout, action } ] }`). Triggers are PascalCase names from the Kiro docs (https://kiro.dev/docs/hooks/types/). Matchers are regexes on the file path. The file triggers fire when the agent creates or saves a file. There is no git pre-commit trigger, so none is used.
@@ -25,3 +26,8 @@ Format: Kiro v1 hook files, one JSON file per hook group in `.kiro/hooks/` (`{ "
 Tests of the hooks, 2026-11-22:
 - Each command was run by hand in a shell from the project root. Engine tests: passed. Language check: passed. Census: exit 1, "No complete snapshot with satcat.csv in data/raw/...", README.md unchanged.
 - Live trigger (saving a file through the agent): not observed. The hooks were created in the same session that saved the test files, and the docs say hooks load when a session starts. Saves to `src/engine/config.ts`, `data/raw/` and `docs/kiro-journal.md` produced no hook output and no hook entry in the Kiro log. Redo the three saves in a new session.
+Second test, 2026-11-22 (fresh session, task 11):
+- Saves made with the agent's file tools in `src/ui/`: `state.ts`, `views/filters.ts`, `views/table.ts` (new files), and edits to `main.ts`, `views/filters.ts`, plus `test/state.test.ts`. After each save the tool result held no hook output. I saw no "Language check passed." line and no hook entry of any kind.
+- Several other `src/ui/` files (`copy.ts`, `router.ts`, `views/churchyard.ts`, `styles/table.css`) were changed by shell commands, not file-save tools. No hook output there either, and none was expected.
+- `src/engine/` was not touched, so the engine-test hook was not exercised. The `data/raw/` census hook was not exercised either.
+- So the language-check hook is still not observed firing. I did not check whether this session loaded the hooks. Language was checked by hand with `npm test` (last step, `node scripts/check-language.ts`: passed).

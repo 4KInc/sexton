@@ -110,10 +110,11 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Fix any hits in existing files.
   - _Requirements: 10.1–10.4_
 
-- [ ] 11. Table view, filters and search
+- [x] 11. Table view, filters and search
   - `views/table.ts` (design 5.5), with sortable headers using `aria-sort`, and all objects including those with no verdict.
   - `state.ts`: filters for owner, verdict, era and unmarked bones, plus search by name or NORAD id, all kept in the hash query and shared by both views.
-  - Manual checks: keyboard only and VoiceOver.
+  - Tests: `test/state.test.ts` (filters and search round-trip through the hash; churchyard and table show the same set).
+  - Manual checks: keyboard only and VoiceOver. Done: keyboard only, in headless Chrome (see the journal). Not checked: VoiceOver.
   - _Requirements: 6.8, 6.9, 6.10_
 
 - [ ] 12. Ledger page

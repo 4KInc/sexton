@@ -11,6 +11,7 @@ import {
   chartDescription,
   countLine,
   dataAge,
+  FILTERS,
   LEGEND,
   MOSS_STEPS,
   offScaleText,
@@ -23,6 +24,9 @@ import {
 import { formatP, formatSigned, spokenKm } from '../format.ts';
 import { esc, withSansDigits } from '../html.ts';
 import type { UiRegister } from '../register.ts';
+import { applyFilters, drawnInChurchyard, hasFilters, hashFor, NO_FILTERS, parseState } from '../state.ts';
+import type { ViewState } from '../state.ts';
+import { filtersHtml, wireFilters } from './filters.ts';
 import { bandsOf } from '../svg/bands.ts';
 import { stoneBody, stoneDefs } from '../svg/headstone.ts';
 import { buildColumns, laneOf, LAYOUT, mossStep, offScale, plotHeight, SCALE, swayAngle, yearFraction, yOf } from '../svg/scale.ts';
@@ -140,11 +144,34 @@ function stoneSvg(r: RetiredRecord, config: Config, cols: Columns, narrow: boole
   );
 }
 
-/** The whole chart as an SVG string. */
-export function chartSvg(reg: UiRegister, narrow: boolean, selected: number | null = null): string {
+/** An unmarked-bones marker: a small plain diamond, no inscription, not a link. */
+function boneSvg(r: SatRecord, config: Config, cols: Columns, narrow: boolean): string {
+  const col = cols.find(r.launchYear);
+  if (col === undefined) return '';
+  const lanes = narrow ? 4 : 3;
+  const gap = narrow ? 8 : 7;
+  const cx = col.x + col.width / 2 + (laneOf(r.norad, lanes) - (lanes - 1) / 2) * gap;
+  const off = offScale(r.pKm);
+  const cy = off === 'above' ? LAYOUT.top + LAYOUT.offScaleInset + 6 : off === 'below' ? LAYOUT.top + plotHeight() - 20 : yOf(r.pKm);
+  const text = pText(r, config);
+  const label = `${r.name}, unmarked bones (${r.status}), perigee ${spokenKm(text)} kilometres${spokenKm(text).startsWith('minus') ? ', below GEO' : ' above GEO'}${off === null ? '' : ', off the drawn scale'}`;
+  const offLabel =
+    off === null ? '' : `<text class="off-label" x="0" y="${off === 'above' ? -10 : 18}" text-anchor="middle">${esc(offScaleText(off, r.pKm))}</text>`;
+  return (
+    `<g class="bone" data-norad="${r.norad}" role="img" aria-label="${esc(label)}"><title>${esc(label)}</title>` +
+    `<g transform="translate(${f(cx)} ${f(cy)})"><path class="bone-mark" d="M 0 -4 L 4 0 L 0 4 L -4 0 Z"/>${offLabel}</g></g>`
+  );
+}
+/**
+ * The whole chart as an SVG string. `shown` is the filtered set (default: no filters, so no unmarked bones).
+ * The columns come from all retired payloads, so filtering does not move the stones, plus the
+ * unmarked bones that are shown.
+ */
+export function chartSvg(reg: UiRegister, narrow: boolean, selected: number | null = null, shown: readonly SatRecord[] = applyFilters(reg.records, NO_FILTERS)): string {
   const config = reg.config;
-  const stones = retiredPayloads(reg.records);
-  const cols = buildColumns(stones.map((r) => r.launchYear), narrow);
+  const stones = retiredPayloads(shown);
+  const bones = shown.filter((r) => r.verdict.kind === 'unmarked bones').sort((a, b) => a.norad - b.norad);
+  const cols = buildColumns([...retiredPayloads(reg.records), ...bones].map((r) => r.launchYear), narrow);
   const width = Math.max(cols.width, cols.gutter + 120);
   const height = LAYOUT.top + plotHeight() + LAYOUT.bottom;
   const parts = [
@@ -158,12 +185,12 @@ export function chartSvg(reg: UiRegister, narrow: boolean, selected: number | nu
     yearAxisSvg(cols, narrow),
     fccLineSvg(config, cols, narrow),
     `</g>`,
+    bones.map((r) => boneSvg(r, config, cols, narrow)).join(''),
     stones.map((r) => stoneSvg(r, config, cols, narrow, selected)).join(''),
     `</svg>`,
   ];
   return parts.join('');
 }
-
 function glyphSvg(verdict: VerdictName, moss: 0 | 1 | 2 | 3 | 4 = 0): string {
   return `<svg class="glyph" viewBox="-14 -26 28 34" width="28" height="34" aria-hidden="true" focusable="false">${stoneBody({ verdict, moss })}</svg>`;
 }
@@ -181,7 +208,7 @@ export function legendHtml(config: Config): string {
     `<h3>${esc(LEGEND.moss)}</h3><ul class="legend-list legend-list--glyphs">${moss}</ul>` +
     `<ul class="legend-list legend-notes">` +
     `<li>${esc(LEGEND.sway(config))}</li><li>${esc(LEGEND.whisker(config))}</li>` +
-    `<li>${esc(LEGEND.fccLine)}</li><li>${esc(LEGEND.offScale)}</li><li>${esc(CHART.fccLine)}</li></ul></section>`
+    `<li>${esc(LEGEND.fccLine)}</li><li>${esc(LEGEND.bones)}</li><li>${esc(LEGEND.offScale)}</li><li>${esc(CHART.fccLine)}</li></ul></section>`
   );
 }
 
@@ -222,22 +249,54 @@ export function introHtml(reg: UiRegister): string {
 
 /** The selected stone survives a redraw (for example when the screen crosses the phone width). */
 let remembered: number | null = null;
-
-/** Draws the churchyard into `root` and wires selection. Returns a function that removes the listeners. */
-export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: boolean): () => void {
+/**
+ * Draws the churchyard into `root` and wires filters and selection. `query` is the hash query.
+ * Returns a function that removes the listeners.
+ */
+export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: boolean, query: URLSearchParams): () => void {
   const config = reg.config;
   const byId = new Map(retiredPayloads(reg.records).map((r) => [r.norad, r]));
+  let state: ViewState = parseState(query);
   let selected: number | null = remembered !== null && byId.has(remembered) ? remembered : null;
+  const hasStones = byId.size > 0;
   root.innerHTML =
     introHtml(reg) +
-    (byId.size === 0
-      ? `<p class="empty">${esc(CHART.empty)}</p>`
-      : `<a class="skip-link skip-link--inline" href="#/table">${esc(SITE.skipToTable)}</a>` +
-        `<div class="chart-wrap">${chartSvg(reg, narrow, selected)}</div>` +
-        `<section class="card" id="stone-card" aria-live="polite" aria-label="Selected stone">${cardHtml(selected === null ? undefined : byId.get(selected), config)}</section>`) +
+    filtersHtml(reg.records, state.filters, config) +
+    `<p class="status" id="chart-status" role="status"></p>` +
+    (hasStones
+      ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>` +
+        `<div class="chart-wrap" id="chart-host"></div>` +
+        `<section class="card" id="stone-card" aria-live="polite" aria-label="Selected stone"></section>`
+      : `<p class="empty">${esc(CHART.empty)}</p>`) +
     legendHtml(config);
-
+  const form = root.querySelector<HTMLFormElement>('#filters')!;
+  const status = root.querySelector<HTMLElement>('#chart-status')!;
+  const host = root.querySelector<HTMLElement>('#chart-host');
   const card = root.querySelector<HTMLElement>('#stone-card');
+  const skip = root.querySelector<HTMLAnchorElement>('#skip-table');
+  const draw = (): void => {
+    const shown = applyFilters(reg.records, state.filters);
+    const drawn = drawnInChurchyard(shown);
+    // A selected stone that the filters hide is cleared.
+    if (selected !== null && !drawn.some((r) => r.norad === selected)) {
+      selected = null;
+      remembered = null;
+    }
+    status.textContent =
+      drawn.length === 0 && hasFilters(state.filters) ? FILTERS.none : `${FILTERS.count(shown.length, reg.records.length)} ${FILTERS.drawn(drawn.length)}`;
+    if (host !== null) host.innerHTML = chartSvg(reg, narrow, selected, drawn);
+    if (card !== null) card.innerHTML = cardHtml(selected === null ? undefined : byId.get(selected), config);
+    if (skip !== null) skip.href = hashFor('table', state);
+  };
+  draw();
+  const unwire = wireFilters(
+    form,
+    () => state,
+    (next) => {
+      state = next;
+    },
+    draw,
+  );
   const select = (norad: number | null): void => {
     selected = norad;
     remembered = norad;
@@ -258,6 +317,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   };
   root.addEventListener('click', onClick);
   return () => {
+    unwire();
     root.removeEventListener('click', onClick);
   };
 }

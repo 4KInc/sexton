@@ -2,13 +2,16 @@
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/churchyard.css';
+import './styles/table.css';
 import { NAV, PAGE_TITLES, SITE } from './copy.ts';
 import { esc, withSansDigits } from './html.ts';
 import { isRegister } from './register.ts';
 import type { UiRegister } from './register.ts';
-import { navRouteOf, parseHash, startRouter } from './router.ts';
+import { navRouteOf, parseHash, QUERY_EVENT, startRouter } from './router.ts';
 import type { Route } from './router.ts';
+import { hashFor, parseState } from './state.ts';
 import { mountChurchyard } from './views/churchyard.ts';
+import { mountTable } from './views/table.ts';
 
 const NARROW = '(max-width: 600px)';
 
@@ -18,10 +21,16 @@ function el<T extends HTMLElement>(id: string): T {
   return found as T;
 }
 
+/** The churchyard and table links carry the filters of the page you are on, so both views show the same set. */
+function navHref(item: (typeof NAV)[number], route: Route): string {
+  if (item.route !== 'churchyard' && item.route !== 'table') return item.href;
+  if (route.name !== 'churchyard' && route.name !== 'table') return item.href;
+  return hashFor(item.route === 'table' ? 'table' : '', parseState(route.query));
+}
 function renderNav(route: Route): void {
   const current = navRouteOf(route);
   el('nav-list').innerHTML = NAV.map(
-    (item) => `<li><a href="${item.href}"${item.route === current ? ' aria-current="page"' : ''}>${esc(item.label)}</a></li>`,
+    (item) => `<li><a href="${esc(navHref(item, route))}"${item.route === current ? ' aria-current="page"' : ''}>${esc(item.label)}</a></li>`,
   ).join('');
 }
 
@@ -43,7 +52,9 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   const view = el('view');
   if (route.name === 'churchyard') {
     drawnNarrow = window.matchMedia(NARROW).matches;
-    stopView = mountChurchyard(view, reg, drawnNarrow);
+    stopView = mountChurchyard(view, reg, drawnNarrow, route.query);
+  } else if (route.name === 'table') {
+    stopView = mountTable(view, reg, route.query);
   } else if (route.name === 'notfound') {
     view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
   } else {
@@ -78,6 +89,8 @@ async function boot(): Promise<void> {
   banner.textContent = reg.sample ? SITE.sampleBanner : '';
   el('skip-main').textContent = SITE.skipToMain;
   startRouter((route, isFirst) => renderRoute(reg, route, isFirst));
+  // Filters and sort change the hash without a redraw, so the nav links are rebuilt here.
+  window.addEventListener(QUERY_EVENT, () => renderNav(parseHash(window.location.hash)));
   // Redraw when the screen crosses the phone width, because the columns change.
   window.matchMedia(NARROW).addEventListener('change', () => {
     if (window.matchMedia(NARROW).matches !== drawnNarrow) renderRoute(reg, parseHash(window.location.hash), true);
