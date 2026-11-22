@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "tsc --noEmit && vitest run",
+    "test": "tsc --noEmit && vitest run && node scripts/check-language.ts",
     "build-register": "node scripts/build-register.ts"
   },
   "devDependencies": {

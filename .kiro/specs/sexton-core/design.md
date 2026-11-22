@@ -269,6 +269,14 @@ The values above are illustrative, apart from p, q and e, which come from spike 
 - It scans `src/ui/**`, `data/cases/**`, `docs/**` and `README.md`. It also scans `index.html`, which holds user-facing text but sits outside `src/ui/`. It reads text files only (`.ts`, `.css`, `.html`, `.md`, `.json`, `.svg`).
 - In `docs/methodology.md` it skips the section from the heading `## What we do not say` up to the next `## ` heading.
 - On a hit it prints `file:line: "match"` for each one and exits 1. With no hits it exits 0.
+- Choices the spec left open:
+  - The skipped section ends at the next line that starts with `## `. A `###` sub-heading does not end it. The heading match ignores case and surrounding spaces, and must be the whole line.
+  - The skip applies only to the path `docs/methodology.md`. If the file or the heading is missing, nothing is skipped.
+  - The check works line by line. A phrase split over two lines (for example "non-" then "compliant") is not caught.
+  - `.kiro/` is outside the scan set. That keeps `language.md`, which lists the stems, from flagging itself. Specs and steering are not user-facing.
+  - Folders that do not exist (for example `data/cases/` before case files are written) are skipped without error.
+  - The script takes optional file paths. With paths it scans only those files, with the same rules. This allows one-off scans outside the default set.
+  - Output: one `file:line: "match"` line per match, with the match as written in the file. Then a summary line on stderr, and exit 1.
 - `npm test` runs `tsc --noEmit && vitest run && node scripts/check-language.ts`. The typecheck always runs first. Task 17 appends the contrast check.
 
 ## 5. Site

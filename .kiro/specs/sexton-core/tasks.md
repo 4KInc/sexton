@@ -103,7 +103,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
 
 ## The rest
 
-- [ ] 10. Language check
+- [x] 10. Language check
   - `scripts/check-language.ts` (design 4), with one exported stem list. It covers `index.html` and skips the methodology section.
   - Add it to `npm test`.
   - Tests: each stem is caught, case-insensitively; the methodology section is skipped; the list matches `language.md`.
