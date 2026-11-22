@@ -166,7 +166,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Record GO or NO-GO.
   - _Requirements: 1.4, 1.9, 5.1_
 
-- [ ] 20. Build the real register — blocked on SATCAT
+- [x] 20. Build the real register — blocked on SATCAT
   - Run `build-register.ts` on the complete set, and commit `data/register.json`.
   - Check that the sample banner is gone on the live site.
   - Spot-check EchoStar-7, Intelsat 511 and Luch/Olymp ledgers against the spike.

@@ -1,6 +1,5 @@
-import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,15 +14,6 @@ const REBUILD = 'node scripts/build-register.ts --set test/fixtures/snapshot --o
 
 const MISSING_SATCAT =
   'No complete snapshot with satcat.csv in data/raw/. Run scripts/snapshot.ts when CelesTrak allows it, or add satcat.csv by hand with a manifest entry. This script never downloads.';
-
-const hasCompleteRealSet = readdirSync(join(ROOT, 'data/raw')).some((name) => {
-  try {
-    const m = JSON.parse(readFileSync(join(ROOT, 'data/raw', name, 'manifest.json'), 'utf8')) as { complete?: boolean };
-    return m.complete === true;
-  } catch {
-    return false;
-  }
-});
 
 let tmp: string;
 let fetchCalls: number;
@@ -61,27 +51,26 @@ function setUp(name = '2026-11-20', edit?: (dir: string, manifest: { complete: b
 const sha = (path: string): string => createHash('sha256').update(readFileSync(path)).digest('hex');
 const registerPath = (): string => join(tmp, 'data', 'register.json');
 
-describe.skipIf(hasCompleteRealSet)('on the real data/raw/ (no complete set with SATCAT yet)', () => {
-  it('exits 1 with the missing-SATCAT message, writes nothing and never calls fetch', () => {
-    const before = existsSync(join(ROOT, 'data/register.json'));
-    const out: string[] = [];
+describe('on the real data/raw/ (complete set with SATCAT)', () => {
+  it('builds, is not a sample, and never calls fetch', () => {
+    const out = join(tmp, 'real.json');
     const err: string[] = [];
-    const code = main([], { log: (l) => out.push(l), error: (l) => err.push(l) });
-    expect(code).toBe(1);
-    expect(err).toEqual([MISSING_SATCAT]);
-    expect(out).toEqual([]);
-    expect(existsSync(join(ROOT, 'data/register.json'))).toBe(before);
+    const code = main(['--out', out], { cwd: tmp, log: () => {}, error: (l) => err.push(l) });
+    expect(err).toEqual([]);
+    expect(code).toBe(0);
+    const reg = JSON.parse(readFileSync(out, 'utf8'));
+    expect(reg.sample).toBe(false);
+    expect(reg.records.length).toBeGreaterThan(1000);
     expect(fetchCalls).toBe(0);
   });
-  it('the real command exits 1 with the same message and no output file', () => {
-    const r = spawnSync('node', ['scripts/build-register.ts'], { cwd: ROOT, encoding: 'utf8' });
-    expect(r.status).toBe(1);
-    expect(r.stderr.trim()).toBe(MISSING_SATCAT);
-    expect(r.stdout).toBe('');
-    expect(existsSync(join(ROOT, 'data/register.json'))).toBe(false);
+  it('the committed data/register.json is up to date with data/raw/ (byte-identical rebuild)', () => {
+    const out = join(tmp, 'real.json');
+    expect(main(['--out', out], { cwd: tmp, log: () => {}, error: () => {} })).toBe(0);
+    const committed = readFileSync(join(ROOT, 'data/register.json'), 'utf8');
+    expect(readFileSync(out, 'utf8') === committed, 'data/register.json is stale. Run: npm run build-register').toBe(true);
+    expect(JSON.parse(committed).sample).toBe(false);
   });
 });
-
 describe('snapshot problems exit 1 and write nothing', () => {
   it('a set that is not complete', () => {
     setUp('2026-11-20', (_d, m) => { m.complete = false; });

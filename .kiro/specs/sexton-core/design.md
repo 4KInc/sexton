@@ -117,13 +117,14 @@ Every parser wraps its row loop so that an unexpected exception becomes a reject
 1. **Population.** The population is SATCAT rows that pass the near-GEO filter (empty DECAY_DATE, ORBIT_CENTER `EA`, apogee and perigee both within GEO + [lowerKm, upperKm]), plus every GP NORAD id. GPZ objects lie within ±200 km of GEO by construction (spike §d), so the union only adds GP objects that SATCAT lacks.
 2. **Orbit.** If a GP row exists, the orbit comes from GP (2.6) with `orbitSource = { kind: 'GP', epoch }`. Otherwise it comes from SATCAT with `orbitSource = { kind: 'SATCAT' }`.
 3. **Type and status.** If a SATCAT row exists, SATCAT decides (`statusSource: 'SATCAT'`). Otherwise the GPZ table decides (`statusSource: 'GPZ table'`), and owner and launch date are `null`, shown as "unknown". If neither has the object, type and status are "unknown".
-4. **Disagreement.** When SATCAT and the GPZ table both cover an object, the engine maps both to {retired payload, living payload, rocket body, debris, unknown}. If they differ, it stores `disagreement = { satcat, gpzTable }` and keeps the SATCAT value.
+4. **Disagreement, and the "unknown payload" exception.** When SATCAT and the GPZ table both cover an object, the engine maps both to {retired payload, living payload, rocket body, debris, unknown}. If they differ, it stores `disagreement = { satcat, gpzTable }`. SATCAT wins, with one exception (owner's decision, 2026-11-22): when SATCAT has the object as a payload with a blank or unknown OPS_STATUS_CODE ("unknown payload") and the GPZ table maps it to a retired or living payload, the table's status is used and `statusSource` is `'GPZ table'`. The disagreement record is kept, so it reads `{ satcat: 'unknown', gpzTable: <table kind> }`. A SATCAT status that is real (retired, living, rocket body, debris, unknown type) is never overridden.
 5. **Order.** The output is sorted by NORAD id, which makes it independent of input order (R1.13).
 Choices made in task 4:
 - `mergeSources({ satcat, gp, table }, snapshotDate, config)` returns `{ records, outsidePopulation }`. `satcat` is `null` when SATCAT is absent. Records are `MergedRecord`s (no verdict yet). `SatRecord` adds `verdict` and `caseFile`. The `SatRecord` and `MergedRecord` types are in `types.ts`.
 - `outsidePopulation` counts SATCAT rows that fail the filter and whose id is not in GP. A row that fails the filter but whose object is in GP is in the population, and its SATCAT type, status, owner and dates are still used.
 - Type and status from SATCAT: OBJECT_TYPE `PAY` splits by OPS_STATUS_CODE; `R/B` is a rocket body; `DEB` is debris; any other type is "unknown". The type codes are in `config.satcatTypes`. A table-only record gets `objectType` `PAY`, `R/B` or `DEB` from its mapped kind, or `null` if the code is not in `config.gpzTableStatus`.
-- The disagreement test collapses "unknown payload" into "unknown", so SATCAT `?` against table `PAY-` is a disagreement, stored as `{ satcat: 'unknown', gpzTable: 'retired payload' }`. The record keeps the SATCAT status.
+- The disagreement test collapses "unknown payload" into "unknown", so SATCAT `?` against table `PAY-` is a disagreement, stored as `{ satcat: 'unknown', gpzTable: 'retired payload' }`. The record keeps the SATCAT status, except in the "unknown payload" case above, where it takes the table's.
+- Choices made with the "unknown payload" change: (a) only a table status of retired payload or living payload fills the gap. If the table says rocket body or debris for a SATCAT payload, or has a code that is not in `config.gpzTableStatus`, the status stays "unknown payload" (the disagreement is still recorded for rocket body and debris). That is a type conflict, not a missing status. (b) Only status and `statusSource` change. `objectType`, owner, launch date, name and designator still come from SATCAT. (c) A record is "SATCAT had no status" when `statusSource === 'GPZ table'` and `disagreement !== null` (a table-only record has no disagreement). The ledger (5.6, item 7) says so in those words, and the census counts these records separately. (d) The 48 such objects in the 2026-11-22 set (spike §f) all have a table status of PAY-, so retired payloads rise from 648 to 696.
 - Name and designator come from SATCAT if it has the row, else GP. Inclination comes with the orbit source. A blank SATCAT owner is `null`, shown as "unknown".
 - `launchYear` is the launch date's year (`'launch date'`). Without a launch date it is the designator's year, but only if the designator looks like `YYYY-NNN` plus letters and the year is from `config.firstLaunchYear` (1957) to the snapshot year. Otherwise it is `null`. It sits on the record, not the verdict (see 2.7).
 - A SATCAT row with blank APOGEE or PERIGEE never reaches merge (the parser counts it). If that object is also in GP, it takes its type and status from the GPZ table.
@@ -192,7 +193,7 @@ The census covers all records in the population:
   - era (before rule, on or after the rule, unknown);
   - orbit source (GP, SATCAT);
   - by owner: the SATCAT owner code to counts by verdict, with `unknown` as its own key.
-- **Disagreements:** the total, and a count per (SATCAT, GPZ table) pair.
+- **Disagreements:** the total, and a count per (SATCAT, GPZ table) pair. A pair whose SATCAT side is `unknown` and whose table side is a payload kind is a case where SATCAT had no status and the table's was used. The README census line counts these separately, from the records.
 - **Snapshot date.**
 
 Each grouping is built from one pass over the same list, so its counts must add up to that list's length. A property test checks this (R5.2).
@@ -413,7 +414,7 @@ The ledger is `#/sat/<norad>` and has these sections, in this order:
 4. **Assumptions.** The C_R and A/m ranges, ±25 km mean-element uncertainty, and the borderline flag.
 5. **Orbit source and data age.** Either "GP mean elements, epoch 2026-11-20 12:07 UTC", or "SATCAT whole-km apogee and perigee, element date not given".
 6. **Snapshot date and source links,** from `register.snapshot`.
-7. **Status source and any disagreement** between SATCAT and the GPZ table.
+7. **Status source and any disagreement** between SATCAT and the GPZ table. When SATCAT has the object as a payload with no status and the table's status was used, say so: "SATCAT lists this object as a payload but gives no status. The status comes from the GPZ table (PAY-)."
 8. **Case file**, if one exists (R8).
 9. **Context.** The IADC guidelines are voluntary. The FCC minimum-perigee rule applies only to satellites the FCC authorizes, launched on or after 18 March 2002. Retirement date is unknown.
 10. **Buttons:** "Print exhumation report" (`window.print()`) and "Download JSON". The JSON is a Blob of this record plus `snapshot` and `config`, saved as `sexton-<norad>.json`.

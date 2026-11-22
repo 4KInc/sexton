@@ -174,7 +174,7 @@ All 868 GPZ table rows are in SATCAT. Counts, table code against SATCAT type and
 | DEB | DEB | 13 |
 
 - 820 agree and 48 disagree. All 48 are table PAY- (not operational) where SATCAT has a payload with a blank OPS_STATUS_CODE. They were launched between 1973-03-06 and 1997-11-12. All have GP orbits, with perigee from −182.8 to +125.9 km above GEO.
-- OPS_STATUS_CODE `-` is the field that decides "retired" in the engine (SATCAT decides, the table is only a fallback when SATCAT has no row, design 2.5). So these 48 are "unknown payload" and get no verdict. If the table decided in this case, the retired payloads would be 696, and all 48 would be unquiet or fallen. **This is an open choice for the owner. I have not changed the engine.** The 48 are recorded as disagreements in the census.
+- OPS_STATUS_CODE `-` is the field that decides "retired" in the engine (SATCAT decides, the table is only a fallback when SATCAT has no row, design 2.5). So these 48 are "unknown payload" and get no verdict. If the table decided in this case, the retired payloads would be 696, and all 48 would be unquiet or fallen. **This was an open choice for the owner.** Decided 2026-11-22: when SATCAT has a payload with a blank or unknown status, the engine uses the GPZ table's status (status source "GPZ table") and keeps the disagreement record. The retired payloads are now 696. See design 2.5.
 - No SATCAT `+` payload is called retired by the table, and no table PAY+ is `-` in SATCAT.
 
 ### Verdict bands, retired payloads (648)

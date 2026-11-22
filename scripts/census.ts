@@ -26,6 +26,7 @@ export interface Io {
 /** The markdown that goes between the markers. Counts only, with the snapshot date and what the register cannot see. */
 export function renderCensus(register: Register): string {
   const c = register.census;
+  const noStatus = register.records.filter((r) => r.statusSource === 'GPZ table' && r.disagreement !== null).length;
   const lines = [
     `Counts from the snapshot of ${c.snapshotDate}. Run \`npm run census\` to refresh them.`,
     '',
@@ -34,6 +35,7 @@ export function renderCensus(register: Register): string {
     ...VERDICT_NAMES.map((v) => `  - ${v}: ${c.retired.byVerdict[v]}`),
     `- Retired payloads close to a threshold (borderline): ${c.retired.borderline.yes}`,
     `- Objects where SATCAT and the GPZ table disagree on status: ${c.disagreements.total}`,
+    `  - of these, SATCAT lists a payload but gives no status, so the GPZ table's status is used: ${noStatus}`,
     '',
     `Verdicts assume a C_R·A/m range of ${CONFIG.iadc.crAmMin} to ${CONFIG.iadc.crAmMax} m²/kg and a ±${CONFIG.uncertaintyKm} km uncertainty in mean elements. The IADC guidelines are voluntary. The register only sees objects still near GEO. Satellites sent much higher, or that left GEO, may be missing.`,
   ];

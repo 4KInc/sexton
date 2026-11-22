@@ -4,6 +4,7 @@ import * as fc from 'fast-check';
 import { CONFIG } from '../src/engine/config.ts';
 import type { GpRow } from '../src/engine/gp.ts';
 import { parseGp } from '../src/engine/gp.ts';
+import type { GpzTableRow } from '../src/engine/gpz-table.ts';
 import { parseGpzTable } from '../src/engine/gpz-table.ts';
 import { inNearGeo, kindFromSatcat, kindFromTableStatus, launchYearOf, mergeSources } from '../src/engine/merge.ts';
 import { orbitFromMeanMotion } from '../src/engine/orbit.ts';
@@ -23,6 +24,7 @@ const satRow = (o: Partial<SatcatRow> = {}): SatcatRow => ({
   norad: 1, line: 2, raw: 'x', name: 'N', intlDes: '2000-001A', objectType: 'PAY', opsStatusCode: '-', owner: 'US',
   launchDate: '2000-01-01', decayDate: null, inclinationDeg: 0.5, apogeeKm: 36100, perigeeKm: 36090, orbitCenter: 'EA', ...o,
 });
+const tableRow = (status: string): GpzTableRow => ({ norad: 1, line: 1, raw: '', status });
 const gpRow = (o: Partial<GpRow> = {}): GpRow => ({
   norad: 1, line: 2, raw: 'x', name: 'N', intlDes: '2000-001A', epoch: '2026-11-20T00:00:00', meanMotion: 1.0027, e: 0.0005, inclinationDeg: 0.5, ...o,
 });
@@ -142,14 +144,83 @@ describe('disagreements', () => {
     expect(merged.records.filter((r) => r.disagreement !== null).map((r) => r.norad)).toEqual([858]);
   });
   it('SATCAT "unknown payload" against a table code is compared as "unknown"', () => {
-    const out = mergeSources(
-      { satcat: [satRow({ opsStatusCode: '?' })], gp: [], table: [{ norad: 1, line: 1, raw: '', status: 'PAY-' }] },
-      DATE,
-    );
-    expect(out.records[0]!.disagreement).toEqual({ satcat: 'unknown', gpzTable: 'retired payload' });
+    for (const code of ['?', '', 'Z']) {
+      const out = mergeSources(
+        { satcat: [satRow({ opsStatusCode: code })], gp: [], table: [tableRow('PAY-')] },
+        DATE,
+      );
+      expect(out.records[0]!.disagreement, code).toEqual({ satcat: 'unknown', gpzTable: 'retired payload' });
+    }
   });
 });
-
+describe('SATCAT payload with no usable status (design 2.5 step 4)', () => {
+  const one = (satOps: string, tableCode: string | null, objectType = 'PAY') =>
+    mergeSources(
+      { satcat: [satRow({ opsStatusCode: satOps, objectType })], gp: [], table: tableCode === null ? [] : [tableRow(tableCode)] },
+      DATE,
+    ).records[0]!;
+  it('uses the table status and says so, and keeps the disagreement record', () => {
+    for (const ops of ['', '?', 'Z']) {
+      const r = one(ops, 'PAY-');
+      expect([r.status, r.statusSource, r.objectType], ops).toEqual(['retired payload', 'GPZ table', 'PAY']);
+      expect(r.disagreement, ops).toEqual({ satcat: 'unknown', gpzTable: 'retired payload' });
+      expect(r.owner).toBe('US'); // everything else still comes from SATCAT
+      expect(r.launchDate).toBe('2000-01-01');
+    }
+  });
+  it('takes a living status from the table too', () => {
+    const r = one('', 'PAY+');
+    expect([r.status, r.statusSource]).toEqual(['living payload', 'GPZ table']);
+    expect(r.disagreement).toEqual({ satcat: 'unknown', gpzTable: 'living payload' });
+  });
+  it('stays "unknown payload" when the table has no row or a code that is not mapped', () => {
+    for (const code of [null, 'XYZ']) {
+      const r = one('', code);
+      expect([r.status, r.statusSource, r.disagreement], String(code)).toEqual(['unknown payload', 'SATCAT', null]);
+    }
+  });
+  it('stays "unknown payload" when the table says rocket body or debris, and records the disagreement', () => {
+    expect(one('', 'R/B')).toMatchObject({ status: 'unknown payload', statusSource: 'SATCAT', disagreement: { satcat: 'unknown', gpzTable: 'rocket body' } });
+    expect(one('', 'DEB')).toMatchObject({ status: 'unknown payload', statusSource: 'SATCAT', disagreement: { satcat: 'unknown', gpzTable: 'debris' } });
+  });
+  it('does not touch a SATCAT status that is real', () => {
+    const r = one('+', 'PAY-');
+    expect([r.status, r.statusSource]).toEqual(['living payload', 'SATCAT']);
+    expect(r.disagreement).toEqual({ satcat: 'living payload', gpzTable: 'retired payload' });
+    const q = one('-', 'PAY+');
+    expect([q.status, q.statusSource]).toEqual(['retired payload', 'SATCAT']);
+    expect(q.disagreement).toEqual({ satcat: 'retired payload', gpzTable: 'living payload' });
+  });
+  it('does not touch a rocket body, debris or other type, whatever the table says', () => {
+    for (const type of ['R/B', 'DEB', 'UNK']) {
+      const r = one('', 'PAY-', type);
+      expect(r.statusSource, type).toBe('SATCAT');
+      expect(r.status, type).not.toBe('retired payload');
+    }
+  });
+  it('the fixture register is unchanged: no fixture object is an unknown payload with a table row', () => {
+    expect(merged.records.filter((r) => r.statusSource === 'GPZ table' && r.disagreement !== null)).toEqual([]);
+  });
+  it('property: SATCAT status is never overridden when it is not "unknown payload"', () => {
+    const codes = fc.oneof(fc.constantFrom('-', '+', 'P', 'B', 'S', 'X', '?', '', 'Z'), fc.string({ maxLength: 3 }));
+    const tableCodes = fc.oneof(fc.constantFrom('PAY-', 'PAY+', 'R/B', 'DEB'), fc.string({ maxLength: 4 }));
+    const types = fc.constantFrom('PAY', 'R/B', 'DEB', 'UNK');
+    fc.assert(
+      fc.property(codes, types, fc.option(tableCodes, { nil: null }), (ops, objectType, tcode) => {
+        const row = satRow({ opsStatusCode: ops, objectType });
+        const satKind = kindFromSatcat(row);
+        const r = mergeSources({ satcat: [row], gp: [], table: tcode === null ? [] : [tableRow(tcode)] }, DATE).records[0]!;
+        if (satKind !== 'unknown payload') return r.status === satKind && r.statusSource === 'SATCAT';
+        // "unknown payload": the table decides only with a payload status, otherwise nothing changes.
+        const tk = tcode === null ? 'unknown' : kindFromTableStatus(tcode);
+        return tk === 'retired payload' || tk === 'living payload'
+          ? r.status === tk && r.statusSource === 'GPZ table' && r.disagreement !== null
+          : r.status === 'unknown payload' && r.statusSource === 'SATCAT';
+      }),
+      { numRuns: 500 },
+    );
+  });
+});
 describe('orbit source', () => {
   it('GP wins for EchoStar-7 and Intelsat 511', () => {
     const e = byId(27378);

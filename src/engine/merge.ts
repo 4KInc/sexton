@@ -148,9 +148,16 @@ export function mergeSources(input: MergeInput, snapshotDate: string, config: Co
       statusSource = 'SATCAT';
       objectType = s.objectType;
       if (t !== undefined) {
+        const tableKind = kindFromTableStatus(t.status, config);
         const a = comparable(status);
-        const b = comparable(kindFromTableStatus(t.status, config));
+        const b = comparable(tableKind);
         if (a !== b) disagreement = { satcat: a, gpzTable: b };
+        // SATCAT has the object as a payload but gives no usable status: the table's
+        // payload status fills the gap. A real SATCAT status is never overridden.
+        if (status === 'unknown payload' && (tableKind === 'retired payload' || tableKind === 'living payload')) {
+          status = tableKind;
+          statusSource = 'GPZ table';
+        }
       }
     } else if (t !== undefined) {
       status = kindFromTableStatus(t.status, config);
