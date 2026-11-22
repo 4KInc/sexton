@@ -11,3 +11,16 @@
 2026-11-21: Task 8 done except the manual checks listed in tasks.md. Site shell, hash router, copy.ts, tokens, self-hosted IM FELL English (OFL), build-time register.json with the sample banner, and the churchyard SVG on the fixture register; 229 tests pass and npm run build works.
 2026-11-21: Task 9 done. deploy.yml (SHA-pinned actions, per-job permissions) runs npm test and build, then deploys; Pages enabled with the GitHub Actions source; live at https://4kinc.github.io/sexton/ with the sample banner served.
 2026-11-21: Task 10 done. scripts/check-language.ts with one exported stem list, skips the methodology "What we do not say" section, runs last in npm test; 30 new tests; no hits in existing files; 259 tests pass.
+
+## Agent hooks
+Format: Kiro v1 hook files, one JSON file per hook group in `.kiro/hooks/` (`{ "version": "v1", "hooks": [ { name, trigger, matcher, timeout, action } ] }`). Triggers are PascalCase names from the Kiro docs (https://kiro.dev/docs/hooks/types/). Matchers are regexes on the file path. The file triggers fire when the agent creates or saves a file. There is no git pre-commit trigger, so none is used.
+
+| File | Trigger and matcher | What it runs |
+| --- | --- | --- |
+| `engine-tests-on-save.json` | `PostFileSave`, `src/engine/` | `npm run test:engine`: the engine test files, including the fast-check property tests in `test/classify.test.ts`. On failure it prints the last 80 lines to stderr and exits 1, so the failure reaches the agent. |
+| `census-on-raw-data.json` | `PostFileCreate` and `PostFileSave`, `data/raw/` | `npm run census`: runs build-register, then rewrites README.md between `<!-- census:start -->` and `<!-- census:end -->` from `data/register.json`. If build-register fails it prints why, exits 1 and leaves README.md unchanged. `data/register.json` is outside `data/raw/`, so the hook cannot trigger itself. |
+| `language-check-on-save.json` | `PostFileSave`, `src/ui/`, `data/cases/`, `docs/` or `README.md` | `node scripts/check-language.ts`. Any hit goes to stderr with a pointer to `.kiro/steering/language.md`. |
+
+Tests of the hooks, 2026-11-22:
+- Each command was run by hand in a shell from the project root. Engine tests: passed. Language check: passed. Census: exit 1, "No complete snapshot with satcat.csv in data/raw/...", README.md unchanged.
+- Live trigger (saving a file through the agent): not observed. The hooks were created in the same session that saved the test files, and the docs say hooks load when a session starts. Saves to `src/engine/config.ts`, `data/raw/` and `docs/kiro-journal.md` produced no hook output and no hook entry in the Kiro log. Redo the three saves in a new session.

@@ -1,0 +1,27 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Census on raw data created",
+      "description": "When a file under data/raw/ is created, run npm run census (build-register, then rewrite the README census block). data/register.json is not under data/raw/, so the hook cannot trigger itself.",
+      "trigger": "PostFileCreate",
+      "matcher": "(^|/)data/raw/",
+      "timeout": 120,
+      "action": {
+        "type": "command",
+        "command": "if out=$(npm run --silent census 2>&1); then printf \"%s\\n\" \"$out\"; else echo \"npm run census FAILED. README.md was left unchanged. Reason:\" >&2; printf \"%s\\n\" \"$out\" >&2; exit 1; fi"
+      }
+    },
+    {
+      "name": "Census on raw data changed",
+      "description": "Same as above, when a file under data/raw/ is saved.",
+      "trigger": "PostFileSave",
+      "matcher": "(^|/)data/raw/",
+      "timeout": 120,
+      "action": {
+        "type": "command",
+        "command": "if out=$(npm run --silent census 2>&1); then printf \"%s\\n\" \"$out\"; else echo \"npm run census FAILED. README.md was left unchanged. Reason:\" >&2; printf \"%s\\n\" \"$out\" >&2; exit 1; fi"
+      }
+    }
+  ]
+}

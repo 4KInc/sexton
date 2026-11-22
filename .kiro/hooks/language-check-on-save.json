@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Language check on save",
+      "description": "When a file in src/ui/, data/cases/, docs/ or README.md is saved, run scripts/check-language.ts and report any hit (rules in .kiro/steering/language.md).",
+      "trigger": "PostFileSave",
+      "matcher": "(^|/)(src/ui/|data/cases/|docs/)|(^|/)README\\.md$",
+      "timeout": 60,
+      "action": {
+        "type": "command",
+        "command": "if out=$(node scripts/check-language.ts 2>&1); then echo \"Language check passed.\"; else echo \"Language check found banned wording (see .kiro/steering/language.md). Say \\\"below the IADC disposal threshold under the stated assumptions\\\" instead of judging:\" >&2; printf \"%s\\n\" \"$out\" >&2; exit 1; fi"
+      }
+    }
+  ]
+}

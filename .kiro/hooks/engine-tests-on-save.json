@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Engine tests on save",
+      "description": "When a file in src/engine/ is saved, run the engine tests (including the fast-check property tests) and report failures.",
+      "trigger": "PostFileSave",
+      "matcher": "(^|/)src/engine/",
+      "timeout": 180,
+      "action": {
+        "type": "command",
+        "command": "if out=$(npm run --silent test:engine 2>&1); then echo \"Engine tests passed.\"; else echo \"Engine tests FAILED after saving a file in src/engine/:\" >&2; printf \"%s\\n\" \"$out\" | tail -n 80 >&2; exit 1; fi"
+      }
+    }
+  ]
+}
