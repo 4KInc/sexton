@@ -9,3 +9,4 @@
 2026-11-21: Task 6 done. census.ts and engine.ts (runEngine); on the committed GPZ files with no SATCAT it gives 238 retired payloads, all unquiet; 139 tests pass.
 2026-11-21: Task 7 done. scripts/build-register.ts builds a deterministic register.json from the newest complete snapshot set; on the real data/raw/ it exits 1 with the missing-SATCAT message and writes nothing; fixture register committed; 163 tests pass.
 2026-11-21: Task 8 done except the manual checks listed in tasks.md. Site shell, hash router, copy.ts, tokens, self-hosted IM FELL English (OFL), build-time register.json with the sample banner, and the churchyard SVG on the fixture register; 229 tests pass and npm run build works.
+2026-11-21: Task 9 done. deploy.yml (SHA-pinned actions, per-job permissions) runs npm test and build, then deploys; Pages enabled with the GitHub Actions source; live at https://4kinc.github.io/sexton/ with the sample banner served.

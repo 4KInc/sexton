@@ -95,7 +95,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - [ ] Manual checks (owner to finish): phone and laptop width, keyboard, VoiceOver, reduced motion, and legibility of headstone numbers in the serif. Done so far, in headless Chrome only: laptop 1280 px and phone 390 px emulated, keyboard path, reduced-motion emulation, digit legibility (see the journal). Not checked: VoiceOver, a real phone, Safari and Firefox, the animation by eye.
   - _Requirements: 4.5, 6.1–6.7, 6.10_
 
-- [ ] 9. Deploy to GitHub Pages
+- [x] 9. Deploy to GitHub Pages
   - `.github/workflows/deploy.yml` (design 8.1): push to `main` and workflow_dispatch, then `npm ci`, `npm test`, `npm run build`, upload and deploy. Third-party actions are pinned by SHA, with minimal permissions.
   - Turn on Pages ("GitHub Actions" source). That's a repository setting, so ask the user first.
   - Check that the live site shows the sample banner.
