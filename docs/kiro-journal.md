@@ -13,6 +13,7 @@
 2026-11-21: Task 10 done. scripts/check-language.ts with one exported stem list, skips the methodology "What we do not say" section, runs last in npm test; 30 new tests; no hits in existing files; 259 tests pass.
 2026-11-22: Added three Kiro hooks (engine tests, census on data/raw, language check) and scripts/census.ts with npm run census; README census markers; 267 tests pass; hooks not yet seen firing live.
 2026-11-22: Task 11 done. state.ts (filters, search and sort in the hash query), filter form, table view with aria-sort, unmarked-bones markers in the churchyard; 307 tests pass and npm run build works; keyboard path checked in headless Chrome only, VoiceOver not checked.
+2026-11-22: Task 19 done. Snapshot data/raw/2026-11-22/ is complete (SATCAT by manual curl, GPZ files by snapshot.ts); spike.md section f answered: SATCAT within 5 km of GP for 863 of 868 GPZ objects, 1,763 near-GEO rows, 648 retired payloads (457 with SATCAT-only orbits), 48 status disagreements; GO, nearGeo kept at ±2,000 km. The old census test wrote README.md and register.json once SATCAT existed, so it now runs on a copy.
 
 ## Agent hooks
 Format: Kiro v1 hook files, one JSON file per hook group in `.kiro/hooks/` (`{ "version": "v1", "hooks": [ { name, trigger, matcher, timeout, action } ] }`). Triggers are PascalCase names from the Kiro docs (https://kiro.dev/docs/hooks/types/). Matchers are regexes on the file path. The file triggers fire when the agent creates or saves a file. There is no git pre-commit trigger, so none is used.
@@ -31,3 +32,7 @@ Second test, 2026-11-22 (fresh session, task 11):
 - Several other `src/ui/` files (`copy.ts`, `router.ts`, `views/churchyard.ts`, `styles/table.css`) were changed by shell commands, not file-save tools. No hook output there either, and none was expected.
 - `src/engine/` was not touched, so the engine-test hook was not exercised. The `data/raw/` census hook was not exercised either.
 - So the language-check hook is still not observed firing. I did not check whether this session loaded the hooks. Language was checked by hand with `npm test` (last step, `node scripts/check-language.ts`: passed).
+Third test, 2026-11-22 (census hook, Task 19):
+- I created `data/raw/2026-11-22/` and its files with shell commands (mkdir, cp, a heredoc) and `scripts/snapshot.ts` wrote two more. No hook output appeared and the census did not run: README.md and `data/register.json` were unchanged afterwards. The `PostFileCreate` hook has not been seen firing. File-save tools were not used for `data/raw/`.
+- `npm test` then wrote README.md and `data/register.json`, because `test/census.test.ts` ran the real census against the repository. With a complete snapshot that succeeds. I restored README.md, deleted `data/register.json` and changed the test to run on a copy.
+- `docs/spike.md` and `docs/kiro-journal.md` were saved with shell commands, not file-save tools, so the language-check hook is still unobserved.

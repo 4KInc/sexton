@@ -160,9 +160,9 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
 
 ## Blocked on SATCAT
 
-- [ ] 19. Finish the spike — blocked on SATCAT
+- [x] 19. Finish the spike
   - Answer the PENDING questions in `docs/spike.md` §f with numbers: SATCAT against GP precision, near-GEO filter counts, Luch/Olymp, status agreement, verdict-band counts, max perigee and any oddities.
-  - Confirm or change the `nearGeo` limits in config, and update `docs/methodology.md` to match.
+  - Confirm or change the `nearGeo` limits in config, and update `docs/methodology.md` to match. (Confirmed at ±2,000 km. `docs/methodology.md` does not exist yet, so Task 15 writes the filter from spike §f.)
   - Record GO or NO-GO.
   - _Requirements: 1.4, 1.9, 5.1_
 

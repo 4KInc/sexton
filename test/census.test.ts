@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -101,15 +100,20 @@ describe('replaceBetweenMarkers', () => {
   });
 });
 
-describe('npm run census on the real repository', () => {
-  it('exits 1 with the build-register message and leaves README.md as it was', () => {
-    const readme = join(ROOT, 'README.md');
-    const before = readFileSync(readme, 'utf8');
-    const r = spawnSync('node', ['scripts/census.ts'], { cwd: ROOT, encoding: 'utf8' });
-    expect(readFileSync(readme, 'utf8')).toBe(before);
-    if (r.status === 1) {
-      expect(r.stderr).toContain('satcat.csv');
-      expect(r.stderr).toContain('README.md was not changed');
+describe('the census script on a copy of the real repository data', () => {
+  // Runs on a copy, never in the repository: with a complete snapshot the script succeeds, and it
+  // would write data/register.json and README.md (that is Task 20's job, not a test's).
+  it('either exits 1 and leaves README.md as it was, or rewrites only between the markers', () => {
+    cpSync(join(ROOT, 'data', 'raw'), join(tmp, 'data', 'raw'), { recursive: true });
+    const { code, errors } = run();
+    if (code === 1) {
+      expect(read()).toBe(README);
+      expect(errors.join('\n')).toContain('README.md was not changed');
+    } else {
+      expect(code).toBe(0);
+      const text = read();
+      expect(text.startsWith(BEFORE + START)).toBe(true);
+      expect(text.endsWith(END + '\n' + AFTER)).toBe(true);
     }
   });
 });

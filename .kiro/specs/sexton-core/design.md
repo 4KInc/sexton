@@ -62,7 +62,7 @@ This file holds every number in the engine (tech.md). Other modules import it an
 export const CONFIG = {
   earth: { radiusKm: 6378.135, muKm3PerS2: 398600.8, secondsPerDay: 86400 }, // WGS-72
   geoAltitudeKm: 35786,
-  nearGeo: { lowerKm: -2000, upperKm: 2000, orbitCenter: 'EA' },   // spike to confirm
+  nearGeo: { lowerKm: -2000, upperKm: 2000, orbitCenter: 'EA' },   // confirmed in the spike (task 19)
   protectedZoneKm: 200,                                            // ± around GEO
   iadc: {
     baseKm: 235, factorKm: 1000,                                   // T(x) = 235 + 1000·x
