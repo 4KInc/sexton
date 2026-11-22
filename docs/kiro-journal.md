@@ -11,6 +11,7 @@
 2026-11-21: Task 8 done except the manual checks listed in tasks.md. Site shell, hash router, copy.ts, tokens, self-hosted IM FELL English (OFL), build-time register.json with the sample banner, and the churchyard SVG on the fixture register; 229 tests pass and npm run build works.
 2026-11-21: Task 9 done. deploy.yml (SHA-pinned actions, per-job permissions) runs npm test and build, then deploys; Pages enabled with the GitHub Actions source; live at https://4kinc.github.io/sexton/ with the sample banner served.
 2026-11-21: Task 10 done. scripts/check-language.ts with one exported stem list, skips the methodology "What we do not say" section, runs last in npm test; 30 new tests; no hits in existing files; 259 tests pass.
+2026-11-22: Added three Kiro hooks (engine tests, census on data/raw, language check) and scripts/census.ts with npm run census; README census markers; 267 tests pass; hooks not yet seen firing live.
 
 ## Agent hooks
 Format: Kiro v1 hook files, one JSON file per hook group in `.kiro/hooks/` (`{ "version": "v1", "hooks": [ { name, trigger, matcher, timeout, action } ] }`). Triggers are PascalCase names from the Kiro docs (https://kiro.dev/docs/hooks/types/). Matchers are regexes on the file path. The file triggers fire when the agent creates or saves a file. There is no git pre-commit trigger, so none is used.
