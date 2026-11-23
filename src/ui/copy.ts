@@ -131,6 +131,7 @@ export const LEGEND = {
   fccLine: 'Vertical line: 18 March 2002, the date from which the FCC minimum-perigee rule applies to the satellites the FCC authorizes.',
   bones: 'Small diamond: unmarked bones, a rocket body or a piece of debris. They carry no name or verdict and show only when switched on.',
   offScale: 'A count at the top or bottom edge: objects above the top limit or below the bottom limit of the scale. Their exact values are on the card and in the ledger.',
+  unevenYears: 'Busy years get wider columns, so the spacing between years is not to scale.',
   highGround: 'Above +400 km the scale is compressed, and a zigzag marks the break. The same height there means a larger distance than below the break.',
 } as const;
 
@@ -193,6 +194,7 @@ export const FILTERS = {
   clear: 'Clear filters',
   none: 'No objects match these filters.',
   drawn: (n: number): string => `${n} drawn in the churchyard. Living and unknown-status payloads are in the table only.`,
+  drawnUnfiltered: (n: number): string => `${n} retired ${n === 1 ? 'payload' : 'payloads'} drawn. Living and unknown-status payloads, rocket bodies and debris are in the table.`,
   count: (shown: number, total: number): string => `${shown} of ${total} ${total === 1 ? 'object' : 'objects'} match.`,
 } as const;
 export const TABLE = {

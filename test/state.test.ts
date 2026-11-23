@@ -88,7 +88,7 @@ describe('filters and search round-trip through the hash query', () => {
     expect(toQuery(a).toString()).toBe('owner=US&verdict=buried&verdict=fallen&q=x');
   });
   it('the form shows the state from the address, including an owner the register does not have', () => {
-    const html = filtersHtml(all, withFilters({ owner: 'ZZ', verdicts: ['fallen'], era: 'before', bones: true, q: 'echo "x"' }), reg.config);
+    const html = filtersHtml(all, withFilters({ owner: 'ZZ', verdicts: ['fallen'], era: 'before', bones: true, q: 'echo "x"' }), reg.config, true);
     expect(html).toContain('<option value="ZZ" selected>');
     expect(html).toMatch(/value="fallen" checked/);
     expect(html).toMatch(/value="before" selected/);
@@ -96,7 +96,12 @@ describe('filters and search round-trip through the hash query', () => {
     expect(html).toContain('value="echo &quot;x&quot;"');
     expect(html).not.toMatch(/value="buried" checked/);
     expect(html).not.toContain('data-clear-filters disabled');
-    expect(filtersHtml(all, NO_FILTERS, reg.config)).toContain('data-clear-filters disabled');
+    expect(filtersHtml(all, NO_FILTERS, reg.config, false)).toContain('data-clear-filters disabled');
+  });
+  it('the form sits in a <details> element titled "Filter the register", open only when asked', () => {
+    const shut = filtersHtml(all, NO_FILTERS, reg.config, false);
+    expect(shut).toContain('<details class="filters-details"><summary>Filter the register</summary>');
+    expect(filtersHtml(all, NO_FILTERS, reg.config, true)).toContain('<details class="filters-details" open>');
   });
 });
 
@@ -304,5 +309,13 @@ describe('sorting', () => {
         expect(norads(sortRecords(all, sort))).toEqual(a);
       }),
     );
+  });
+});
+describe('status line without filters', () => {
+  it('does not read like a filter is on', () => {
+    expect(FILTERS.drawnUnfiltered(696)).toBe(
+      '696 retired payloads drawn. Living and unknown-status payloads, rocket bodies and debris are in the table.',
+    );
+    expect(FILTERS.drawnUnfiltered(696)).not.toMatch(/match/);
   });
 });

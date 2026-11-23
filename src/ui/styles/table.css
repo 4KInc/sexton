@@ -5,8 +5,17 @@
   border: 1px solid var(--stone);
   max-width: 60rem;
 }
-.filters h2 {
-  margin-top: 0;
+.filters-details {
+  margin: var(--space-3) 0;
+  max-width: 60rem;
+}
+.filters-details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: var(--space-1) 0;
+}
+.filters-details > .filters {
+  margin-top: var(--space-2);
 }
 .filters-note,
 .hint {

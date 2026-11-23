@@ -283,7 +283,7 @@ export function legendHtml(config: Config): string {
     `<h3>${esc(LEGEND.moss)}</h3><ul class="legend-list legend-list--glyphs">${moss}</ul>` +
     `<ul class="legend-list legend-notes">` +
     `<li>${esc(LEGEND.sway(config))}</li><li>${esc(LEGEND.whisker(config))}</li>` +
-    `<li>${esc(LEGEND.fccLine)}</li><li>${esc(LEGEND.bones)}</li><li>${esc(LEGEND.offScale)}</li><li>${esc(CHART.fccLine)}</li></ul></section>`
+    `<li>${esc(LEGEND.fccLine)}</li><li>${esc(LEGEND.bones)}</li><li>${esc(LEGEND.offScale)}</li><li>${esc(LEGEND.unevenYears)}</li></ul></section>`
   );
 }
 
@@ -336,7 +336,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   const hasStones = byId.size > 0;
   root.innerHTML =
     introHtml(reg) +
-    filtersHtml(reg.records, state.filters, config) +
+    filtersHtml(reg.records, state.filters, config, hasFilters(state.filters)) +
     `<p class="status" id="chart-status" role="status"></p>` +
     (hasStones
       ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>` +
@@ -362,8 +362,11 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       selected = null;
       remembered = null;
     }
-    status.textContent =
-      drawn.length === 0 && hasFilters(state.filters) ? FILTERS.none : `${FILTERS.count(shown.length, reg.records.length)} ${FILTERS.drawn(drawn.length)}`;
+    status.textContent = !hasFilters(state.filters)
+      ? FILTERS.drawnUnfiltered(drawn.length)
+      : drawn.length === 0
+        ? FILTERS.none
+        : `${FILTERS.count(shown.length, reg.records.length)} ${FILTERS.drawn(drawn.length)}`;
     if (host !== null) {
       host.innerHTML = chartSvg(reg, narrow, selected, drawn, tabStop ?? selected);
       nav = chartModel(reg, narrow, shown).nav;

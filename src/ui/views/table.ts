@@ -90,7 +90,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   let state: ViewState = parseState(query);
   root.innerHTML =
     introHtml(reg.config) +
-    filtersHtml(reg.records, state.filters, reg.config) +
+    filtersHtml(reg.records, state.filters, reg.config, true) +
     verdictKeyHtml(reg.config) +
     `<p class="status" id="table-status" role="status"></p><div id="table-host"></div>`;
   const form = root.querySelector<HTMLFormElement>('#filters')!;

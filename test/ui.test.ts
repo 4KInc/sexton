@@ -519,6 +519,12 @@ describe('selection card and legend', () => {
     expect(html).toContain('Moss: years since launch');
     expect(html.match(/class="glyph"/g)!.length).toBe(6 + 4);
   });
+  it('the FCC line is explained once, and the legend says year columns are not to scale', () => {
+    const html = legendHtml(fixture.config);
+    expect(html).not.toContain('FCC minimum-perigee rule (launches from 18 Mar 2002)');
+    expect(html.match(/18 March 2002/g)).toHaveLength(1);
+    expect(html).toContain('Busy years get wider columns, so the spacing between years is not to scale.');
+  });
 });
 
 describe('register source for the build', () => {

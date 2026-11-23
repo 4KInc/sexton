@@ -17,8 +17,8 @@ const ERA_LABEL: Record<EraFilter, string> = {
 const option = (value: string, label: string, selected: boolean): string =>
   `<option value="${esc(value)}"${selected ? ' selected' : ''}>${esc(label)}</option>`;
 
-/** The form as a string. `records` is the whole register, so the owner list does not shrink while filtering. */
-export function filtersHtml(records: readonly SatRecord[], filters: Filters, config: Config): string {
+/** The form inside a <details> element, as a string. `open` is whether it starts open. `records` is the whole register, so the owner list does not shrink while filtering. */
+export function filtersHtml(records: readonly SatRecord[], filters: Filters, config: Config, open: boolean): string {
   const { codes, hasNone } = ownersOf(records);
   // An owner in the address that the register does not have still shows in the select, so the form matches the address.
   const known = new Set([...codes, ...(hasNone ? [OWNER_NONE] : [])]);
@@ -34,8 +34,9 @@ export function filtersHtml(records: readonly SatRecord[], filters: Filters, con
   const eras =
     option('', FILTERS.anyEra, filters.era === null) + ERA_FILTERS.map((e) => option(e, ERA_LABEL[e], filters.era === e)).join('');
   return (
-    `<form class="filters" id="filters" aria-labelledby="filters-title" novalidate>` +
-    `<h2 id="filters-title">${esc(FILTERS.legend)}</h2><p class="filters-note">${esc(FILTERS.note)}</p>` +
+    `<details class="filters-details"${open ? ' open' : ''}><summary>${esc(FILTERS.legend)}</summary>` +
+    `<form class="filters" id="filters" aria-label="${esc(FILTERS.legend)}" novalidate>` +
+    `<p class="filters-note">${esc(FILTERS.note)}</p>` +
     `<div class="filters-row">` +
     `<div class="field"><label for="f-q">${esc(FILTERS.search)}</label><input type="search" id="f-q" name="q" value="${esc(filters.q)}" autocomplete="off" aria-describedby="f-q-hint"><span id="f-q-hint" class="hint">${esc(FILTERS.searchHint)}</span></div>` +
     `<div class="field"><label for="f-owner">${esc(FILTERS.owner)}</label><select id="f-owner" name="owner">${owners}</select></div>` +
@@ -44,7 +45,7 @@ export function filtersHtml(records: readonly SatRecord[], filters: Filters, con
     `<fieldset class="field"><legend>${esc(FILTERS.verdict)}</legend><ul class="check-list">${verdicts}</ul></fieldset>` +
     `<div class="field field--check"><input type="checkbox" id="f-bones" name="bones" value="1"${filters.bones ? ' checked' : ''}><label for="f-bones">${esc(FILTERS.bones)}</label></div>` +
     `<p><button type="button" class="button" data-clear-filters${hasFilters(filters) ? '' : ' disabled'}>${esc(FILTERS.clear)}</button></p>` +
-    `</form>`
+    `</form></details>`
   );
 }
 
