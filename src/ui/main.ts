@@ -4,6 +4,7 @@ import './styles/base.css';
 import './styles/churchyard.css';
 import './styles/table.css';
 import './styles/ledger.css';
+import './styles/census.css';
 import './styles/print.css';
 import { NAV, PAGE_TITLES, SITE } from './copy.ts';
 import { esc, withSansDigits } from './html.ts';
@@ -12,6 +13,7 @@ import type { UiRegister } from './register.ts';
 import { navRouteOf, parseHash, QUERY_EVENT, startRouter } from './router.ts';
 import type { Route } from './router.ts';
 import { hashFor, parseState } from './state.ts';
+import { mountCensus } from './views/census.ts';
 import { mountChurchyard } from './views/churchyard.ts';
 import { mountLedger } from './views/ledger.ts';
 import { mountTable } from './views/table.ts';
@@ -60,6 +62,8 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
     stopView = mountTable(view, reg, route.query);
   } else if (route.name === 'sat') {
     stopView = mountLedger(view, reg, route.norad);
+  } else if (route.name === 'census') {
+    stopView = mountCensus(view, reg);
   } else if (route.name === 'notfound') {
     view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
   } else {

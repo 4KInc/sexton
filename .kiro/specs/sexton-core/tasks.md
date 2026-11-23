@@ -132,7 +132,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Manual check: print preview.
   - _Requirements: 7.1–7.5_
 
-- [ ] 13. Census page
+- [x] 13. Census page
   - `views/census.ts` (design 5.7): verdict counts and shares, era, owner, disagreements, rejected rows, no-orbit-data rows, and the fixed caveat block.
   - The comparison figures list in `copy.ts`: show a figure only if design 6 marks it verified. Otherwise show "comparison pending a checked source".
   - Test: an unverified figure is not rendered.

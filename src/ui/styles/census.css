@@ -1,0 +1,30 @@
+/* The census page. Colours come from tokens.css. */
+.census {
+  max-width: 60rem;
+}
+.census-section {
+  margin: var(--space-4) 0;
+}
+.census-section h2 {
+  margin-bottom: var(--space-2);
+}
+.census .census-table {
+  min-width: 0;
+}
+.census .census-owner {
+  min-width: 40rem;
+}
+.census .num-head {
+  text-align: right;
+}
+.census .census-data > div {
+  grid-template-columns: minmax(10rem, 24rem) 1fr;
+}
+.census .census-data dd {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 600px) {
+  .census .census-data > div {
+    grid-template-columns: 1fr;
+  }
+}

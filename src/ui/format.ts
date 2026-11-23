@@ -61,3 +61,21 @@ export function formatGap(margin: number, base: number): string {
 export function spokenKm(text: string): string {
   return text.replace('+', 'plus ').replace(MINUS, 'minus ');
 }
+
+/** 67607 -> "67,607". For counts. */
+export function formatCount(n: number): string {
+  return group(Math.abs(n), 0).replace(/^/, n < 0 ? MINUS : '');
+}
+/**
+ * A share with its denominator, always: "280 of 696 (40.2%)". The percentage is to 0.1. A share that is
+ * not 0 or 100 is never shown as 0.0% or 100.0% ("<0.1%", ">99.9%"), and an empty population shows no percentage.
+ */
+export function formatShare(n: number, of: number): string {
+  const head = `${formatCount(n)} of ${formatCount(of)}`;
+  if (of <= 0) return head;
+  const pct = (100 * n) / of;
+  const shown = pct.toFixed(1);
+  if (n > 0 && n < of && Number(shown) === 0) return `${head} (<0.1%)`;
+  if (n > 0 && n < of && Number(shown) === 100) return `${head} (>99.9%)`;
+  return `${head} (${shown}%)`;
+}

@@ -3,7 +3,7 @@
 // with their plain technical meaning.
 import type { Config } from '../engine/config.ts';
 import type { SatRecord, VerdictName } from '../engine/types.ts';
-import { formatSigned, MINUS } from './format.ts';
+import { formatCount, formatSigned, MINUS } from './format.ts';
 import { SCALE } from './svg/scale.ts';
 
 export const SITE = {
@@ -292,3 +292,136 @@ export const OFF_SCALE_ARROW = { above: '\u25B2', below: '\u25BC' } as const;
 export const offScaleEdgeText = (side: 'above' | 'below', count: number, limitKm: number): string =>
   `${OFF_SCALE_ARROW[side]} ${count} more ${side} ${formatSigned(limitKm, 0)} km`;
 export { MINUS };
+
+/**
+ * The comparison figures (design 5.7 and 6). A figure is shown only when `verified` is true, and it is
+ * true only when design.md section 6 marks the figure verified and records where it was found.
+ * test/census-page.test.ts checks this list against section 6.
+ */
+export interface Comparison {
+  id: 'esa' | 'roberts';
+  /** Name of the source, as design.md section 6 lists it. */
+  source: string;
+  /** What the source says. Never rendered while `verified` is false. */
+  figure: string;
+  /** The checked link. Rendered only with a verified figure. */
+  url: string;
+  verified: boolean;
+  /** Where in the source the figure was found. Required once `verified` is true. */
+  where: string | null;
+}
+export const COMPARISONS: readonly Comparison[] = [
+  {
+    id: 'esa',
+    source: 'ESA Space Environment Report 2025',
+    figure: 'ESA: 70\u201395% of GEO retirements succeed.',
+    url: 'https://www.esa.int/Space_Safety/Space_Debris/ESA_Space_Environment_Report_2025',
+    verified: false,
+    where: null,
+  },
+  {
+    id: 'roberts',
+    source: 'Roberts, Georgia Tech, 2025',
+    figure: 'Roberts: 73%.',
+    url: 'https://iac.gatech.edu/publications/pub/8089',
+    verified: false,
+    where: null,
+  },
+];
+export const CENSUS = {
+  intro: (date: string): string =>
+    `Counts from the snapshot of ${date}. Every number here comes from the register, and every share shows what it is a share of.`,
+  fromRegister: 'Retired payloads are satellites that SATCAT or the GPZ table lists as not operational. A verdict is given only to them.',
+  headings: {
+    population: 'What the register holds',
+    verdicts: 'Verdicts for retired payloads',
+    borderline: 'Borderline verdicts',
+    era: 'Launch era',
+    orbit: 'Where the orbit comes from',
+    status: 'Where the status comes from',
+    owner: 'By owner',
+    gaps: 'Rows left out',
+    blind: 'What the register cannot see',
+    comparison: 'Comparison with other studies',
+    caveat: 'Read the shares with care',
+  },
+  population: {
+    total: 'Objects near GEO in the register',
+    outside: 'SATCAT rows outside the near-GEO filter',
+    caption: 'Objects in the register, by type',
+    columns: { type: 'Type', count: 'Objects', share: 'Share of the register' },
+    types: {
+      'retired payload': 'Retired payloads',
+      'living payload': 'Living payloads',
+      'unknown payload': 'Payloads with unknown status',
+      'rocket body': 'Rocket bodies (unmarked bones)',
+      debris: 'Debris (unmarked bones)',
+      unknown: 'Unknown type',
+    },
+  },
+  verdictTable: {
+    caption: 'Retired payloads by verdict',
+    columns: { verdict: 'Verdict', count: 'Retired payloads', share: 'Share of retired payloads' },
+    total: 'All retired payloads',
+  },
+  borderline: (uncertaintyKm: number, share: string): string =>
+    `${share} of the verdicts are borderline: the perigee is within ${uncertaintyKm} km of a band edge, so the mean-element uncertainty could change the verdict.`,
+  era: {
+    caption: 'Retired payloads by launch era',
+    columns: { era: 'Launch era', count: 'Retired payloads', share: 'Share of retired payloads' },
+    beforeRule: 'Launched before 18 March 2002',
+    onOrAfterRule: 'Launched on or after 18 March 2002',
+    unknown: 'Launch date unknown',
+    note: 'The FCC minimum-perigee rule applies only to satellites the FCC authorizes, launched on or after 18 March 2002. An earlier launch does not mean no licence conditions applied.',
+  },
+  orbit: {
+    caption: 'Retired payloads by orbit source',
+    columns: { source: 'Orbit source', count: 'Retired payloads', share: 'Share of retired payloads' },
+    GP: 'GP mean elements (perigee to 0.1 km, with an epoch)',
+    SATCAT: 'SATCAT whole-km altitudes (perigee to 1 km, element date not given)',
+    note: (share: string, config: Config): string =>
+      `${share} of the verdicts rest on SATCAT whole-km altitudes, not GP mean elements. SATCAT rounds each altitude to 1 km, which is small against the \u00B1${config.uncertaintyKm} km mean-element uncertainty. GP files cover only orbits in the protected zone (\u00B1${config.protectedZoneKm} km), so an object above it has only SATCAT altitudes.`,
+  },
+  status: {
+    gpzLine: (share: string): string =>
+      `${share} of the retired payloads have a status that came from the GPZ table. For each of them SATCAT gave no status, and the table calls the object not operational.`,
+    disagreements: (total: number): string =>
+      `SATCAT and the GPZ table disagree on the status of ${formatCount(total)} objects. In these, the register uses the GPZ table only where SATCAT gives no status.`,
+    none: 'SATCAT and the GPZ table agree on every status.',
+    caption: 'Disagreements between SATCAT and the GPZ table',
+    columns: { pair: 'SATCAT says', table: 'GPZ table says', count: 'Objects' },
+    unknownSatcat: 'no status given',
+  },
+  owner: {
+    caption: 'Retired payloads by SATCAT owner code and verdict',
+    ownerColumn: 'Owner code',
+    totalColumn: 'All',
+    note: 'Owner codes are SATCAT owner codes, shown as given. Several codes can belong to one country or company, and the register does not merge them.',
+    scrollLabel: 'Owner table. Scroll sideways to see every column.',
+    unknown: 'unknown',
+  },
+  gaps: {
+    rejected: 'Rows rejected as malformed',
+    noOrbit: 'SATCAT rows with no apogee or perigee',
+    noOrbitNote: 'A row with no apogee or perigee cannot be placed in an orbit, so the register leaves it out and gives it no verdict.',
+  },
+  blind: {
+    filter: (lowKm: number, highKm: number, centre: string): string =>
+      `The register keeps SATCAT objects with no decay date, orbit centre ${centre}, and both apogee and perigee within ${formatCount(highKm)} km of GEO altitude (from ${formatSigned(lowKm, 0)} to ${formatSigned(highKm, 0)} km), plus every object in the GPZ file.`,
+    consequence:
+      'Satellites sent much higher, or that left GEO, are not in the register. That includes retired satellites that were moved far above the graveyard orbit, and satellites that drift well below GEO.',
+  },
+  comparison: {
+    intro: 'Other studies give success rates for disposal in GEO. Each figure is shown only after someone has found it in the source itself.',
+    pending: (source: string): string => `Comparison with ${source} pending a checked source.`,
+    verified: (source: string, where: string): string => `Source: ${source}, ${where}.`,
+  },
+  caveat: {
+    intro: 'These shares are not directly comparable to figures from other studies.',
+    points: [
+      'Sexton has no retirement dates. We know each launch date and current orbit, not when a satellite retired.',
+      'A verdict describes where a satellite is now, under the stated assumptions. It does not say how or when it got there.',
+      'The register only sees objects still near GEO. Satellites sent much higher, or that left GEO, may be missing, so the shares are not a success rate.',
+    ],
+  },
+} as const;
