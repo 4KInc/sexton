@@ -18,6 +18,8 @@
 ## Agent hooks
 Format: Kiro v1 hook files, one JSON file per hook group in `.kiro/hooks/` (`{ "version": "v1", "hooks": [ { name, trigger, matcher, timeout, action } ] }`). Triggers are PascalCase names from the Kiro docs (https://kiro.dev/docs/hooks/types/). Matchers are regexes on the file path. The file triggers fire when the agent creates or saves a file. There is no git pre-commit trigger, so none is used.
 
+Check, 2026-11-23: we suspected the hook format was wrong, so we compared the three files with the IDE 1.0 docs (https://kiro.dev/docs/ide/whats-new-v1/hooks/ and https://kiro.dev/docs/hooks/types/). The files already match: `.kiro/hooks/*.json`, `"version": "v1"`, PascalCase `PostFileSave` and `PostFileCreate`, regex `matcher`, `action.type` `command`, so nothing in them was changed and the format is not the proven cause. A save of `docs/methodology.md` with the agent's file tool (trailing space added, then removed) produced no hook output, so the hooks have still not been seen firing. The docs say the file triggers fire on saves and creates made by the agent. The docs do not say whether shell writes or editor saves by a person count, so we treat them as not counting.
+
 | File | Trigger and matcher | What it runs |
 | --- | --- | --- |
 | `engine-tests-on-save.json` | `PostFileSave`, `src/engine/` | `npm run test:engine`: the engine test files, including the fast-check property tests in `test/classify.test.ts`. On failure it prints the last 80 lines to stderr and exits 1, so the failure reaches the agent. |
@@ -44,3 +46,11 @@ Third test, 2026-11-22 (census hook, Task 19):
 2026-11-23: Task 14 done. Case-file loader (hand-parsed front matter), markdown that escapes raw HTML and keeps only http, https and # links, section 8 on the ledger with the provisional notice, and a build step that fails on a bad case file naming the file. The language check covers data/cases (tested per stem). No real case files written. 461 tests pass.
 2026-11-23: Task 15 done. docs/methodology.md (formulas, config values, near-GEO filter and blind spot, SATCAT against GP, the 48 table-status objects, eccentricity rounding, churchyard scale, FCC and IADC scope, credits, sources with opened links or LINK NEEDED) rendered at #/method. Test reads every CONFIG number from the file. ESA 70-95% found in the full report (page 7) and Roberts 73% not found; both stay unverified. 520 tests pass.
 2026-11-23: Task 21 done and the three case files written (EchoStar-7, Intelsat 511, Luch/Olymp) with the orbital-coroner agent definition (.kiro/agents/orbital-coroner.md, Markdown with YAML front matter). SATCAT has 40258 (PAY, `-`, EA, 36,095 × 36,133 km), so provisional is false. Hooks: none fired. Every save in data/cases/ and docs/ was made with the file tools and no hook output came back, so the language-check hook was not seen running; the agent was not callable as a sub-agent here, so a general sub-agent followed its definition. 520 tests pass.
+2026-11-23: Checked the hooks and the orbital-coroner agent against the Kiro docs. The three hook files and the agent file already match the documented formats and locations, so neither was changed; a file-tool save of docs/methodology.md gave no hook output and `orbital-coroner` is still not found as a sub-agent. Journal updated; 520 tests pass.
+
+## What surprised us
+- The hand-written hook format loaded (4 read, 4 registered) but never fired.
+- The census test wrote the real `data/register.json` and README.md.
+- The colour test matched "white" inside `white-space`.
+- The check-language script passed silently when run through a symlinked path.
+- The orbital-coroner agent was missing from the registry because it was created mid-session.
