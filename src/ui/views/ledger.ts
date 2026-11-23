@@ -110,7 +110,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister): string {
     H.orbit,
     `<p><strong>${esc(r.orbitSource.kind === 'GP' ? dataAge(r) : LEDGER.satcatSource)}</strong></p>` +
       `<dl class="ledger-data">${row(F.perigee, `${pText} km`)}${row(F.apogee, `${formatSigned(r.qKm, decimals)} km`)}${row(F.eccentricity, formatE(r.e, config.iadc.eccentricityMax))}` +
-      `${row(F.perigeeAltitude, `${formatSigned(r.perigeeKm, decimals).replace('+', '')} km`)}${row(F.apogeeAltitude, `${formatSigned(r.apogeeKm, decimals).replace('+', '')} km`)}${row(F.dataAge, dataAge(r))}</dl>` +
+      `${row(F.perigeeAltitude, `${formatSigned(r.perigeeKm, decimals).replace('+', '')} km`)}${row(F.apogeeAltitude, `${formatSigned(r.apogeeKm, decimals).replace('+', '')} km`)}</dl>` +
       paras(notes),
   );
   const sources = reg.snapshot.sources

@@ -3,6 +3,7 @@
   :root {
     color-scheme: light;
   }
+  html,
   body {
     background: var(--paper);
     color: var(--ink);
@@ -58,12 +59,20 @@
   }
   .ledger-footer {
     display: block;
+    break-inside: avoid;
     margin-top: var(--space-4);
     padding-top: var(--space-2);
     border-top: 1px solid var(--ink-muted);
     font-size: 0.8rem;
   }
+  /* A SHA-256 is 64 hex characters. At 0.62rem monospace it fits one line on A4 and Letter. */
   .ledger-footer code {
-    overflow-wrap: anywhere;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.62rem;
+    text-wrap: nowrap;
+    display: block;
+  }
+  .ledger-footer ul {
+    padding-left: var(--space-3);
   }
 }

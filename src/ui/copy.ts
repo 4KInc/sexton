@@ -227,7 +227,6 @@ export const LEDGER = {
     eccentricity: 'Eccentricity',
     perigeeAltitude: 'Perigee altitude above the equatorial radius',
     apogeeAltitude: 'Apogee altitude above the equatorial radius',
-    dataAge: 'Data age',
   },
   notGiven: 'not given',
   unknown: 'unknown',
