@@ -436,6 +436,18 @@ The ledger is `#/sat/<norad>` and has these sections, in this order:
 - Sections 1–9 as plain blocks. Link URLs are printed after each link text with `a::after { content: " (" attr(href) ")" }`.
 - A footer with the snapshot date and the register's source hashes.
 
+Choices made in task 12:
+- **Files.** `views/ledger.ts` (pure string builders plus `mountLedger`), `styles/ledger.css`, `styles/print.css`. The page text is in `copy.ts` under `LEDGER`. The sections have headings, in the order above: the object, the verdict, the threshold maths, assumptions, orbit source and data age, snapshot and sources, status source, context, report and data.
+- **Section 8 (case file).** Not drawn. No case file exists and the loader is task 14. Task 14 adds the section between status source and context.
+- **Who gets a ledger.** Only objects with a verdict (retired payloads), as the table already links. Any other NORAD id in the register gets one plain sentence ("has no verdict ... so it has no ledger") and a link to the table. An id not in the register gets "no object with NORAD id".
+- **Boundary-safe rounding is extended.** `formatP` still shows 2 decimals when 0.1 km (GP) or 1 km (SATCAT) rounding would cross an edge. If 2 decimals still cross, it adds decimals up to 6. The same rule applies to the gaps in the maths (`formatGap`: a gap that rounds to 0 but is not 0 gets more decimals, so it never reads as "on the edge") and to eccentricity (`formatE`: 5 decimals, more if the shown value would sit on the other side of 0.003, so 0.003004 is not shown as 0.00300).
+- **The eccentricity-rounding note.** Shown when the orbit is SATCAT-only, |e − 0.003| ≤ 0.0005 (`ECC_NOTE_BAND` in `copy.ts`) **and** p ≥ 247. Below 247 the verdict is decided by perigee before eccentricity is looked at (2.7), so the rounding cannot change it and the note would be false. In the 2026-11-22 register this is 18 of the 25 SATCAT-only retired payloads that are within 0.0005 (docs/spike.md, section f).
+- **Orbit source.** GP: the epoch, and a line that perigee and apogee come from the mean motion and eccentricity. SATCAT: "whole-km apogee and perigee, element date not given", with the 1 km rounding (up to 0.5 km in each altitude) stated. Both show perigee and apogee above GEO, the altitudes above the equatorial radius, eccentricity and data age.
+- **Status source.** Four cases: SATCAT status (one line); SATCAT payload with no status and the GPZ table's status used (the sentence in section 7, with the table code, such as PAY-); no SATCAT entry; SATCAT and table disagree (both shown, SATCAT used).
+- **Off-scale and high-ground objects.** The numbers are the register values. A note says the churchyard counts the object at the edge (beyond +1,000 or −300 km), or draws it on the compressed high ground (above +400 km), and that the drawn position is not the value.
+- **Download.** `sexton-<norad>.json` holds `sample`, `snapshot`, `config` and `record`, pretty-printed.
+- **Print.** The page title, nav, buttons and chart are hidden. A serif "Exhumation report: NORAD n" heads the page. Only `http` links print their address after the link text, because a `#/…` address means nothing on paper. The footer (print only) lists the snapshot date and each source file's SHA-256.
+- **Retirement date.** The context section says only that we know the launch date and current orbit, not when a satellite retired. Tests check that no sentence about retiring carries a year, for all 696 real ledgers.
 ### 5.7 Census page (R5.3–R5.5)
 
 - A table of verdict counts for retired payloads, with shares, the era split and the owner table.

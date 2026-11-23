@@ -1,0 +1,69 @@
+/* The exhumation report: the ledger on paper (design 5.6, R7.3). Paper and ink colours only. */
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .skip-link,
+  .site-header,
+  #page-title,
+  .ledger-actions,
+  .ledger-back,
+  .ledger-section[id='ledger-actions'],
+  svg.chart {
+    display: none;
+  }
+  main {
+    max-width: none;
+    padding: 0;
+  }
+  .ledger {
+    max-width: none;
+  }
+  .print-title {
+    display: block;
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--ink);
+  }
+  .ledger-section {
+    break-inside: avoid;
+    margin: var(--space-3) 0;
+  }
+  .ledger-section h2,
+  .verdict-line {
+    color: var(--ink);
+  }
+  .ledger-data dt,
+  .ledger-footer {
+    color: var(--ink-muted);
+  }
+  .ledger-data > div {
+    border-bottom-color: var(--ink-muted);
+  }
+  .era-badge {
+    border-color: var(--ink);
+  }
+  a {
+    color: var(--ink);
+  }
+  .ledger a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    overflow-wrap: anywhere;
+    color: var(--ink-muted);
+  }
+  .ledger-footer {
+    display: block;
+    margin-top: var(--space-4);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--ink-muted);
+    font-size: 0.8rem;
+  }
+  .ledger-footer code {
+    overflow-wrap: anywhere;
+  }
+}

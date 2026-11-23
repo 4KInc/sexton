@@ -125,7 +125,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Manual checks: keyboard only and VoiceOver. Done: keyboard only, in headless Chrome (see the journal). Not checked: VoiceOver.
   - _Requirements: 6.8, 6.9, 6.10_
 
-- [ ] 12. Ledger page
+- [x] 12. Ledger page
   - `views/ledger.ts` (design 5.6): sections 1–10, the threshold maths from `register.config`, the boundary-safe rounding rule, the era badge text, and the FCC scope sentence.
   - "Download JSON" and `print.css` for the exhumation report.
   - Tests: the rounding rule at 199.96 and 246.96; the ledger text has no retirement date and passes the language check.

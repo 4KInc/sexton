@@ -124,6 +124,8 @@ export const VERDICT_ORDER: readonly VerdictName[] = ['buried', 'uncertain', 'sh
 
 export const MOSS_STEPS = ['under 10 years', '10 to 19 years', '20 to 29 years', '30 years or more'] as const;
 
+/** A SATCAT-only eccentricity this close to the limit gets the rounding note (docs/spike.md, section f). */
+export const ECC_NOTE_BAND = 0.0005;
 export const LEGEND = {
   moss: 'Moss: years since launch',
   sway: (config: Config): string => `A swaying stone: eccentricity above ${config.iadc.eccentricityMax}. The wider the sway, the higher the eccentricity.`,
@@ -196,6 +198,69 @@ export const FILTERS = {
   drawn: (n: number): string => `${n} drawn in the churchyard. Living and unknown-status payloads are in the table only.`,
   drawnUnfiltered: (n: number): string => `${n} retired ${n === 1 ? 'payload' : 'payloads'} drawn. Living and unknown-status payloads, rocket bodies and debris are in the table.`,
   count: (shown: number, total: number): string => `${shown} of ${total} ${total === 1 ? 'object' : 'objects'} match.`,
+} as const;
+export const LEDGER = {
+  printTitle: 'Exhumation report',
+  back: 'Back to the table',
+  notFound: (norad: number): string => `The register has no object with NORAD id ${norad}.`,
+  noLedger: (name: string, norad: number, reason: string): string =>
+    `${name} (NORAD ${norad}) has no verdict (${reason}), so it has no ledger. Its numbers are in the table.`,
+  headings: {
+    identity: 'The object',
+    verdict: 'The verdict',
+    maths: 'The threshold maths',
+    assumptions: 'Assumptions',
+    orbit: 'Orbit source and data age',
+    snapshot: 'Snapshot and sources',
+    status: 'Status source',
+    context: 'Context',
+    actions: 'Report and data',
+  },
+  fields: {
+    name: 'Name',
+    norad: 'NORAD id',
+    designator: 'International designator',
+    owner: 'Owner',
+    launch: 'Launch date',
+    perigee: 'Perigee above GEO',
+    apogee: 'Apogee above GEO',
+    eccentricity: 'Eccentricity',
+    perigeeAltitude: 'Perigee altitude above the equatorial radius',
+    apogeeAltitude: 'Apogee altitude above the equatorial radius',
+    dataAge: 'Data age',
+  },
+  notGiven: 'not given',
+  unknown: 'unknown',
+  formula: (config: Config): string => `T = ${config.iadc.baseKm} + ${config.iadc.factorKm} × C_R·A/m.`,
+  range: (config: Config): string =>
+    `With C_R·A/m from ${config.iadc.crAmMin} to ${config.iadc.crAmMax} m²/kg, T is ${config.thresholdLowKm} to ${config.thresholdHighKm} km.`,
+  assumedRanges: (config: Config): string =>
+    `C_R is taken from ${config.iadc.crRange[0]} to ${config.iadc.crRange[1]} and A/m from ${config.iadc.amRange[0]} to ${config.iadc.amRange[1]} m²/kg. The true values for this satellite are not known.`,
+  notBorderline: (config: Config): string => `Not borderline: more than ${config.uncertaintyKm} km from every band edge.`,
+  gpOrbit: 'Perigee and apogee are computed from the mean motion and eccentricity in the GP mean elements.',
+  satcatSource: 'SATCAT whole-km apogee and perigee, element date not given',
+  satcatOrbit:
+    'SATCAT rounds each altitude to 1 km, so perigee and apogee here carry up to 0.5 km of rounding, and the eccentricity is computed from the rounded altitudes.',
+  eccentricityRounding: (e: string, limit: number): string =>
+    `This eccentricity (${e}) is within ${ECC_NOTE_BAND} of the ${limit} limit. Whether it is above the limit decides the Restless verdict, and that result depends on the whole-km rounding of the SATCAT altitudes.`,
+  offScaleAbove: (limitKm: number): string =>
+    `This object is above the top of the drawn scale (${formatSigned(limitKm, 0)} km), so the churchyard counts it at the edge. The numbers here are its register values, not its drawn position.`,
+  offScaleBelow: (limitKm: number): string =>
+    `This object is below the bottom of the drawn scale (${formatSigned(limitKm, 0)} km), so the churchyard counts it at the edge. The numbers here are its register values, not its drawn position.`,
+  highGround: (fromKm: number): string =>
+    `This object stands on the high ground, above ${formatSigned(fromKm, 0)} km, where the churchyard scale is compressed. The numbers here are its register values, not its drawn position.`,
+  snapshotLine: (set: string): string => `Snapshot ${set}.`,
+  fetched: 'fetched',
+  sampleNote: 'This register is sample data for layout only.',
+  statusFrom: (status: string, source: string): string => `Status: ${status}, from ${source}.`,
+  statusGapSatcat: (code: string): string =>
+    `SATCAT lists this object as a payload but gives no status. The status comes from the GPZ table (${code}).`,
+  statusNoSatcat: (code: string): string => `SATCAT has no entry for this object. The status comes from the GPZ table (${code}).`,
+  statusDisagree: (satcat: string, table: string, code: string): string =>
+    `SATCAT gives "${satcat}". The GPZ table gives "${table}" (${code}). The register uses the SATCAT status.`,
+  print: 'Print exhumation report',
+  download: 'Download JSON',
+  footer: (set: string): string => `Sexton register, snapshot ${set}. Source files and their SHA-256 hashes:`,
 } as const;
 export const TABLE = {
   intro: 'Every object the register holds, with the same numbers as the churchyard. Sort a column with its button.',
