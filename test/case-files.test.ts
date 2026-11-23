@@ -235,6 +235,7 @@ describe('the language check covers data/cases', () => {
     const root = mkdtempSync(join(realpathSync(tmpdir()), 'lang-root-'));
     mkdirSync(join(root, 'scripts'));
     cpSync(join(ROOT, 'scripts/check-language.ts'), join(root, 'scripts/check-language.ts'));
+    cpSync(join(ROOT, 'scripts/is-main.ts'), join(root, 'scripts/is-main.ts'));
     mkdirSync(join(root, 'data/cases'), { recursive: true });
     writeFileSync(join(root, 'data/cases/40258.md'), FM(`Fine line.\nThe operator ${stem} it.`));
     const r = spawnSync('node', [join(root, 'scripts/check-language.ts')], { cwd: '/', encoding: 'utf8' });
@@ -246,6 +247,7 @@ describe('the language check covers data/cases', () => {
     const root = mkdtempSync(join(realpathSync(tmpdir()), 'lang-root-'));
     mkdirSync(join(root, 'scripts'));
     cpSync(join(ROOT, 'scripts/check-language.ts'), join(root, 'scripts/check-language.ts'));
+    cpSync(join(ROOT, 'scripts/is-main.ts'), join(root, 'scripts/is-main.ts'));
     mkdirSync(join(root, 'data/cases'), { recursive: true });
     writeFileSync(join(root, 'data/cases/40258.md'), fixture);
     expect(spawnSync('node', [join(root, 'scripts/check-language.ts')], { cwd: '/', encoding: 'utf8' }).status).toBe(0);

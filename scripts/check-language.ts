@@ -3,7 +3,8 @@
 //        node scripts/check-language.ts <file>...  scan only the given files, with the same rules
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
+import { isMain } from './is-main.ts';
 
 /** Banned stems. Keep identical to the list in .kiro/steering/language.md (a test checks it). */
 export const BANNED_STEMS: readonly string[] = [
@@ -106,4 +107,4 @@ function main(): number {
   return 0;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) process.exitCode = main();
+if (isMain(import.meta.url)) process.exitCode = main();

@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -128,6 +128,22 @@ describe('command line', () => {
       expect(r.status).toBe(1);
       expect(r.stdout).toContain('bad.md:2: "ILLEGAL"');
       expect(spawnSync('node', [script, good], { cwd: '/', encoding: 'utf8' }).status).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+describe('command line through a symlinked path', () => {
+  it('still exits 1 on a hit when argv[1] is a symlink to the script directory', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'lang-link-'));
+    try {
+      const bad = join(dir, 'bad.md');
+      writeFileSync(bad, 'ok\nIt was ILLEGAL.\n');
+      const link = join(dir, 'linked-scripts');
+      symlinkSync(join(ROOT, 'scripts'), link);
+      const r = spawnSync('node', [join(link, 'check-language.ts'), bad], { cwd: '/', encoding: 'utf8' });
+      expect(r.status).toBe(1);
+      expect(r.stdout).toContain('bad.md:2: "ILLEGAL"');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

@@ -9,7 +9,8 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
+import { isMain } from './is-main.ts';
 import { CONFIG } from '../src/engine/config.ts';
 import { runEngine } from '../src/engine/engine.ts';
 import type { Register, RegisterSource } from '../src/engine/types.ts';
@@ -192,6 +193,6 @@ export function main(argv: string[], io: Io = {}): number {
   }
 }
 
-if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isMain(import.meta.url)) {
   process.exitCode = main(process.argv.slice(2));
 }

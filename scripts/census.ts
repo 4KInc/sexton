@@ -6,7 +6,8 @@
 // Exit codes: 0 done (README.md is current), 1 nothing was changed.
 import { readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
+import { isMain } from './is-main.ts';
 import type { Register } from '../src/engine/types.ts';
 import { CONFIG } from '../src/engine/config.ts';
 import { VERDICT_NAMES } from '../src/engine/census.ts';
@@ -90,6 +91,6 @@ export function main(io: Io = {}): number {
   return 0;
 }
 
-if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isMain(import.meta.url)) {
   process.exitCode = main();
 }
