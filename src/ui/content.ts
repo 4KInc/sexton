@@ -7,3 +7,5 @@ const raw = import.meta.glob('/data/cases/*.md', { query: '?raw', import: 'defau
 
 /** Every case file, by NORAD id. Empty when data/cases/ has none. */
 export const CASES: ReadonlyMap<number, CaseFile> = parseCaseFiles(raw);
+/** docs/methodology.md as written, bundled as raw text (design 5.9). The `#/method` page renders it. */
+export { default as METHODOLOGY } from '../../docs/methodology.md?raw';

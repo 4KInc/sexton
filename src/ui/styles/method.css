@@ -1,0 +1,39 @@
+/* The methodology page. Colours come from tokens.css. */
+.method {
+  max-width: var(--measure);
+}
+.method h2 {
+  margin-top: var(--space-5);
+}
+.method h3 {
+  margin-top: var(--space-4);
+}
+.method pre {
+  overflow-x: auto;
+  padding: var(--space-3);
+  background: var(--road);
+  border: 1px solid var(--stone);
+  font-size: 0.95rem;
+}
+.method code {
+  font-size: 0.95em;
+}
+.method .method-wrap {
+  max-width: 100%;
+  margin: var(--space-3) 0;
+}
+.method .method-table {
+  min-width: 36rem;
+}
+.method .method-table td {
+  overflow-wrap: anywhere;
+}
+@media print {
+  .method {
+    max-width: none;
+  }
+  .method pre {
+    background: var(--paper);
+    border-color: var(--ink-muted);
+  }
+}

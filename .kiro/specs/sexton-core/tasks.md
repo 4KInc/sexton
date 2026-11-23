@@ -144,7 +144,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Don't write the case-file contents; a custom agent writes them later.
   - _Requirements: 8.1–8.4_
 
-- [ ] 15. Methodology page
+- [x] 15. Methodology page
   - Write `docs/methodology.md` (design 5.9): formulas, config values, filter, status mapping, limits, the FCC scope, the font licence, credit to Roberts, sources with checked links or "LINK NEEDED", and "What we do not say".
   - Render it at `#/method`.
   - Test: every number in the config appears in the file (it's read and matched).

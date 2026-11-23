@@ -481,7 +481,7 @@ Markdown body.
 - This spec writes no case-file contents. The loader is tested with a fixture case file in `test/fixtures/cases/`.
 
 Choices made in task 14:
-- **Files.** `src/ui/case-file.ts` is the pure parser (`parseCaseFile`, `parseCaseFiles`, `CaseFileError`). `content.ts` globs `data/cases/*.md` and exports `CASES` (a map by NORAD id). `markdown.ts` renders. `scripts/check-cases.ts` checks a folder with the same parser. `content.ts` does not load `docs/methodology.md`: task 15 adds that.
+- **Files.** `src/ui/case-file.ts` is the pure parser (`parseCaseFile`, `parseCaseFiles`, `CaseFileError`). `content.ts` globs `data/cases/*.md` and exports `CASES` (a map by NORAD id). `markdown.ts` renders. `scripts/check-cases.ts` checks a folder with the same parser. `content.ts` does not load `docs/methodology.md`: task 15 adds that (done).
 - **The build fails on a bad file.** A glob in the bundle only throws when the code runs in a browser, so a Vite plugin (`casesPlugin` in `vite.config.ts`) runs `checkCaseDir` at `buildStart`. The message is `Bad case file data/cases/<name>: <problem>`. `SEXTON_CASES_DIR` overrides the folder (tests only).
 - **Front matter rules.** The file starts with a `---` line and has a closing `---` line. Each non-blank line is `key: value`. The keys are `norad`, `title` and `provisional`, with no unknown or repeated keys. `norad` and `title` are required. `provisional` is optional and means false when absent; it must be `true` or `false`. A title may be wrapped in matching quotes. `norad` must be a whole number equal to the id in the file name. The file name must be `<norad>.md`, so any other `.md` file in `data/cases/` fails the build. The body must not be empty. (`build-register.ts` still ignores other names. The build is what rejects them.)
 - **Markdown safety.** Raw HTML, block or inline, is escaped and shown as text. A link keeps its address only if it starts with `http://`, `https://` or `#` (case-insensitive). Any other link, including `javascript:`, `data:`, `vbscript:`, relative and `//` links and entity-encoded forms, shows its text with no link. External links get `rel="noopener noreferrer"`. An image shows its alt text only, so the site loads nothing from other hosts. Headings shift down three levels (`#` becomes `h4`, never past `h6`), because the section is an `h2` and the case title an `h3`.
@@ -503,15 +503,20 @@ Choices made in task 14:
 - the sources (6);
 - a "What we do not say" section, which the language check skips.
 
+Choices made in task 15:
+- `content.ts` exports `METHODOLOGY` (the file as raw text). `views/method.ts` renders it with `renderDocument` in `markdown.ts` (same safety rules, headings kept at their level, leading `# Title` dropped, tables in a labelled scroll box). `styles/method.css` styles it.
+- The ESA and Roberts comparison figures are not on the page. Spike §f findings are dated to the 2026-11-22 snapshot.
+- `test/methodology.test.ts` checks every number in `CONFIG` against the file, the spike topics, that every link is in a list of opened links, and the render.
+
 ## 6. Sources
 
-Every link was checked on 2026-11-20. A link that couldn't be checked is written "LINK NEEDED" and must stay that way until someone opens it (R5.4).
+Every link was checked on 2026-11-20, and the ones used by the methodology page were opened again on 2026-11-23 (see docs/methodology.md, Sources). A link that couldn't be checked is written "LINK NEEDED" and must stay that way until someone opens it (R5.4).
 
 A **figure** counts as verified only when someone has found it in the source itself and recorded the page or section here. Unverified figures are not shown (R5.3, 5.7). On 2026-11-20 both comparison figures are **unverified**:
 
 | Figure | Status | Where it must be found |
 | --- | --- | --- |
-| ESA: 70–95% of GEO retirements succeed | unverified | Full ESA Space Environment Report 2025. Page NEEDED. |
+| ESA: 70–95% of GEO retirements succeed | unverified | Found 2026-11-23 in the full report, awaiting the owner's check: ESA's Annual Space Environment Report, Issue 9.1, 21 October 2025 (https://www.sdo.esoc.esa.int/publications/Space_Environment_Report_I9R1_20251021.pdf), Executive summary, page 7 of 146: "Between 70% and 95% do so successfully, with the compliance trend asymptotically increasing, but notable exceptions in 2015 and 2022." The sentence before it: "Between 85% and 100% of all payloads reaching end-of-life during the last decade in the GEO protected region attempt to comply with space debris mitigation measures." So it is a yearly range over the last decade for payloads, not one rate. Not yet marked verified. |
 | Roberts: 73% | unverified | The paper itself. LINK NEEDED. |
 
 | Source | Link | Check result |
@@ -520,8 +525,8 @@ A **figure** counts as verified only when someone has found it in the source its
 | 47 CFR § 25.283, FCC end-of-life disposal | https://www.law.cornell.edu/cfr/text/47/25.283 | Opened. (a) gives 36,021 km + 1000·C_R·A/m. (d) says the minimum perigee doesn't apply to space stations launched before 18 March 2002. |
 | ESA Space Environment Report 2025 (summary page) | https://www.esa.int/Space_Safety/Space_Debris/ESA_Space_Environment_Report_2025 | Opened. **The 70–95% GEO figure isn't on this summary page.** Its location in the full report is LINK NEEDED. |
 | Roberts, "Assessing Compliance with Post-mission Disposal Guidelines in Geosynchronous Orbit", IAA Space Traffic Management Conference, March 2025 | https://iac.gatech.edu/publications/pub/8089 | Opened. This is a listing page, not the paper. **The 73% figure isn't verified.** A link to the paper is LINK NEEDED. |
-| IADC Space Debris Mitigation Guidelines | LINK NEEDED | iadc-home.org returned 403 to the checker. |
-| CelesTrak SATCAT format documentation | LINK NEEDED | The CelesTrak page timed out. |
+| IADC Space Debris Mitigation Guidelines | LINK NEEDED (iadc-home.org); opened 2026-11-23: IADC-02-01 Revision 2 (March 2020) at https://orbitaldebris.jsc.nasa.gov/library/IADC-Space-Debris-Guidelines-Revision-2.pdf | iadc-home.org returned 403 again. The NASA-hosted copy is an older revision. Section 2 (page 6) says organisations are "encouraged" to use it. The GEO formula and e ≤ 0.003 are on page 11. |
+| CelesTrak SATCAT format documentation | https://celestrak.org/satcat/satcat-format.php | Opened 2026-11-23. Status codes: https://celestrak.org/satcat/status.php, also opened. |
 
 Two notes on these sources:
 - **The FCC rule's reach.** 47 CFR § 25.283 applies only to satellites the FCC authorizes, launched on or after 18 March 2002. Many satellites in the register are not FCC-authorized. language.md says so, and every place the rule is mentioned must say so too.

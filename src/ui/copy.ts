@@ -16,7 +16,6 @@ export const SITE = {
   loading: 'Loading the register.',
   notFound: 'There is no page at this address.',
   backToChurchyard: 'Back to the churchyard',
-  notBuilt: 'This page is not built yet.',
 } as const;
 
 export const NAV = [
@@ -51,6 +50,10 @@ export const CHURCHYARD_INTRO = {
     'The register only sees objects still near GEO. Satellites sent much higher, or that left GEO, may be missing.',
 } as const;
 
+/** The methodology page is docs/methodology.md. Only its chrome is here. */
+export const METHOD = {
+  tableLabel: 'Table from the methodology. Scroll sideways to see every column.',
+} as const;
 export const CHART = {
   title: 'Churchyard of retired geostationary satellites',
   axisTitle: 'Perigee above GEO, km',

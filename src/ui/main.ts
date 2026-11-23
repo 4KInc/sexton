@@ -5,6 +5,7 @@ import './styles/churchyard.css';
 import './styles/table.css';
 import './styles/ledger.css';
 import './styles/census.css';
+import './styles/method.css';
 import './styles/print.css';
 import { NAV, PAGE_TITLES, SITE } from './copy.ts';
 import { esc, withSansDigits } from './html.ts';
@@ -16,6 +17,7 @@ import { hashFor, parseState } from './state.ts';
 import { mountCensus } from './views/census.ts';
 import { mountChurchyard } from './views/churchyard.ts';
 import { mountLedger } from './views/ledger.ts';
+import { mountMethod } from './views/method.ts';
 import { mountTable } from './views/table.ts';
 
 const NARROW = '(max-width: 600px)';
@@ -64,10 +66,10 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
     stopView = mountLedger(view, reg, route.norad);
   } else if (route.name === 'census') {
     stopView = mountCensus(view, reg);
-  } else if (route.name === 'notfound') {
-    view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
+  } else if (route.name === 'method') {
+    stopView = mountMethod(view);
   } else {
-    view.innerHTML = `<p>${esc(SITE.notBuilt)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
+    view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
   }
   // After a navigation, move keyboard and screen-reader focus to the new page title.
   if (!isFirst) el('page-title').focus({ preventScroll: false });
