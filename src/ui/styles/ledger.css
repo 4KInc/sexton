@@ -1,6 +1,8 @@
 /* The ledger page. Colours come from tokens.css. */
 .ledger {
   max-width: 48rem;
+  /* Long source addresses and hashes must wrap, so a 320 px screen has no sideways page scroll. */
+  overflow-wrap: anywhere;
 }
 .ledger-section {
   margin: var(--space-4) 0;

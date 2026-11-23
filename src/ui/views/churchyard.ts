@@ -303,7 +303,7 @@ export function cardHtml(r: RetiredRecord | undefined, config: Config): string {
   if (r.launchDate === null) notes.push(r.launchYearSource === 'designator' ? CHART.designatorNote : CHART.mossUnknown);
   else if (v.yearsSinceLaunch !== null) notes.push(`${CARD.yearsSinceLaunch(v.yearsSinceLaunch)}. Launched ${r.launchDate}.`);
   return (
-    `<h3 class="card-name">${withSansDigits(r.name)} <span class="card-id">NORAD ${r.norad}</span></h3>` +
+    `<h2 class="card-name">${withSansDigits(r.name)} <span class="card-id">NORAD ${r.norad}</span></h2>` +
     `<p class="card-verdict">${esc(verdictCopy(v.verdict, config).pair)}</p>` +
     `<dl class="card-data">${rows.map(([k, val]) => `<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join('')}</dl>` +
     `<ul class="card-notes">${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` +

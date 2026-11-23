@@ -156,7 +156,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Tell the user about the "Allow GitHub Actions to create pull requests" setting.
   - _Requirements: 11.1–11.3_
 
-- [ ] 17. Accessibility and contrast pass
+- [x] 17. Accessibility and contrast pass
   - Check every colour pair actually used against WCAG AA with a small script over `tokens.css`. Add it to `npm test`.
   - Confirm colour is never the only cue, and check focus order, the skip link, and reduced motion across all views.
   - _Requirements: 6.10_

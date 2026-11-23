@@ -56,6 +56,8 @@ export function renderDocument(text: string, tableLabel: string): string {
   const body = text.replace(/^# [^\n]*\n+/, '');
   const html = docMd.parse(body) as string;
   return html
+    // Markdown tables have column headers only.
+    .replace(/<th(?=[ >])/g, '<th scope="col"')
     .replace(/<table>/g, `<div class="table-wrap method-wrap" role="region" aria-label="${esc(tableLabel)}" tabindex="0"><table class="register-table method-table">`)
     .replace(/<\/table>/g, '</table></div>');
 }

@@ -20,7 +20,10 @@ import { mountLedger } from './views/ledger.ts';
 import { mountMethod } from './views/method.ts';
 import { mountTable } from './views/table.ts';
 
-const NARROW = '(max-width: 600px)';
+// The wide chart is 1,650 units across and scales to its box, so below this width its 12-unit text
+// would be too small to read. At 200% zoom a 1,440 px screen is 720 px wide, so it gets the natural-size
+// chart that scrolls inside its own box.
+const NARROW = '(max-width: 900px)';
 
 function el<T extends HTMLElement>(id: string): T {
   const found = document.getElementById(id);

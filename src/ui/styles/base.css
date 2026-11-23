@@ -58,10 +58,6 @@ a {
   outline: 3px solid var(--lantern);
   outline-offset: 2px;
 }
-#main:focus,
-#page-title:focus {
-  outline: none;
-}
 
 .skip-link {
   position: absolute;
