@@ -9521,7 +9521,7 @@
         "era": "before FCC rule",
         "yearsSinceLaunch": 41
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 15946,
@@ -28355,7 +28355,7 @@
         "era": "before FCC rule",
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27380,
@@ -41068,7 +41068,7 @@
         "era": null,
         "yearsSinceLaunch": 12
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 40267,

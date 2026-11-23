@@ -215,3 +215,7 @@ Open items for later tasks:
 - The 48 payloads that the table calls not operational and SATCAT leaves blank (Task 20 decides whether the table fills the gap).
 - The ±2,000 km window leaves out 45 retired payloads that a ±10,000 km window would add. The census text names this blind spot.
 - SATCAT is 21 hours older than the GP files, so a few manoeuvring objects differ in both.
+## Task 21: Luch/Olymp case file status
+- The committed snapshot `data/raw/2026-11-22/satcat.csv` has a row for 40258: LUCH (OLYMP-K 1), PAY, OPS_STATUS_CODE `-`, ORBIT_CENTER `EA`, no decay date, apogee 36,133 km, perigee 36,095 km. The row matches the register record (p +309 km, SATCAT orbit).
+- SATCAT therefore confirms where the object is. `provisional` in `data/cases/40258.md` is set to `false`.
+- This confirms the catalogue entry and the orbit. It does not add a source for the object's history, and the case file claims none.

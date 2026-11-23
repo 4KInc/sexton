@@ -180,7 +180,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Spot-check EchoStar-7, Intelsat 511 and Luch/Olymp ledgers against the spike.
   - _Requirements: 4.1–4.5_
 
-- [ ] 21. Luch/Olymp case status — blocked on SATCAT
+- [x] 21. Luch/Olymp case status — blocked on SATCAT
   - Set `provisional` on `data/cases/40258.md` (if it exists by then) to match what SATCAT shows. Note the result in the spike.
   - _Requirements: 8.3_
 
