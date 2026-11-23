@@ -138,7 +138,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Test: an unverified figure is not rendered.
   - _Requirements: 5.3–5.5_
 
-- [ ] 14. Case-file loader and display
+- [x] 14. Case-file loader and display
   - `content.ts` and `markdown.ts`, with raw HTML escaped. Hand-parse the front matter and fail the build on a bad file. Show the provisional notice.
   - Tests: use the fixture case file in `test/fixtures/cases/`, plus bad front matter and a provisional file.
   - Don't write the case-file contents; a custom agent writes them later.

@@ -201,6 +201,7 @@ export const FILTERS = {
 } as const;
 export const LEDGER = {
   printTitle: 'Exhumation report',
+  provisional: 'Provisional: not yet confirmed against SATCAT',
   back: 'Back to the table',
   notFound: (norad: number): string => `The register has no object with NORAD id ${norad}.`,
   noLedger: (name: string, norad: number, reason: string): string =>
@@ -213,6 +214,7 @@ export const LEDGER = {
     orbit: 'Orbit source and data age',
     snapshot: 'Snapshot and sources',
     status: 'Status source',
+    caseFile: 'Case file',
     context: 'Context',
     actions: 'Report and data',
   },

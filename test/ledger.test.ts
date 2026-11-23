@@ -98,7 +98,8 @@ describe('every real ledger', () => {
   const text = retired.map(textOfLedger);
   it('renders for all 696 retired payloads, with the sections in order', () => {
     expect(html).toHaveLength(696);
-    const order = Object.values(LEDGER.headings);
+    // The case-file section shows only when a record has a case file (test/case-files.test.ts).
+    const order = Object.values(LEDGER.headings).filter((h) => h !== LEDGER.headings.caseFile);
     for (const [i, t] of text.entries()) {
       let at = -1;
       for (const h of order) {

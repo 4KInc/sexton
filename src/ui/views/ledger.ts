@@ -4,7 +4,10 @@ import type { Config } from '../../engine/config.ts';
 import type { ObjectKind, SatRecord, VerdictName } from '../../engine/types.ts';
 import { CARD, dataAge, ECC_NOTE_BAND, LEDGER, assumptionsLine, CHURCHYARD_INTRO, verdictCopy } from '../copy.ts';
 import { formatE, formatGap, formatP, formatSigned, MINUS } from '../format.ts';
+import type { CaseFile } from '../case-file.ts';
+import { CASES } from '../content.ts';
 import { esc } from '../html.ts';
+import { renderMarkdown } from '../markdown.ts';
 import type { UiRegister } from '../register.ts';
 import { SCALE, offScale } from '../svg/scale.ts';
 type Retired = SatRecord & { verdict: Extract<SatRecord['verdict'], { kind: 'verdict' }> };
@@ -67,8 +70,15 @@ const row = (k: string, v: string): string => `<div><dt>${esc(k)}</dt><dd>${esc(
 const section = (id: string, title: string, body: string): string =>
   `<section class="ledger-section" id="ledger-${id}" aria-labelledby="ledger-${id}-title"><h2 id="ledger-${id}-title">${esc(title)}</h2>${body}</section>`;
 const paras = (lines: readonly string[]): string => lines.map((l) => `<p>${esc(l)}</p>`).join('');
-/** The whole ledger for one retired payload. */
-export function ledgerHtml(r: Retired, reg: UiRegister): string {
+/** Section 8: the case file, when the register says the record has one and the file is loaded. */
+export function caseFileSection(r: SatRecord, cases: ReadonlyMap<number, CaseFile>): string {
+  const file = r.caseFile ? cases.get(r.norad) : undefined;
+  if (file === undefined) return '';
+  const notice = file.provisional ? `<p class="case-provisional" role="note"><strong>${esc(LEDGER.provisional)}</strong></p>` : '';
+  return section('case', LEDGER.headings.caseFile, `${notice}<h3 class="case-title">${esc(file.title)}</h3><div class="case-body">${renderMarkdown(file.body)}</div>`);
+}
+/** The whole ledger for one retired payload. `cases` is the loaded case files. */
+export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<number, CaseFile> = CASES): string {
   const config = reg.config;
   const v = r.verdict;
   const decimals = r.orbitSource.kind === 'GP' ? 1 : 0;
@@ -130,19 +140,19 @@ export function ledgerHtml(r: Retired, reg: UiRegister): string {
     `</ul></footer>`;
   return (
     `<article class="ledger"><p class="print-title">${esc(LEDGER.printTitle)}: NORAD <span class="num">${r.norad}</span></p>` +
-    identity + verdict + maths + assumptions + orbit + snapshot + status + context + actions + footer +
+    identity + verdict + maths + assumptions + orbit + snapshot + status + caseFileSection(r, cases) + context + actions + footer +
     `<p class="ledger-back"><a href="#/table">${esc(LEDGER.back)}</a></p></article>`
   );
 }
 /** The page for any NORAD id: a ledger, or a plain note when the object has no verdict or is not in the register. */
-export function ledgerPageHtml(reg: UiRegister, norad: number): string {
+export function ledgerPageHtml(reg: UiRegister, norad: number, cases: ReadonlyMap<number, CaseFile> = CASES): string {
   const r = reg.records.find((x) => x.norad === norad);
   if (r === undefined) return `<p>${esc(LEDGER.notFound(norad))}</p><p><a href="#/table">${esc(LEDGER.back)}</a></p>`;
   if (!isRetired(r)) {
     const reason = r.verdict.kind === 'no verdict' ? r.verdict.reason : `unmarked bones, ${r.status}`;
     return `<p>${esc(LEDGER.noLedger(r.name, r.norad, reason))}</p><p><a href="#/table">${esc(LEDGER.back)}</a></p>`;
   }
-  return ledgerHtml(r, reg);
+  return ledgerHtml(r, reg, cases);
 }
 /** The "Download JSON" file: this record, the snapshot and the config. */
 export function ledgerJson(r: SatRecord, reg: UiRegister): string {

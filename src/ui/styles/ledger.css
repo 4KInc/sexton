@@ -44,3 +44,10 @@
     gap: 0;
   }
 }
+.case-provisional {
+  border: 1px solid var(--moss);
+  padding: 0.5rem 0.75rem;
+}
+.case-body {
+  max-width: 42rem;
+}

@@ -75,4 +75,7 @@
   .ledger-footer ul {
     padding-left: var(--space-3);
   }
+  .case-provisional {
+    border-color: var(--ink);
+  }
 }

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
+import { checkCaseDir } from './scripts/check-cases.ts';
 import { registerText } from './scripts/register-source.ts';
 
 const BASE = '/sexton/';
@@ -29,7 +30,25 @@ function registerPlugin(): Plugin {
   };
 }
 
+/** Stops the build, naming the file, when a case file in data/cases/ is bad. SEXTON_CASES_DIR is for tests. */
+function casesPlugin(): Plugin {
+  let root = process.cwd();
+  return {
+    name: 'sexton-cases',
+    configResolved(config) {
+      root = config.root;
+    },
+    buildStart() {
+      const dir = process.env.SEXTON_CASES_DIR ?? `${root}/data/cases`;
+      try {
+        checkCaseDir(dir);
+      } catch (error) {
+        this.error(error instanceof Error ? error.message : String(error));
+      }
+    },
+  };
+}
 export default defineConfig({
   base: BASE,
-  plugins: [registerPlugin()],
+  plugins: [registerPlugin(), casesPlugin()],
 });
