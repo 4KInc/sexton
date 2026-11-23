@@ -334,9 +334,9 @@ The only runtime dependency is `marked`, for markdown. Raw HTML in markdown is e
 ### 5.4 Churchyard view (R6)
 
 **Axes.**
-- y is p, on a linear scale from −300 to +450 km, which gives room around −200 to +400. The scale is in `svg/scale.ts` and is UI layout, not a threshold.
-- An object outside the drawn range sits at the top or bottom edge, with a ▲ or ▼ and its true value, for example "▼ −1,840 km" (R6.3).
-- x is `launchYear` (R6.2): one column per year, with stones in a column spread by NORAD id. When the launch date is unknown, the year comes from the international designator (2.7). Only objects with no usable year go in a narrow "launch year unknown" column at the left. A stone placed by designator year gets no moss, and its card says "launch year from designator".
+- y is p. From −300 to +400 km the scale is linear, at 0.8 px per km, so −200 to +400 keeps its old size. From +400 to +1,000 km ("high ground") it is compressed: the height is 140 px and grows with ln(1 + d/100), where d is km above +400. A zigzag across the plot marks the break at +400, the high-ground ticks (+500, +600, +800, +1,000) are in italic, and the legend says the scale is compressed. The scale is in `svg/scale.ts` and is UI layout, not a threshold.
+- Objects above +1,000 or below −300 km are off-scale. They stand in a 44 px strip above the top limit or below the bottom limit. Each strip has one label with the count, for example "▲ 15 more above +1,000 km". The exact value of each stays in its aria-label, its card and its ledger (R6.3).
+- x is `launchYear` (R6.2): one column per year, with stones in a column arranged in lanes (see task 8b). When the launch date is unknown, the year comes from the international designator (2.7). Only objects with no usable year go in a narrow "launch year unknown" column at the left. A stone placed by designator year gets no moss, and its card says "launch year from designator".
 - A thin vertical line at 18 March 2002 is labelled "FCC minimum-perigee rule (launches from 18 Mar 2002)". It carries the era, so it passes the "every element carries data" rule.
 
 **Bands** (R6.4). Band edges come from `register.config`:
@@ -372,9 +372,9 @@ The verdict uses p only when q ≥ −200. So an unquiet stone can stand below t
 
 **Filters** (R6.8): owner (select), verdict (checkboxes), era (before the rule / on or after / unknown), "show unmarked bones", and search by name or NORAD id. All are kept in the hash query, so a filtered view can be shared.
 
-**Small screens.** The SVG uses a `viewBox` and fills the width. Below 600 px, year columns merge into 5-year columns and labels move into a legend under the chart.
-
-Choices made in task 8:
+**Small screens.** Below 600 px the chart keeps its year columns and its natural size (1 viewBox unit is 1 px), inside its own horizontally scrollable box. The page itself never scrolls sideways. A line above the box says the chart scrolls and links to the table view. The in-chart band names and the 18 March label are dropped, and the legend carries the full band labels at every width.
+**Keyboard.** The chart is one Tab stop (roving tabindex): one stone has `tabindex="0"` and the others `-1`. The stop is the selected stone, or else the first stone in order. Arrow keys move focus and the stop with it. Order is by year column, then top to bottom, then left to right. Left and right go to the next column that has stones, to the stone nearest in height. Up and down move within the column. Home and End go to the first and last stone. Enter selects (opens the card). The skip link to the table stays before the chart.
+Choices made in task 8 (the scale, lane and off-scale bullets are replaced by task 8b below):
 - **Files built.** `index.html`, `main.ts`, `router.ts`, `copy.ts`, `format.ts`, `html.ts`, `register.ts`, `views/churchyard.ts`, `svg/{scale,headstone,bands}.ts`, `styles/{tokens,base,churchyard}.css`, `fonts/`. `state.ts`, the other views, `content.ts`, `markdown.ts`, `print.css` come in their own tasks. Until then `#/table`, `#/sat/<id>`, `#/census` and `#/method` show "This page is not built yet." The `Table` nav item is also lit for a ledger page.
 - **Register at build time.** `scripts/register-source.ts` picks `data/register.json`, or the fixture with `sample: true`. A Vite plugin in `vite.config.ts` emits it as `register.json` and serves it in dev. The page fetches `${BASE_URL}register.json` and nothing else. `index.html` has an empty-data icon (`data:,`) so the browser asks for no favicon.
 - **Not in this task.** Filters and search (task 11), and the "show unmarked bones" switch. Rocket bodies, debris and objects with no verdict are not drawn.
@@ -388,6 +388,15 @@ Choices made in task 8:
 - **Numbers in the serif.** IM FELL English has old-style figures. A 7 drops below the line in "ECHOSTAR 7". So digits in names and headings are wrapped in `<span class="num">` and set in the sans. Stones carry no numbers, only the "?" carving, and off-scale values are in the sans.
 - **p display.** `format.ts` has the rule from 5.6: GP to 0.1 km, SATCAT to whole km, and 2 decimals when rounding would reach a band edge. Task 12 adds the tests it names.
 - **Moss tests.** The card says "Launch year from the international designator. Moss is not shown." for a stone placed by designator year.
+Choices made in task 8b (the real register has 696 stones):
+- **Range.** The data has 124 retired payloads above +400 km, 41 above +600, 15 above +1,000, and 14 below −200 (8 below −300). So the linear range stays −300 to +400. The high ground adds +400 to +1,000. Only 15 stones above and 8 below are off-scale.
+- **Why a log curve.** Most of the high-ground stones are between +400 and +600 (83 of 109). A log curve gives that part room, and still shows +1,000. It is strictly increasing, so order is never lost. The break is drawn, so no one reads the curve as linear.
+- **Stone size.** 10 × 14 units, down from 14 × 19. Moss steps cover 15, 30, 50 and 75% of the height, so the smallest step is 2 px. The whisker sits just outside the stone. The sway angles are unchanged (1° to 4°), as is the reduced-motion tilt.
+- **Lanes.** A stone never moves up or down, because height is data. Within a year column stones are sorted by y, then NORAD id, and each takes the first lane where no stone in that lane is closer than one stone height. Lanes are 11 units apart, at most 3 per column. A column is as wide as its lanes need (at least 12 units), so crowded years are wider. When all 3 lanes are taken, the stone goes in the lane with the fewest overlaps and shifts sideways by 4 units per overlapped stone. No two stones ever share a position. The layout covers all retired payloads and the shown bones, so filtering never moves a stone.
+- **Overlap measure.** Two stones overlap when their boxes (10 × 14) share area. On the 2026-11-22 register, before: 536 of 696 stones overlap another at desktop width (807 pairs) and 629 at phone width (2,460 pairs), counting 14 × 19 boxes. After: 93 stones (86 pairs), the same at both widths. `node scripts/overlap.ts` prints it.
+- **Width.** The chart is 1,654 units wide on the real register (1,536 before). It is scaled to fit at desktop widths.
+- **Phone.** The 5-year columns are gone, because a wide column holds too many stones. The chart is the same drawing at 1 : 1. The y-axis labels scroll with it.
+- **Focus.** The hit area of a stone is its box plus 1 unit, so neighbours do not take each other's clicks. The roving stop follows focus, survives a redraw, and is restored by Shift+Tab.
 ### 5.5 Table view (R6.9)
 
 - A real `<table>` with `<caption>` and `scope` headers. Its columns are name, NORAD, owner, launch date, verdict, borderline, p, q, e, orbit source and data age.

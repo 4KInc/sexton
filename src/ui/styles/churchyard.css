@@ -112,7 +112,7 @@
 }
 .carving {
   fill: var(--bone);
-  font: 11px var(--font-display);
+  font: 9px var(--font-display);
 }
 .crack {
   fill: none;
@@ -126,13 +126,6 @@
 }
 .whisker line:nth-child(n + 2) {
   stroke-dasharray: none;
-}
-.off-label {
-  fill: var(--bone);
-  font: 11px var(--font-body);
-  stroke: var(--ground);
-  stroke-width: 3px;
-  paint-order: stroke;
 }
 
 .stone-link:hover .stone-body {
@@ -274,4 +267,37 @@
   .card-data dt {
     min-width: 0;
   }
+}
+/* High ground and the edges */
+.break-mark {
+  fill: none;
+  stroke: var(--bone);
+  stroke-width: 1.2;
+}
+.break-label {
+  fill: var(--bone-muted);
+  font: italic 11px var(--font-body);
+}
+.tick--high {
+  font-style: italic;
+}
+.edge-label {
+  fill: var(--bone);
+  font: 12px var(--font-body);
+  stroke: var(--ground);
+  stroke-width: 3px;
+  paint-order: stroke;
+}
+/* Phone: the chart keeps its natural size and scrolls sideways inside its own box, never the page. */
+.chart-note {
+  margin: var(--space-2) 0 0;
+}
+.chart-wrap--scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.chart--natural {
+  width: auto;
+  max-width: none;
 }

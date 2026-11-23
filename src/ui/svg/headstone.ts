@@ -24,11 +24,12 @@ export const stoneDefs = (): string =>
 function mossPath(coverage: number): string {
   const h = H * coverage;
   const teeth = 4;
+  const bump = Math.max(1.2, W * 0.13);
   const step = W / teeth;
   let d = `M ${-HALF} 0 L ${-HALF} ${-h}`;
   for (let i = 1; i <= teeth; i++) {
     const x = -HALF + i * step;
-    const up = i % 2 === 1 ? -1.8 : 0;
+    const up = i % 2 === 1 ? -bump : 0;
     d += ` L ${x - step / 2} ${-h + up} L ${x} ${-h}`;
   }
   return `${d} L ${HALF} 0 Z`;
@@ -52,7 +53,7 @@ export function stoneBody({ verdict, moss }: GlyphOptions): string {
     case 'buried':
       return upright(`<path class="ground-line" d="M ${-HALF - 3} 0 L ${HALF + 3} 0"/>`, 'stone--buried');
     case 'uncertain':
-      return upright(`<text class="carving" x="0" y="${-HALF + 2}" text-anchor="middle">?</text>`, 'stone--uncertain');
+      return upright(`<text class="carving" x="0" y="${-HALF + 3.5}" text-anchor="middle">?</text>`, 'stone--uncertain');
     case 'shallow grave': {
       // Sunk to half height in a mound: the part below the base line is hidden.
       const sink = H / 2 - 1;
@@ -60,14 +61,14 @@ export function stoneBody({ verdict, moss }: GlyphOptions): string {
         `<g class="stone-shape stone--shallow"><g clip-path="url(#${ABOVE_GROUND_ID})"><g transform="translate(0 ${sink})">` +
         `<path class="stone-body" d="${STONE_PATH}"/>` +
         (moss > 0 ? `<g clip-path="url(#${CLIP_ID})"><path class="moss" d="${mossPath(MOSS_COVERAGE[moss])}"/></g>` : '') +
-        `</g></g><path class="mound" d="M ${-HALF - 4} 0 Q 0 -8 ${HALF + 4} 0 Z"/></g>`
+        `</g></g><path class="mound" d="M ${-HALF - 4} 0 Q 0 -6 ${HALF + 4} 0 Z"/></g>`
       );
     }
     case 'unquiet':
       return upright('', 'stone--unquiet');
     case 'restless':
       return upright(
-        `<path class="crack" d="M ${-HALF + 2} ${-ARCH + 1} L -1 ${-ARCH + 5} L 1 ${-ARCH + 8} L ${HALF - 3} ${-ARCH + 12}"/>`,
+        `<path class="crack" d="M ${-HALF + 1.5} ${-ARCH + 1} L -1 ${-ARCH + 4} L 1 ${-ARCH + 6} L ${HALF - 2} ${-ARCH + 9}"/>`,
         'stone--restless',
       );
     case 'fallen':

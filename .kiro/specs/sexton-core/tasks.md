@@ -95,6 +95,14 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - [ ] Manual checks (owner to finish): phone and laptop width, keyboard, VoiceOver, reduced motion, and legibility of headstone numbers in the serif. Done so far, in headless Chrome only: laptop 1280 px and phone 390 px emulated, keyboard path, reduced-motion emulation, digit legibility (see the journal). Not checked: VoiceOver, a real phone, Safari and Firefox, the animation by eye.
   - _Requirements: 4.5, 6.1–6.7, 6.10_
 
+- [x] 8b. Fix the churchyard for the real register (design 5.4)
+  - The real register draws 696 stones. Above about +420 km everything was clamped into one row, the per-stone off-scale labels collided, and 536 stones overlapped another.
+  - Y scale: linear −300 to +400 as before, plus a compressed "high ground" from +400 to +1,000 with its own ticks and a zigzag break mark. Only objects above +1,000 or below −300 are off-scale. One count label per edge replaces the per-stone labels. The card and ledger keep exact values.
+  - Overlap: smaller stones, and lanes inside each launch-year column, deterministic by NORAD id. Moss, sway and whiskers stay visible on an isolated stone. Overlap counts, before and after, are in design 5.4.
+  - Phone (under 600 px): the chart in its own horizontally scrollable box at its natural size, with a line above it that links to the table view. No page-level horizontal scroll.
+  - Keyboard: one Tab stop (roving tabindex), arrow keys by column and height, Enter selects, Home and End. Aria-labels and the skip link stay.
+  - Tests: scale mapping (monotonic, break at +400, edges, off-scale counts), layout (deterministic, no shared position, overlap bound on the real register), roving tabindex and arrow-key order. `scripts/overlap.ts` and `scripts/screenshot.ts` are the measuring tools.
+  - _Requirements: 6.1–6.3, 6.5–6.7, 6.10_
 - [x] 9. Deploy to GitHub Pages
   - `.github/workflows/deploy.yml` (design 8.1): push to `main` and workflow_dispatch, then `npm ci`, `npm test`, `npm run build`, upload and deploy. Third-party actions are pinned by SHA, with minimal permissions.
   - Turn on Pages ("GitHub Actions" source). That's a repository setting, so ask the user first.

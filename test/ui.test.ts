@@ -13,8 +13,9 @@ import { isRegister } from '../src/ui/register.ts';
 import type { UiRegister } from '../src/ui/register.ts';
 import { navRouteOf, parseHash } from '../src/ui/router.ts';
 import { bandsOf } from '../src/ui/svg/bands.ts';
-import { buildColumns, laneOf, LAYOUT, mossStep, offScale, plotHeight, SCALE, swayAngle, yearFraction, yOf } from '../src/ui/svg/scale.ts';
-import { cardHtml, chartSvg, legendHtml, retiredPayloads } from '../src/ui/views/churchyard.ts';
+import { buildColumns, edgeBaseY, HIGH_TICKS_KM, LAYOUT, mossStep, offScale, offScaleCounts, plotHeight, SCALE, swayAngle, yBreak, yearFraction, yOf } from '../src/ui/svg/scale.ts';
+import { countOverlaps, layoutStones, nextInNav, NAV_KEYS, navSort, PACK } from '../src/ui/svg/layout.ts';
+import { cardHtml, chartModel, chartSvg, legendHtml, retiredPayloads } from '../src/ui/views/churchyard.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const fixture = JSON.parse(readFileSync(join(ROOT, 'test/fixtures/register.json'), 'utf8')) as UiRegister;
@@ -89,21 +90,63 @@ describe('number formatting', () => {
 
 describe('scale', () => {
   it('maps p to y inside the plot and clamps off-scale values', () => {
-    expect(yOf(SCALE.maxKm)).toBe(LAYOUT.top);
-    expect(yOf(SCALE.minKm)).toBe(LAYOUT.top + plotHeight());
-    expect(yOf(5000)).toBe(LAYOUT.top);
-    expect(yOf(-5000)).toBe(LAYOUT.top + plotHeight());
+    expect(yOf(SCALE.maxKm)).toBe(LAYOUT.top + SCALE.edgePx);
+    expect(yOf(SCALE.minKm)).toBe(LAYOUT.top + plotHeight() - SCALE.edgePx);
+    expect(yOf(5000)).toBe(yOf(SCALE.maxKm));
+    expect(yOf(-5000)).toBe(yOf(SCALE.minKm));
     expect(yOf(100)).toBeLessThan(yOf(0));
   });
-  it('the range covers −200 to +400 with room to spare', () => {
-    expect(SCALE.minKm).toBeLessThan(-200);
-    expect(SCALE.maxKm).toBeGreaterThan(400);
+  it('keeps −200 to +400 linear, at the same pixels per km', () => {
+    for (const [a, b] of [[-300, -200], [-200, 0], [0, 247], [247, 400]] as const) {
+      expect(yOf(a) - yOf(b)).toBeCloseTo((b - a) * SCALE.pxPerKm, 9);
+    }
   });
-  it('off-scale only outside the drawn range', () => {
+  it('the break is at +400, and the scale is continuous there', () => {
+    expect(SCALE.linearMaxKm).toBe(400);
+    expect(yOf(400)).toBe(yBreak());
+    expect(yOf(400.001)).toBeCloseTo(yOf(400), 2);
+    expect(yOf(1000)).toBeCloseTo(yBreak() - SCALE.highPx, 9);
+  });
+  it('above the break the scale is compressed: a km is shorter than below it, and shorter further up', () => {
+    const below = yOf(300) - yOf(400);
+    const nearBreak = (yOf(400) - yOf(500)) / 100;
+    const high = (yOf(900) - yOf(1000)) / 100;
+    expect(nearBreak).toBeLessThan(below / 100);
+    expect(high).toBeLessThan(nearBreak);
+  });
+  it('property: y falls as p rises, over the whole range and beyond it where it is flat', () => {
+    fc.assert(
+      fc.property(fc.double({ min: -3000, max: 3000, noNaN: true }), fc.double({ min: -3000, max: 3000, noNaN: true }), (a, b) => {
+        const [lo, hi] = a <= b ? [a, b] : [b, a];
+        return yOf(hi) <= yOf(lo);
+      }),
+    );
+    fc.assert(
+      fc.property(fc.double({ min: SCALE.minKm, max: SCALE.maxKm - 1, noNaN: true }), (p) => yOf(p + 1) < yOf(p)),
+    );
+  });
+  it('the high ground has its own ticks, all inside it', () => {
+    expect(HIGH_TICKS_KM).toEqual([500, 600, 800, 1000]);
+    for (const km of HIGH_TICKS_KM) {
+      expect(km).toBeGreaterThan(SCALE.linearMaxKm);
+      expect(km).toBeLessThanOrEqual(SCALE.maxKm);
+    }
+  });
+  it('off-scale only above +1,000 or below −300', () => {
     expect(offScale(450)).toBeNull();
-    expect(offScale(450.1)).toBe('above');
+    expect(offScale(1000)).toBeNull();
+    expect(offScale(1000.1)).toBe('above');
     expect(offScale(-300)).toBeNull();
     expect(offScale(-300.1)).toBe('below');
+  });
+  it('counts the off-scale objects per edge', () => {
+    expect(offScaleCounts([0, 999, 1000, 1001, 5000, -300, -301, -2000, -2001])).toEqual({ above: 2, below: 3 });
+    expect(offScaleCounts([])).toEqual({ above: 0, below: 0 });
+  });
+  it('off-scale stones stand in the strips outside the scale proper', () => {
+    expect(edgeBaseY('above')).toBeLessThan(yOf(SCALE.maxKm));
+    expect(edgeBaseY('below') - LAYOUT.stoneHeight).toBeGreaterThan(yOf(SCALE.minKm));
+    expect(edgeBaseY('below')).toBeLessThan(LAYOUT.top + plotHeight());
   });
   it('sway: none at or below e = 0.003, 1° just above, 4° at 0.03 and beyond', () => {
     expect(swayAngle(0.003, CONFIG)).toBeNull();
@@ -124,20 +167,16 @@ describe('scale', () => {
   it('moss steps by years since launch', () => {
     expect([null, 0, 9, 10, 19, 20, 29, 30, 80].map(mossStep)).toEqual([0, 1, 1, 2, 2, 3, 3, 4, 4]);
   });
-  it('lanes are spread by NORAD id and stay in range', () => {
-    fc.assert(fc.property(fc.integer({ min: 1, max: 999999 }), fc.integer({ min: 1, max: 6 }), (n, k) => laneOf(n, k) >= 0 && laneOf(n, k) < k));
-  });
   it('year columns: one per year with an empty column at each end', () => {
     const c = buildColumns([2000, 2003, 2003], false);
     expect(c.list.map((x) => x.from)).toEqual([1999, 2000, 2001, 2002, 2003, 2004]);
     expect(c.find(2003)).toBeDefined();
     expect(c.find(1990)).toBeUndefined();
   });
-  it('narrow columns hold five years', () => {
-    const c = buildColumns([2001, 2008], true);
-    expect(c.list.map((x) => [x.from, x.to])).toEqual([[2000, 2004], [2005, 2009]]);
-    expect(c.find(2004)).toBe(c.list[0]);
-    expect(c.find(2005)).toBe(c.list[1]);
+  it('a column grows to the width its stones need, and no narrower than the minimum', () => {
+    const c = buildColumns([2000, 2002], false, new Map([[2001, 50]]));
+    expect(c.find(2001)!.width).toBe(50);
+    expect(c.find(2000)!.width).toBe(LAYOUT.yearColumnMin);
   });
   it('objects with no usable year get their own column at the left', () => {
     const c = buildColumns([null, 1999], false);
@@ -164,11 +203,11 @@ describe('bands come from the register config', () => {
   it('five bands, with edges at ±zone, 247 and 280', () => {
     const bands = bandsOf(CONFIG);
     expect(bands.map((b) => b.id)).toEqual(['below', 'road', 'shallow', 'wall', 'consecrated']);
-    expect(bands.map((b) => [b.fromKm, b.toKm])).toEqual([[-300, -200], [-200, 200], [200, 247], [247, 280], [280, 450]]);
+    expect(bands.map((b) => [b.fromKm, b.toKm])).toEqual([[-300, -200], [-200, 200], [200, 247], [247, 280], [280, SCALE.maxKm]]);
   });
   it('follow a changed config', () => {
     const changed = { ...CONFIG, thresholdLowKm: 250, thresholdHighKm: 290, protectedZoneKm: 150 } as unknown as typeof CONFIG;
-    expect(bandsOf(changed).map((b) => b.toKm)).toEqual([-150, 150, 250, 290, 450]);
+    expect(bandsOf(changed).map((b) => b.toKm)).toEqual([-150, 150, 250, 290, SCALE.maxKm]);
     expect(bandCopy('road', changed).full).toContain('±150 km');
     expect(assumptionsLine(changed)).toContain('±25 km');
   });
@@ -224,15 +263,23 @@ describe('churchyard chart on the fixture register', () => {
     expect(svg).toContain('aria-label="FIXTURE FALLEN, fallen, perigee minus 386 kilometres, below GEO, off the drawn scale"');
     expect(svg).toContain('aria-label="FIXTURE EDGE P247, uncertain, perigee plus 247 kilometres above GEO, borderline"');
   });
-  it('off-scale stones sit at the edge with an arrow and the true value', () => {
-    expect(svg).toContain('\u25B2 +1,914 km');
-    expect(svg).toContain('\u25BC \u22122,000 km');
+  it('off-scale stones get one label per edge with a count, and keep their exact value in the aria-label', () => {
+    expect(svg.match(/class="edge-label"/g)).toHaveLength(2);
+    expect(svg).toContain('\u25B2 1 more above +1,000 km');
+    expect(svg).toContain('\u25BC 2 more below \u2212300 km');
+    expect(svg).not.toContain('off-label');
     expect(svg).toContain('perigee plus 1,914 kilometres above GEO, off the drawn scale');
-    expect(svg).toContain('\u25BC \u2212386 km'); // below −300 too
+    expect(svg).toContain('perigee minus 2,000 kilometres, below GEO, off the drawn scale');
+  });
+  it('draws the break mark and the high-ground ticks', () => {
+    expect(svg.match(/class="break-mark"/g)).toHaveLength(1);
+    for (const km of ['+500', '+600', '+800', '+1,000', '+400']) expect(svg).toContain(`>${km}</text>`);
+    expect(svg.match(/class="tick tick--high"/g)).toHaveLength(HIGH_TICKS_KM.length);
+    expect(svg).toContain('High ground: compressed scale');
   });
   it('draws the five bands, the edge lines, the GEO line and the 18 March 2002 line', () => {
     for (const id of ['below', 'road', 'shallow', 'wall', 'consecrated']) expect(svg).toContain(`band band--${id}`);
-    expect(svg.match(/class="edge/g)!.length).toBe(5);
+    expect(svg.match(/class="edge(?: edge--geo)?"/g)!.length).toBe(7); // +1,000, 280, 247, 200, 0, −200, −300
     expect(svg).toContain('class="fcc-line"');
     expect(svg).toContain('FCC minimum-perigee rule (launches from 18 Mar 2002)');
     expect(svg).toContain('The wall');
@@ -269,12 +316,15 @@ describe('churchyard chart on the fixture register', () => {
     expect(chartSvg(fixture, false, 27378)).toMatch(/class="stone-link selected" href="#\/sat\/27378"/);
     expect(svg).not.toContain('selected');
   });
-  it('the narrow chart merges years into five-year columns and drops the in-chart labels', () => {
+  it('the narrow chart has the same year columns at its natural size, and drops the in-chart labels', () => {
     const narrow = chartSvg(fixture, true);
     expect(narrow).not.toContain('band-name');
     expect(narrow).not.toContain('fcc-label');
     expect(narrow).toContain('class="fcc-line"');
-    expect(Number(/viewBox="0 0 ([\d.]+)/.exec(narrow)![1])).toBeLessThan(Number(/viewBox="0 0 ([\d.]+)/.exec(svg)![1]));
+    const [w, h] = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(narrow)!.slice(1);
+    expect(narrow).toContain(`width="${w}" height="${h}"`);
+    expect(svg).not.toMatch(/<svg[^>]* width=/);
+    expect(chartModel(fixture, true).cols.list.map((c) => c.from)).toEqual(chartModel(fixture, false).cols.list.map((c) => c.from));
   });
   it('escapes a name that holds markup', () => {
     const evil = structuredClone(fixture);
@@ -289,6 +339,154 @@ describe('churchyard chart on the fixture register', () => {
   });
 });
 
+describe('stone layout', () => {
+  const real = JSON.parse(readFileSync(join(ROOT, 'data/register.json'), 'utf8')) as UiRegister;
+  const posKey = (m: ReturnType<typeof chartModel>): string[] => [...m.pos.values()].map((p) => `${p.x.toFixed(2)}|${p.y.toFixed(2)}`);
+  it('is deterministic: the same input in any order gives the same positions', () => {
+    const items = Array.from({ length: 60 }, (_, i) => ({ id: 1000 + i * 7, column: 2000 + (i % 3), y: 100 + ((i * 37) % 50) }));
+    const a = layoutStones(items);
+    const b = layoutStones([...items].reverse());
+    expect([...a.placed.entries()].sort()).toEqual([...b.placed.entries()].sort());
+    expect([...a.widths.entries()].sort()).toEqual([...b.widths.entries()].sort());
+  });
+  it('property: no two stones stand at the same position, even when p is identical', () => {
+    fc.assert(
+      fc.property(
+        fc.uniqueArray(fc.record({ id: fc.integer({ min: 1, max: 99999 }), column: fc.integer({ min: 1999, max: 2001 }), y: fc.integer({ min: 100, max: 112 }) }), { selector: (r) => r.id, maxLength: 80 }),
+        (items) => {
+          const { placed } = layoutStones(items);
+          const keys = [...placed.values()].map((p) => `${p.column}|${p.dx.toFixed(2)}|${p.y.toFixed(2)}`);
+          return new Set(keys).size === items.length;
+        },
+      ),
+    );
+  });
+  it('never moves a stone up or down, and keeps it inside its column width', () => {
+    const items = Array.from({ length: 40 }, (_, i) => ({ id: i + 1, column: 2000, y: 200 + (i % 5) }));
+    const { placed, widths } = layoutStones(items);
+    for (const it of items) {
+      const p = placed.get(it.id)!;
+      expect(p.y).toBe(it.y);
+      expect(Math.abs(p.dx) + LAYOUT.stoneWidth / 2).toBeLessThanOrEqual(widths.get(2000)! / 2);
+    }
+  });
+  it('stones far apart in height share a lane, and close ones take different lanes', () => {
+    const far = layoutStones([{ id: 1, column: 1, y: 100 }, { id: 2, column: 1, y: 100 + LAYOUT.stoneHeight }]);
+    expect(far.placed.get(1)!.dx).toBe(far.placed.get(2)!.dx);
+    const near = layoutStones([{ id: 1, column: 1, y: 100 }, { id: 2, column: 1, y: 101 }]);
+    expect(near.placed.get(1)!.dx).not.toBe(near.placed.get(2)!.dx);
+    expect(Math.abs(near.placed.get(1)!.dx - near.placed.get(2)!.dx)).toBeGreaterThanOrEqual(LAYOUT.stoneWidth);
+  });
+  it('uses at most the lane cap, so a crowded year does not widen the chart without limit', () => {
+    const items = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, column: 1, y: 100 }));
+    const { placed } = layoutStones(items);
+    expect(new Set([...placed.values()].map((p) => p.lane)).size).toBeLessThanOrEqual(PACK.maxLanes);
+  });
+  it('overlap counting: boxes share area only when closer than a stone in both directions', () => {
+    expect(countOverlaps([{ x: 0, y: 0 }, { x: 9, y: 13 }])).toEqual({ stones: 2, pairs: 1 });
+    expect(countOverlaps([{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 0, y: 14 }])).toEqual({ stones: 0, pairs: 0 });
+  });
+  it('on the real register: all stones have distinct positions, and overlap stays below 15% of the stones', () => {
+    const m = chartModel(real, false);
+    expect(m.stones).toHaveLength(696);
+    expect(new Set(posKey(m)).size).toBe(696);
+    const boxes = [...m.pos.values()];
+    expect(countOverlaps(boxes).stones).toBeLessThan(696 * 0.15);
+  });
+  it('on the real register: the edge counts are 15 above and 8 below, and the labels say so', () => {
+    const svg = chartSvg(real, false);
+    expect(svg).toContain('\u25B2 15 more above +1,000 km');
+    expect(svg).toContain('\u25BC 8 more below \u2212300 km');
+    expect(svg.match(/class="edge-label"/g)).toHaveLength(2);
+  });
+  it('filtering does not move a stone', () => {
+    const all = chartModel(fixture, false);
+    const some = chartModel(fixture, false, fixture.records.filter((r) => r.norad === 27378));
+    expect(some.pos.get(27378)).toEqual(all.pos.get(27378));
+  });
+});
+describe('keyboard: one Tab stop and arrow keys', () => {
+  const tabStops = (svg: string): string[] => stones(svg).filter((s) => s.includes('tabindex="0"')).map((s) => /data-norad="(\d+)"/.exec(s)![1]!);
+  const model = chartModel(fixture, false);
+  it('exactly one stone is in the Tab order, and the rest are at -1', () => {
+    const svg = chartSvg(fixture, false);
+    expect(tabStops(svg)).toHaveLength(1);
+    expect(stones(svg).filter((s) => s.includes('tabindex="-1"'))).toHaveLength(19);
+    expect(svg).not.toMatch(/tabindex="[1-9]/);
+  });
+  it('the Tab stop is the first stone in keyboard order, or the selected one', () => {
+    expect(tabStops(chartSvg(fixture, false))).toEqual([String(model.nav[0]!.id)]);
+    expect(tabStops(chartSvg(fixture, false, 27378))).toEqual(['27378']);
+    expect(tabStops(chartSvg(fixture, false, null, undefined, 90011))).toEqual(['90011']);
+  });
+  it('keeps one Tab stop on the narrow chart too, and keeps the aria-labels and the skip link target', () => {
+    const narrow = chartSvg(fixture, true);
+    expect(tabStops(narrow)).toHaveLength(1);
+    expect(narrow).toContain('aria-label="ECHOSTAR 7, unquiet, perigee plus 110.4 kilometres above GEO"');
+  });
+  const items = navSort([
+    { id: 1, col: 0, y: 100, dx: 0 },
+    { id: 2, col: 0, y: 150, dx: 0 },
+    { id: 3, col: 0, y: 150, dx: 11 },
+    { id: 4, col: 2, y: 90, dx: 0 },
+    { id: 5, col: 2, y: 140, dx: 0 },
+    { id: 6, col: 5, y: 120, dx: 0 },
+  ]);
+  it('orders by column, then top to bottom, then left to right', () => {
+    expect(items.map((n) => n.id)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+  it('up and down move within a column and stop at its ends', () => {
+    expect(nextInNav(items, 1, 'ArrowDown')).toBe(2);
+    expect(nextInNav(items, 2, 'ArrowDown')).toBe(3);
+    expect(nextInNav(items, 3, 'ArrowDown')).toBeNull();
+    expect(nextInNav(items, 3, 'ArrowUp')).toBe(2);
+    expect(nextInNav(items, 1, 'ArrowUp')).toBeNull();
+  });
+  it('left and right go to the next column with stones, at the nearest height', () => {
+    expect(nextInNav(items, 2, 'ArrowRight')).toBe(5);
+    expect(nextInNav(items, 1, 'ArrowRight')).toBe(4);
+    expect(nextInNav(items, 5, 'ArrowRight')).toBe(6);
+    expect(nextInNav(items, 6, 'ArrowRight')).toBeNull();
+    expect(nextInNav(items, 6, 'ArrowLeft')).toBe(5);
+    expect(nextInNav(items, 4, 'ArrowLeft')).toBe(1);
+    expect(nextInNav(items, 1, 'ArrowLeft')).toBeNull();
+  });
+  it('Home and End jump to the first and last stone', () => {
+    expect(nextInNav(items, 5, 'Home')).toBe(1);
+    expect(nextInNav(items, 2, 'End')).toBe(6);
+  });
+  it('other keys do nothing, and an empty chart has nowhere to go', () => {
+    expect(nextInNav(items, 1, 'a')).toBeNull();
+    expect(nextInNav(items, 1, 'Enter')).toBeNull();
+    expect(nextInNav([], null, 'Home')).toBeNull();
+    expect([...NAV_KEYS]).toEqual(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
+  });
+  it('property: every move lands on a stone, and Home then End reach the ends', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(...NAV_KEYS), fc.constantFrom(...items.map((n) => n.id)), (key, id) => {
+        const next = nextInNav(items, id, key);
+        return next === null || items.some((n) => n.id === next);
+      }),
+    );
+  });
+  it('the real register: the arrow keys alone reach every stone from the first', () => {
+    const real = JSON.parse(readFileSync(join(ROOT, 'data/register.json'), 'utf8')) as UiRegister;
+    const nav = chartModel(real, false).nav;
+    const seen = new Set<number>([nav[0]!.id]);
+    const queue = [nav[0]!.id];
+    while (queue.length > 0) {
+      const id = queue.pop()!;
+      for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) {
+        const next = nextInNav(nav, id, key);
+        if (next !== null && !seen.has(next)) {
+          seen.add(next);
+          queue.push(next);
+        }
+      }
+    }
+    expect(seen.size).toBe(nav.length);
+  });
+});
 describe('selection card and legend', () => {
   const echostar = retiredPayloads(fixture.records).find((r) => r.norad === 27378)!;
   it('the card shows the verdict with its meaning, p, data age and assumptions', () => {

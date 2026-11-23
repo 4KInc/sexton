@@ -4,6 +4,7 @@
 import type { Config } from '../engine/config.ts';
 import type { SatRecord, VerdictName } from '../engine/types.ts';
 import { formatSigned, MINUS } from './format.ts';
+import { SCALE } from './svg/scale.ts';
 
 export const SITE = {
   title: 'Sexton',
@@ -63,10 +64,14 @@ export const CHART = {
   legendTitle: 'How to read the churchyard',
   designatorNote: 'Launch year from the international designator. Moss is not shown.',
   mossUnknown: 'No moss: launch date unknown.',
+  highGround: 'High ground: compressed scale',
+  scrollNote: 'This chart is wide. Scroll it sideways, or read the same objects in the',
+  scrollLink: 'table view',
+  scrollRegion: 'Churchyard chart. Scroll sideways to see every launch year.',
 } as const;
 
 export function chartDescription(config: Config): string {
-  return `Height is perigee above GEO, from ${formatSigned(-300, 0)} to ${formatSigned(450, 0)} km. Columns are launch years. The bands are set by ${config.protectedZoneKm} km above and below GEO and by the IADC threshold of ${config.thresholdLowKm} to ${config.thresholdHighKm} km.`;
+  return `Height is perigee above GEO, from ${formatSigned(SCALE.minKm, 0)} to ${formatSigned(SCALE.maxKm, 0)} km. The scale is linear up to ${formatSigned(SCALE.linearMaxKm, 0)} km. Above that, the high ground, it is compressed. Columns are launch years. The bands are set by ${config.protectedZoneKm} km above and below GEO and by the IADC threshold of ${config.thresholdLowKm} to ${config.thresholdHighKm} km.`;
 }
 
 export function countLine(shown: number, snapshotDate: string): string {
@@ -125,7 +130,8 @@ export const LEGEND = {
   whisker: (config: Config): string => `Dotted bar: the verdict is within ${config.uncertaintyKm} km of a band edge, the mean-element uncertainty.`,
   fccLine: 'Vertical line: 18 March 2002, the date from which the FCC minimum-perigee rule applies to the satellites the FCC authorizes.',
   bones: 'Small diamond: unmarked bones, a rocket body or a piece of debris. They carry no name or verdict and show only when switched on.',
-  offScale: 'An arrow at the top or bottom edge: the object is off the drawn scale. Its true value is written beside it.',
+  offScale: 'A count at the top or bottom edge: objects above the top limit or below the bottom limit of the scale. Their exact values are on the card and in the ledger.',
+  highGround: 'Above +400 km the scale is compressed, and a zigzag marks the break. The same height there means a larger distance than below the break.',
 } as const;
 
 export function assumptionsLine(config: Config): string {
@@ -216,5 +222,7 @@ export const TABLE = {
   scrollLabel: 'Table of objects. Scroll sideways to see every column.',
 } as const;
 export const OFF_SCALE_ARROW = { above: '\u25B2', below: '\u25BC' } as const;
-export const offScaleText = (side: 'above' | 'below', p: number): string => `${OFF_SCALE_ARROW[side]} ${formatSigned(p, 0)} km`;
+/** One label per edge: how many objects are beyond the limit. */
+export const offScaleEdgeText = (side: 'above' | 'below', count: number, limitKm: number): string =>
+  `${OFF_SCALE_ARROW[side]} ${count} more ${side} ${formatSigned(limitKm, 0)} km`;
 export { MINUS };

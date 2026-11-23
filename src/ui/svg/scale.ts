@@ -2,40 +2,78 @@
 // every threshold comes from register.config.
 import type { Config } from '../../engine/config.ts';
 
-/** The drawn range of p, in km above GEO. */
-export const SCALE = { minKm: -300, maxKm: 450, pxPerKm: 0.8 } as const;
-
+/**
+ * The drawn range of p, in km above GEO (design 5.4). From minKm to linearMaxKm the scale is linear.
+ * From linearMaxKm to maxKm ("high ground") it is compressed, with a break mark at linearMaxKm.
+ * Objects above maxKm or below minKm are off-scale.
+ */
+export const SCALE = {
+  minKm: -300,
+  linearMaxKm: 400,
+  maxKm: 1000,
+  pxPerKm: 0.8,
+  /** Height of the whole high-ground section. */
+  highPx: 140,
+  /** Log knee of the high-ground curve: y grows as ln(1 + d / highKneeKm), d km above linearMaxKm. */
+  highKneeKm: 100,
+  /** Height of the strip above maxKm and the strip below minKm, where off-scale stones stand. */
+  edgePx: 44,
+} as const;
+/** Tick labels in the high ground, besides the break itself (+400) and the top limit. */
+export const HIGH_TICKS_KM: readonly number[] = [500, 600, 800, 1000];
 export const LAYOUT = {
   top: 40,
   bottom: 40,
   right: 16,
   gutterWide: 150,
   gutterNarrow: 46,
-  yearColumnWide: 22,
-  /** A column covers this many years on a narrow screen. */
-  narrowYears: 5,
-  narrowColumn: 40,
+  /** Narrowest a year column gets. Columns grow with the lanes their stones need. */
+  yearColumnMin: 12,
   unknownColumn: 56,
-  stoneWidth: 14,
-  stoneHeight: 19,
-  /** Space above the stone for an off-scale label, and its depth. */
-  offScaleInset: 24,
+  stoneWidth: 10,
+  stoneHeight: 14,
 } as const;
-
-export const plotHeight = (): number => (SCALE.maxKm - SCALE.minKm) * SCALE.pxPerKm;
-
-/** y of p, clamped to the drawn range. */
+const LOW_PX = (SCALE.linearMaxKm - SCALE.minKm) * SCALE.pxPerKm;
+export const plotHeight = (): number => SCALE.edgePx + SCALE.highPx + LOW_PX + SCALE.edgePx;
+/** Share 0..1 of the high-ground height reached by d km above the break. Strictly increasing. */
+function highFraction(d: number): number {
+  return Math.log(1 + d / SCALE.highKneeKm) / Math.log(1 + (SCALE.maxKm - SCALE.linearMaxKm) / SCALE.highKneeKm);
+}
+/** y of the +maxKm line, the top of the scale proper. */
+export const yTopLimit = (): number => LAYOUT.top + SCALE.edgePx;
+/** y of the break at linearMaxKm. */
+export const yBreak = (): number => LAYOUT.top + SCALE.edgePx + SCALE.highPx;
+/** y of p, clamped to the drawn range. Linear up to linearMaxKm, compressed above it. */
 export function yOf(p: number): number {
   const clamped = Math.min(SCALE.maxKm, Math.max(SCALE.minKm, p));
-  return LAYOUT.top + (SCALE.maxKm - clamped) * SCALE.pxPerKm;
+  if (clamped >= SCALE.linearMaxKm) return yBreak() - highFraction(clamped - SCALE.linearMaxKm) * SCALE.highPx;
+  return yBreak() + (SCALE.linearMaxKm - clamped) * SCALE.pxPerKm;
 }
-
 export function offScale(p: number): 'above' | 'below' | null {
   if (p > SCALE.maxKm) return 'above';
   if (p < SCALE.minKm) return 'below';
   return null;
 }
-
+/** How many of these perigees are off the drawn scale, per edge. */
+export function offScaleCounts(ps: readonly number[]): { above: number; below: number } {
+  let above = 0;
+  let below = 0;
+  for (const p of ps) {
+    const side = offScale(p);
+    if (side === 'above') above++;
+    else if (side === 'below') below++;
+  }
+  return { above, below };
+}
+/** y of the base of a stone standing in an edge strip. */
+export function edgeBaseY(side: 'above' | 'below'): number {
+  return side === 'above' ? LAYOUT.top + SCALE.edgePx - 6 : LAYOUT.top + plotHeight() - SCALE.edgePx + 6 + LAYOUT.stoneHeight;
+}
+/** y of the stone's base for a perigee: its scale position, or the edge strip when off-scale. */
+export function baseYOf(p: number): number {
+  const side = offScale(p);
+  return side === null ? yOf(p) : edgeBaseY(side);
+}
 /** Sway angle in degrees: 1 at e = eccentricityMax, 4 at e = 0.03, in proportion (design 5.4). */
 export const SWAY = { fromE: 0.003, toE: 0.03, fromDeg: 1, toDeg: 4, seconds: 8 } as const;
 export function swayAngle(e: number, config: Config): number | null {
@@ -56,11 +94,6 @@ export function mossStep(yearsSinceLaunch: number | null): 0 | 1 | 2 | 3 | 4 {
 /** Share of the stone's height that moss covers, by step. */
 export const MOSS_COVERAGE = [0, 0.15, 0.3, 0.5, 0.75] as const;
 
-/** Stones in one column are spread over this many lanes, by NORAD id. */
-export function laneOf(norad: number, lanes: number): number {
-  return norad % lanes;
-}
-
 export interface Column {
   /** First year in the column, or null for the "launch year unknown" column. */
   from: number | null;
@@ -79,32 +112,29 @@ export interface Columns {
   xOfYear: (year: number, fraction: number) => number | null;
 }
 
-/** Year columns from the first to the last launch year, 5-year columns when narrow. */
-export function buildColumns(years: readonly (number | null)[], narrow: boolean): Columns {
+/**
+ * Year columns from the first to the last launch year. `widths` gives the width a column needs for its
+ * stones (from the layout); a column with no entry gets the minimum.
+ */
+export function buildColumns(years: readonly (number | null)[], narrow: boolean, widths: ReadonlyMap<number | null, number> = new Map()): Columns {
   const known = years.filter((y): y is number => y !== null);
   const hasUnknown = years.some((y) => y === null);
   const gutter = narrow ? LAYOUT.gutterNarrow : LAYOUT.gutterWide;
   const list: Column[] = [];
   let x = gutter;
   if (hasUnknown) {
-    list.push({ from: null, to: null, x, width: LAYOUT.unknownColumn });
-    x += LAYOUT.unknownColumn;
+    const w = Math.max(LAYOUT.unknownColumn, widths.get(null) ?? 0);
+    list.push({ from: null, to: null, x, width: w });
+    x += w;
   }
   if (known.length > 0) {
     const min = Math.min(...known);
     const max = Math.max(...known);
-    if (narrow) {
-      const step = LAYOUT.narrowYears;
-      for (let start = Math.floor(min / step) * step; start <= max; start += step) {
-        list.push({ from: start, to: start + step - 1, x, width: LAYOUT.narrowColumn });
-        x += LAYOUT.narrowColumn;
-      }
-    } else {
-      // One empty column at each end, so stones in the first and last year don't touch the edge.
-      for (let year = min - 1; year <= max + 1; year++) {
-        list.push({ from: year, to: year, x, width: LAYOUT.yearColumnWide });
-        x += LAYOUT.yearColumnWide;
-      }
+    // One empty column at each end, so stones in the first and last year don't touch the edge.
+    for (let year = min - 1; year <= max + 1; year++) {
+      const w = Math.max(LAYOUT.yearColumnMin, widths.get(year) ?? 0);
+      list.push({ from: year, to: year, x, width: w });
+      x += w;
     }
   }
   const find = (year: number | null): Column | undefined =>

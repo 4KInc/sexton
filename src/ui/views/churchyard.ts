@@ -14,7 +14,7 @@ import {
   FILTERS,
   LEGEND,
   MOSS_STEPS,
-  offScaleText,
+  offScaleEdgeText,
   SITE,
   stoneLabel,
   TERMS,
@@ -29,7 +29,23 @@ import type { ViewState } from '../state.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { bandsOf } from '../svg/bands.ts';
 import { stoneBody, stoneDefs } from '../svg/headstone.ts';
-import { buildColumns, laneOf, LAYOUT, mossStep, offScale, plotHeight, SCALE, swayAngle, yearFraction, yOf } from '../svg/scale.ts';
+import { layoutStones, nextInNav, NAV_KEYS, navSort } from '../svg/layout.ts';
+import type { NavItem, Placed } from '../svg/layout.ts';
+import {
+  baseYOf,
+  buildColumns,
+  HIGH_TICKS_KM,
+  LAYOUT,
+  mossStep,
+  offScale,
+  offScaleCounts,
+  plotHeight,
+  SCALE,
+  swayAngle,
+  yBreak,
+  yearFraction,
+  yOf,
+} from '../svg/scale.ts';
 import type { Columns } from '../svg/scale.ts';
 
 export type RetiredRecord = SatRecord & { verdict: Extract<SatRecord['verdict'], { kind: 'verdict' }> };
@@ -41,41 +57,59 @@ const edgesOf = (config: Config): number[] => [config.protectedZoneKm, config.th
 const pText = (r: SatRecord, config: Config): string => formatP(r.pKm, r.orbitSource.kind, edgesOf(config));
 const f = (n: number): string => String(Math.round(n * 100) / 100);
 
+/** A zigzag across the plot at +400 km. It tells the reader the scale above is compressed. */
+function breakMark(x0: number, x1: number, y: number): string {
+  const step = 8;
+  let d = `M ${f(x0)} ${f(y)}`;
+  for (let x = x0, up = true; x < x1; x += step, up = !up) {
+    d += ` L ${f(Math.min(x + step / 2, x1))} ${f(y + (up ? -3 : 3))}`;
+  }
+  return `<path class="break-mark" d="${d}"/>`;
+}
 function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
   const x = cols.gutter;
   const w = cols.width - cols.gutter - LAYOUT.right;
+  const plotTop = LAYOUT.top;
+  const plotBottom = LAYOUT.top + plotHeight();
   const out: string[] = [];
   for (const band of bandsOf(config)) {
-    const y1 = yOf(band.toKm);
-    const y0 = yOf(band.fromKm);
+    // The top band reaches up into the strip for off-scale stones, and the bottom band down into its strip.
+    const y1 = band.toKm >= SCALE.maxKm ? plotTop : yOf(band.toKm);
+    const y0 = band.fromKm <= SCALE.minKm ? plotBottom : yOf(band.fromKm);
     const copy = bandCopy(band.id, config);
     out.push(`<rect class="band band--${band.id}" x="${f(x)}" y="${f(y1)}" width="${f(w)}" height="${f(y0 - y1)}"/>`);
     if (!narrow) {
-      out.push(`<text class="band-name" x="8" y="${f((y0 + y1) / 2 + 4)}">${esc(copy.short)}</text>`);
+      // The name sits in the linear part of its band.
+      const ly1 = band.toKm > SCALE.linearMaxKm ? yBreak() : y1;
+      const ly0 = band.fromKm <= SCALE.minKm ? yOf(SCALE.minKm) : y0;
+      out.push(`<text class="band-name" x="8" y="${f((ly0 + ly1) / 2 + 4)}">${esc(copy.short)}</text>`);
     }
   }
-  // Edge lines and tick numbers. 0 is GEO. The top tick has no edge line.
+  // Edge lines and tick numbers. 0 is GEO. +400 is the break. Ticks above it are on the compressed scale.
   const zone = config.protectedZoneKm;
-  const topTick = SCALE.maxKm - 50;
-  for (const km of [topTick, zone, -zone, config.thresholdLowKm, config.thresholdHighKm, 0]) {
+  const ticks = [...HIGH_TICKS_KM, SCALE.linearMaxKm, config.thresholdHighKm, config.thresholdLowKm, zone, 0, -zone, SCALE.minKm];
+  for (const km of ticks) {
     const y = f(yOf(km));
-    if (km !== topTick) {
+    const high = km > SCALE.linearMaxKm;
+    // Lines at the real edges and limits only. Interior high-ground ticks are just labels.
+    if (km !== SCALE.linearMaxKm && !(high && km !== SCALE.maxKm)) {
       out.push(`<line class="${km === 0 ? 'edge edge--geo' : 'edge'}" x1="${f(x)}" x2="${f(x + w)}" y1="${y}" y2="${y}"/>`);
     }
-    out.push(`<text class="tick" x="${f(x - 6)}" y="${f(yOf(km) + 4)}" text-anchor="end">${esc(formatSigned(km, 0))}</text>`);
+    out.push(`<text class="${high ? 'tick tick--high' : 'tick'}" x="${f(x - 6)}" y="${f(yOf(km) + 4)}" text-anchor="end">${esc(formatSigned(km, 0))}</text>`);
     if (km === 0) out.push(`<text class="tick tick--geo" x="${f(x + 4)}" y="${f(yOf(km) - 4)}">${esc(CHART.geoLabel)}</text>`);
   }
+  out.push(breakMark(x, x + w, yBreak()));
+  if (!narrow) out.push(`<text class="break-label" x="8" y="${f(yBreak() - 8)}">${esc(CHART.highGround)}</text>`);
   return out.join('');
 }
-
-function yearAxisSvg(cols: Columns, narrow: boolean): string {
+function yearAxisSvg(cols: Columns): string {
   const y = LAYOUT.top + plotHeight() + 18;
   const out: string[] = [];
   for (const c of cols.list) {
     const cx = f(c.x + c.width / 2);
     if (c.from === null) {
       out.push(`<text class="tick" x="${cx}" y="${f(y)}" text-anchor="middle"><title>${esc(CHART.unknownYearTitle)}</title>${esc(CHART.unknownYear)}</text>`);
-    } else if (narrow ? true : c.from % 5 === 0) {
+    } else if (c.from % 5 === 0) {
       out.push(`<text class="tick" x="${cx}" y="${f(y)}" text-anchor="middle">${c.from}</text>`);
     }
   }
@@ -97,16 +131,12 @@ function fccLineSvg(config: Config, cols: Columns, narrow: boolean): string {
   return `<g class="fcc"><line class="fcc-line" x1="${f(x)}" x2="${f(x)}" y1="${f(y0)}" y2="${f(y1)}"/><title>${esc(CHART.fccLine)}</title>${label}</g>`;
 }
 
-function stoneSvg(r: RetiredRecord, config: Config, cols: Columns, narrow: boolean, selected: number | null): string {
-  const col = cols.find(r.launchYear);
-  if (col === undefined) return '';
-  const lanes = narrow ? 4 : 3;
-  const gap = narrow ? 8 : 7;
-  const cx = col.x + col.width / 2 + (laneOf(r.norad, lanes) - (lanes - 1) / 2) * gap;
+interface Pos {
+  x: number;
+  y: number;
+}
+function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number | null, tabStop: number | null): string {
   const off = offScale(r.pKm);
-  const plotTop = LAYOUT.top;
-  const plotBottom = LAYOUT.top + plotHeight();
-  const baseY = off === 'above' ? plotTop + LAYOUT.offScaleInset + 14 : off === 'below' ? plotBottom - 20 : yOf(r.pKm);
   const v = r.verdict;
   const text = pText(r, config);
   const label = stoneLabel(r.name, v.verdict, spokenKm(text), off, v.borderline);
@@ -119,74 +149,119 @@ function stoneSvg(r: RetiredRecord, config: Config, cols: Columns, narrow: boole
       : `<g class="sway" style="--sway-angle:${angle}deg;--sway-delay:${delay}s">${body}</g>`;
   let whisker = '';
   if (v.borderline) {
-    const top = yOf(r.pKm + config.uncertaintyKm) - baseY;
-    const bottom = yOf(r.pKm - config.uncertaintyKm) - baseY;
-    const wx = LAYOUT.stoneWidth / 2 + 5;
+    const top = yOf(r.pKm + config.uncertaintyKm) - pos.y;
+    const bottom = yOf(r.pKm - config.uncertaintyKm) - pos.y;
+    const wx = LAYOUT.stoneWidth / 2 + 2.5;
     whisker =
       `<g class="whisker"><line x1="${wx}" x2="${wx}" y1="${f(top)}" y2="${f(bottom)}"/>` +
       `<line x1="${wx - 2}" x2="${wx + 2}" y1="${f(top)}" y2="${f(top)}"/>` +
       `<line x1="${wx - 2}" x2="${wx + 2}" y1="${f(bottom)}" y2="${f(bottom)}"/></g>`;
   }
-  const offLabel =
-    off === null
-      ? ''
-      : `<text class="off-label" x="0" y="${off === 'above' ? -(LAYOUT.stoneHeight + 6) : 12}" text-anchor="middle">${esc(offScaleText(off, r.pKm))}</text>`;
   const cls = `stone-link${selected === r.norad ? ' selected' : ''}`;
+  const hw = LAYOUT.stoneWidth / 2 + 1;
   return (
-    `<a class="${cls}" href="#/sat/${r.norad}" data-norad="${r.norad}" aria-label="${esc(label)}">` +
+    `<a class="${cls}" href="#/sat/${r.norad}" data-norad="${r.norad}" tabindex="${tabStop === r.norad ? 0 : -1}" aria-label="${esc(label)}">` +
     `<title>${esc(label)}</title>` +
-    `<g transform="translate(${f(cx)} ${f(baseY)})">` +
-    `<rect class="hit" x="-12" y="-26" width="24" height="32"/>` +
+    `<g transform="translate(${f(pos.x)} ${f(pos.y)})">` +
+    `<rect class="hit" x="${-hw}" y="${-LAYOUT.stoneHeight - 2}" width="${2 * hw}" height="${LAYOUT.stoneHeight + 3}"/>` +
     shape +
     whisker +
-    offLabel +
     `</g></a>`
   );
 }
-
 /** An unmarked-bones marker: a small plain diamond, no inscription, not a link. */
-function boneSvg(r: SatRecord, config: Config, cols: Columns, narrow: boolean): string {
-  const col = cols.find(r.launchYear);
-  if (col === undefined) return '';
-  const lanes = narrow ? 4 : 3;
-  const gap = narrow ? 8 : 7;
-  const cx = col.x + col.width / 2 + (laneOf(r.norad, lanes) - (lanes - 1) / 2) * gap;
+function boneSvg(r: SatRecord, config: Config, pos: Pos): string {
   const off = offScale(r.pKm);
-  const cy = off === 'above' ? LAYOUT.top + LAYOUT.offScaleInset + 6 : off === 'below' ? LAYOUT.top + plotHeight() - 20 : yOf(r.pKm);
   const text = pText(r, config);
   const label = `${r.name}, unmarked bones (${r.status}), perigee ${spokenKm(text)} kilometres${spokenKm(text).startsWith('minus') ? ', below GEO' : ' above GEO'}${off === null ? '' : ', off the drawn scale'}`;
-  const offLabel =
-    off === null ? '' : `<text class="off-label" x="0" y="${off === 'above' ? -10 : 18}" text-anchor="middle">${esc(offScaleText(off, r.pKm))}</text>`;
+  // The diamond is centred on the stone's base line, so it sits at the object's own height.
   return (
     `<g class="bone" data-norad="${r.norad}" role="img" aria-label="${esc(label)}"><title>${esc(label)}</title>` +
-    `<g transform="translate(${f(cx)} ${f(cy)})"><path class="bone-mark" d="M 0 -4 L 4 0 L 0 4 L -4 0 Z"/>${offLabel}</g></g>`
+    `<g transform="translate(${f(pos.x)} ${f(pos.y - 4)})"><path class="bone-mark" d="M 0 -4 L 4 0 L 0 4 L -4 0 Z"/></g></g>`
   );
+}
+export interface ChartModel {
+  cols: Columns;
+  stones: RetiredRecord[];
+  bones: SatRecord[];
+  /** Where each drawn stone and bone stands: x is the middle of its base. */
+  pos: Map<number, Pos>;
+  /** The stones in keyboard order. */
+  nav: NavItem[];
+  placed: Map<number, Placed>;
+}
+/**
+ * Columns and positions for the chart. `shown` is the filtered set. The layout covers all retired
+ * payloads, not only the shown ones, so filtering never moves a stone.
+ */
+export function chartModel(reg: UiRegister, narrow: boolean, shown: readonly SatRecord[] = applyFilters(reg.records, NO_FILTERS)): ChartModel {
+  const stones = retiredPayloads(shown);
+  const bones = shown.filter((r) => r.verdict.kind === 'unmarked bones').sort((a, b) => a.norad - b.norad);
+  const everyStone = retiredPayloads(reg.records);
+  const laidOut = [...everyStone, ...bones];
+  const { placed, widths } = layoutStones(laidOut.map((r) => ({ id: r.norad, column: r.launchYear, y: baseYOf(r.pKm) })));
+  const cols = buildColumns(laidOut.map((r) => r.launchYear), narrow, widths);
+  const pos = new Map<number, Pos>();
+  const nav: NavItem[] = [];
+  for (const r of [...stones, ...bones]) {
+    const col = cols.find(r.launchYear);
+    const p = placed.get(r.norad);
+    if (col === undefined || p === undefined) continue;
+    pos.set(r.norad, { x: col.x + col.width / 2 + p.dx, y: p.y });
+  }
+  for (const r of stones) {
+    const col = cols.find(r.launchYear);
+    const p = placed.get(r.norad);
+    if (col !== undefined && p !== undefined) nav.push({ id: r.norad, col: cols.list.indexOf(col), y: p.y, dx: p.dx });
+  }
+  return { cols, stones, bones, pos, nav: navSort(nav), placed };
+}
+/** One label per edge: how many objects stand beyond the limit. Exact values are on the card and in the ledger. */
+function edgeLabelsSvg(model: ChartModel): string {
+  const counts = offScaleCounts([...model.stones, ...model.bones].map((r) => r.pKm));
+  const x = model.cols.gutter + 6;
+  const out: string[] = [];
+  if (counts.above > 0) {
+    out.push(`<text class="edge-label" x="${f(x)}" y="${f(LAYOUT.top + 14)}">${esc(offScaleEdgeText('above', counts.above, SCALE.maxKm))}</text>`);
+  }
+  if (counts.below > 0) {
+    out.push(`<text class="edge-label" x="${f(x)}" y="${f(LAYOUT.top + plotHeight() - 8)}">${esc(offScaleEdgeText('below', counts.below, SCALE.minKm))}</text>`);
+  }
+  return out.join('');
 }
 /**
  * The whole chart as an SVG string. `shown` is the filtered set (default: no filters, so no unmarked bones).
- * The columns come from all retired payloads, so filtering does not move the stones, plus the
- * unmarked bones that are shown.
+ * `tabStop` is the one stone that is in the Tab order (roving tabindex): the selected stone, or the first.
+ * On a narrow screen the SVG has its natural width, and its container scrolls sideways.
  */
-export function chartSvg(reg: UiRegister, narrow: boolean, selected: number | null = null, shown: readonly SatRecord[] = applyFilters(reg.records, NO_FILTERS)): string {
+export function chartSvg(
+  reg: UiRegister,
+  narrow: boolean,
+  selected: number | null = null,
+  shown: readonly SatRecord[] = applyFilters(reg.records, NO_FILTERS),
+  tabStop: number | null = selected,
+): string {
   const config = reg.config;
-  const stones = retiredPayloads(shown);
-  const bones = shown.filter((r) => r.verdict.kind === 'unmarked bones').sort((a, b) => a.norad - b.norad);
-  const cols = buildColumns([...retiredPayloads(reg.records), ...bones].map((r) => r.launchYear), narrow);
+  const model = chartModel(reg, narrow, shown);
+  const { cols } = model;
   const width = Math.max(cols.width, cols.gutter + 120);
   const height = LAYOUT.top + plotHeight() + LAYOUT.bottom;
+  const stop = tabStop !== null && model.nav.some((n) => n.id === tabStop) ? tabStop : (model.nav[0]?.id ?? null);
+  const size = narrow ? ` width="${f(width)}" height="${f(height)}"` : '';
   const parts = [
-    `<svg class="chart" viewBox="0 0 ${f(width)} ${f(height)}" role="group" aria-labelledby="chart-title chart-desc" focusable="false">`,
+    `<svg class="chart${narrow ? ' chart--natural' : ''}" viewBox="0 0 ${f(width)} ${f(height)}"${size} role="group" aria-labelledby="chart-title chart-desc" focusable="false">`,
     `<title id="chart-title">${esc(CHART.title)}</title>`,
     `<desc id="chart-desc">${esc(chartDescription(config))}</desc>`,
     `<defs>${stoneDefs()}<linearGradient id="wall-shade" x1="0" y1="1" x2="0" y2="0"><stop class="wall-stop-low" offset="0"/><stop class="wall-stop-high" offset="1"/></linearGradient></defs>`,
     `<g aria-hidden="true">`,
     bandsSvg(config, cols, narrow),
     `<text class="axis-title" x="8" y="18">${esc(CHART.axisTitle)}</text>`,
-    yearAxisSvg(cols, narrow),
+    yearAxisSvg(cols),
     fccLineSvg(config, cols, narrow),
     `</g>`,
-    bones.map((r) => boneSvg(r, config, cols, narrow)).join(''),
-    stones.map((r) => stoneSvg(r, config, cols, narrow, selected)).join(''),
+    edgeLabelsSvg(model),
+    model.bones.map((r) => boneSvg(r, config, model.pos.get(r.norad)!)).join(''),
+    model.stones.map((r) => stoneSvg(r, config, model.pos.get(r.norad)!, selected, stop)).join(''),
     `</svg>`,
   ];
   return parts.join('');
@@ -265,7 +340,8 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     `<p class="status" id="chart-status" role="status"></p>` +
     (hasStones
       ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>` +
-        `<div class="chart-wrap" id="chart-host"></div>` +
+        (narrow ? `<p class="chart-note">${esc(CHART.scrollNote)} <a id="scroll-table" href="#/table">${esc(CHART.scrollLink)}</a>.</p>` : '') +
+        `<div class="chart-wrap${narrow ? ' chart-wrap--scroll' : ''}" id="chart-host"${narrow ? ` role="region" aria-label="${esc(CHART.scrollRegion)}"` : ''}></div>` +
         `<section class="card" id="stone-card" aria-live="polite" aria-label="Selected stone"></section>`
       : `<p class="empty">${esc(CHART.empty)}</p>`) +
     legendHtml(config);
@@ -274,6 +350,10 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   const host = root.querySelector<HTMLElement>('#chart-host');
   const card = root.querySelector<HTMLElement>('#stone-card');
   const skip = root.querySelector<HTMLAnchorElement>('#skip-table');
+  const scrollLink = root.querySelector<HTMLAnchorElement>('#scroll-table');
+  // The one stone in the Tab order (roving tabindex). It follows focus, and survives a redraw.
+  let tabStop: number | null = null;
+  let nav: NavItem[] = [];
   const draw = (): void => {
     const shown = applyFilters(reg.records, state.filters);
     const drawn = drawnInChurchyard(shown);
@@ -284,9 +364,15 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     }
     status.textContent =
       drawn.length === 0 && hasFilters(state.filters) ? FILTERS.none : `${FILTERS.count(shown.length, reg.records.length)} ${FILTERS.drawn(drawn.length)}`;
-    if (host !== null) host.innerHTML = chartSvg(reg, narrow, selected, drawn);
+    if (host !== null) {
+      host.innerHTML = chartSvg(reg, narrow, selected, drawn, tabStop ?? selected);
+      nav = chartModel(reg, narrow, shown).nav;
+      const stop = host.querySelector<HTMLElement>('a.stone-link[tabindex="0"]');
+      tabStop = stop === null ? null : Number(stop.dataset['norad']);
+    }
     if (card !== null) card.innerHTML = cardHtml(selected === null ? undefined : byId.get(selected), config);
     if (skip !== null) skip.href = hashFor('table', state);
+    if (scrollLink !== null) scrollLink.href = hashFor('table', state);
   };
   draw();
   const unwire = wireFilters(
@@ -315,9 +401,41 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     }
     if (target.closest('[data-clear]') !== null) select(null);
   };
+  const stoneOf = (target: EventTarget | null): SVGAElement | null => (target instanceof Element ? target.closest<SVGAElement>('a.stone-link') : null);
+  /** Moves the Tab stop to one stone. */
+  const setTabStop = (norad: number): void => {
+    if (host === null || tabStop === norad) return;
+    host.querySelector('a.stone-link[tabindex="0"]')?.setAttribute('tabindex', '-1');
+    host.querySelector(`a.stone-link[data-norad="${norad}"]`)?.setAttribute('tabindex', '0');
+    tabStop = norad;
+  };
+  const onFocusIn = (event: Event): void => {
+    const link = stoneOf(event.target);
+    if (link !== null) setTabStop(Number(link.dataset['norad']));
+  };
+  const onKeydown = (event: KeyboardEvent): void => {
+    const link = stoneOf(event.target);
+    if (link === null || event.altKey || event.ctrlKey || event.metaKey) return;
+    const norad = Number(link.dataset['norad']);
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      select(norad);
+      return;
+    }
+    if (!(NAV_KEYS as readonly string[]).includes(event.key)) return;
+    event.preventDefault();
+    const next = nextInNav(nav, norad, event.key);
+    if (next === null || next === norad) return;
+    setTabStop(next);
+    host?.querySelector<SVGAElement>(`a.stone-link[data-norad="${next}"]`)?.focus();
+  };
   root.addEventListener('click', onClick);
+  root.addEventListener('focusin', onFocusIn);
+  root.addEventListener('keydown', onKeydown);
   return () => {
     unwire();
     root.removeEventListener('click', onClick);
+    root.removeEventListener('focusin', onFocusIn);
+    root.removeEventListener('keydown', onKeydown);
   };
 }
