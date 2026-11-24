@@ -100,7 +100,7 @@ The data is a committed snapshot in `data/raw/<date>/`, with a `manifest.json`. 
 
 - Thomas González Roberts (Georgia Tech) published the audit method this site makes explorable: "Assessing Compliance with Post-mission Disposal Guidelines in Geosynchronous Orbit" (IAA Space Traffic Management Conference, March 2025). Sexton's formulas come from the IADC and FCC texts in [docs/methodology.md](docs/methodology.md). Any error is Sexton's own.
 - Orbit and catalogue data: [CelesTrak](https://celestrak.org) (SATCAT and GP data).
-- Display type: IM FELL English by Igino Marini, under the SIL Open Font License 1.1. See [docs/credits.md](docs/credits.md).
+- Type: IM FELL English (Igino Marini) for display, IBM Plex Sans and IBM Plex Mono (IBM Corp.) for body and readings, all under the SIL Open Font License 1.1. See [docs/credits.md](docs/credits.md).
 
 
 ## Use it from an AI assistant

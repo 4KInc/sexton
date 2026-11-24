@@ -41,7 +41,8 @@
   overflow-x: auto;
   padding: var(--space-3);
   background: var(--road);
-  border: 1px solid var(--panel-edge);
+  border: 0;
+  border-top: 1px solid var(--rule);
   border-radius: var(--radius);
   font-size: 0.95rem;
 }
@@ -62,8 +63,9 @@
 }
 /* Contents. Closed on a phone, open and sticky beside the text on a wide screen. */
 .toc {
-  background: var(--panel);
-  border: 1px solid var(--panel-edge);
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 .toc > summary {
@@ -109,8 +111,9 @@
   align-content: start;
   gap: var(--space-1);
   padding: var(--space-3);
-  background: var(--panel);
-  border: 1px solid var(--panel-edge);
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--rule);
   border-left: 3px solid var(--moss);
   border-radius: var(--radius);
 }

@@ -579,11 +579,17 @@ describe('no hard-coded colours outside tokens.css', () => {
       expect(COLOUR.exec(text)?.[0]).toBeUndefined();
     });
   }
-  it('tokens.css defines the seven palette colours and the print three', () => {
+  it('tokens.css defines the palette in OKLCH: the ground and three surfaces, the zone, three text levels, moss, lantern, and the print three', () => {
     const css = readFileSync(join(ROOT, 'src/ui/styles/tokens.css'), 'utf8');
-    for (const name of ['ground', 'road', 'stone', 'bone', 'bone-muted', 'moss', 'lantern', 'ink', 'ink-muted', 'paper']) {
-      expect(css).toMatch(new RegExp(`--${name}: #[0-9a-f]{6};`));
+    for (const name of ['ground', 'surface-1', 'surface-2', 'surface-3', 'road', 'bone', 'bone-soft', 'bone-muted', 'moss', 'lantern', 'ink', 'ink-muted', 'paper']) {
+      expect(css).toMatch(new RegExp(`--${name}: oklch\\([\\d.]+ [\\d.]+ [\\d.]+\\);`));
     }
+    // The surfaces get lighter as they rise.
+    const l = (n: string): number => Number(new RegExp(`--${n}: oklch\\(([\\d.]+)`).exec(css)![1]);
+    expect(l('ground')).toBeLessThan(l('surface-1'));
+    expect(l('surface-1')).toBeLessThan(l('surface-2'));
+    expect(l('surface-2')).toBeLessThan(l('surface-3'));
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
   it('lantern amber is used only for focus and selection', () => {
     const uses: string[] = [];

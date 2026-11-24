@@ -78,11 +78,11 @@ describe('the table', () => {
     }
     expect(rowHtml(retired, config)).toContain('<th scope="row" role="rowheader"><a href="#/sat/');
   });
-  it('keeps its header in view, stripes its rows, and lifts the row under the pointer', () => {
+  it('keeps its header in view, rules its rows with hairlines (no stripes), and lifts the row under the pointer', () => {
     const t = css('table.css');
     expect(t).toMatch(/\.register-table thead th\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0/);
     expect(t).toMatch(/#table-host \.table-wrap\s*\{[^}]*max-height:[^}]*overflow-y:\s*auto/);
-    expect(t).toMatch(/tbody tr:nth-child\(even\)\s*\{[^}]*background:\s*var\(--panel\)/);
+    expect(t).not.toMatch(/nth-child\(even\)\s*\{[^}]*background:\s*var\(--(panel|surface)/);
     expect(t).toMatch(/tbody tr:hover\s*\{[^}]*background:\s*var\(--stone\)/);
   });
   it('has a toolbar: search first, the other filters behind a button on a phone, and the same form fields', () => {

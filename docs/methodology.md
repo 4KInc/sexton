@@ -220,13 +220,13 @@ Sexton's shares are checked for plausibility against a published range. The chec
 - Some SATCAT "not operational" payloads may never have reached a disposal manoeuvre. Sexton cannot tell them from payloads that were disposed of low.
 ## Font
 
-The display serif is IM FELL English, designed by Igino Marini (copyright 2010), under the SIL Open Font License 1.1. It is self-hosted, and the site loads no font from another server. The licence text is in the repository at `src/ui/fonts/OFL.txt`, and `docs/credits.md` records where the files came from.
+Three fonts are used, all under the SIL Open Font License 1.1 and all self-hosted, so the site loads no font from another server. The display serif is IM FELL English, designed by Igino Marini (copyright 2010). The body text is IBM Plex Sans and every reading (numbers, units, dates, NORAD ids) is IBM Plex Mono, both by IBM Corp. (copyright 2017). The licence text is in the repository at `src/ui/fonts/OFL.txt`, and `docs/credits.md` records where the files came from.
 
 ## Credits
 
 - **Thomas González Roberts** (Georgia Tech) for the idea of auditing GEO disposal against the IADC guidelines. He published that work as "Assessing Compliance with Post-mission Disposal Guidelines in Geosynchronous Orbit" (IAA Space Traffic Management Conference, March 2025). Sexton is a public, per-satellite view of that kind of audit. The paper itself could not be opened, so Sexton's formulas come from the IADC and FCC texts listed under Sources, not from the paper. Any error in Sexton is Sexton's own, not Roberts'.
 - **CelesTrak** (T.S. Kelso) for SATCAT, the GP data and the GPZ table.
-- **IM FELL English**, Igino Marini, under the SIL Open Font License 1.1.
+- **IM FELL English**, Igino Marini, and **IBM Plex Sans** and **IBM Plex Mono**, IBM Corp., all under the SIL Open Font License 1.1.
 
 ## Sources
 
@@ -248,6 +248,7 @@ A link is listed only if it was opened on 2026-11-23. A link that could not be o
 | CelesTrak | https://celestrak.org/ | Opened. |
 | SIL Open Font License 1.1 | https://openfontlicense.org/open-font-license-official-text/ | Opened. |
 | IM FELL English licence file | https://raw.githubusercontent.com/google/fonts/main/ofl/imfellenglish/OFL.txt | Opened. Copyright 2010 Igino Marini. |
+| IBM Plex licence file | https://raw.githubusercontent.com/IBM/plex/master/LICENSE.txt | Opened 2026-11-24. Copyright 2017 IBM Corp., Reserved Font Name "Plex", SIL Open Font License 1.1. |
 | WGS-72 constants (Earth radius and μ) | LINK NEEDED | No source has been opened. |
 
 The ESA range is shown, because it was found in the report itself (above). The Roberts figure is not on this page. The census page shows a figure only after it has been checked against its source, and until then it says the comparison is pending a checked source.

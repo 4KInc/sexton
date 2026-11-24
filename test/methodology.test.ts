@@ -81,7 +81,7 @@ describe('methodology.md covers the spike findings (docs/spike.md section f)', (
 });
 
 describe('methodology.md sources', () => {
-  // Every link below was opened on 2026-11-23. A new link must be opened by a person, then added here.
+  // Every link below was opened on 2026-11-23 or later (the dates are in docs/methodology.md). A new link must be opened by a person, then added here.
   const OPENED = new Set([
     'https://docs.fcc.gov/public/attachments/DA-23-888A1.txt',
     'https://www.law.cornell.edu/cfr/text/47/25.283',
@@ -96,6 +96,8 @@ describe('methodology.md sources', () => {
     'https://celestrak.org/',
     'https://openfontlicense.org/open-font-license-official-text/',
     'https://raw.githubusercontent.com/google/fonts/main/ofl/imfellenglish/OFL.txt',
+    // Opened 2026-11-24: the IBM Plex licence file.
+    'https://raw.githubusercontent.com/IBM/plex/master/LICENSE.txt',
   ]);
   const links = [...doc.matchAll(/https?:\/\/[^\s|)]+/g)].map((m) => m[0]);
   it('cites only links that were opened', () => {

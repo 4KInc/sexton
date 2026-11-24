@@ -26,9 +26,10 @@
   align-content: start;
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4) var(--space-3);
-  background: linear-gradient(180deg, var(--stone), var(--panel) 85%);
-  border: 1px solid var(--panel-edge);
-  border-radius: 2.6rem 2.6rem var(--radius) var(--radius);
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: var(--radius);
 }
 .stat-figure {
   display: flex;
@@ -49,8 +50,9 @@
 .census-section {
   margin: var(--space-4) 0;
   padding: var(--space-3);
-  background: var(--panel);
-  border: 1px solid var(--panel-edge);
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 .census-cols {
@@ -129,7 +131,7 @@
   justify-content: center;
   background: var(--moss-deep);
   border: 1px solid var(--moss);
-  border-radius: 0.3rem;
+  border-radius: var(--radius);
   font-size: 0.85rem;
   font-weight: 600;
   text-wrap: nowrap;
@@ -140,7 +142,7 @@
   height: 1.1rem;
   background: var(--stone);
   border: 1px solid var(--bone);
-  border-radius: 0.3rem;
+  border-radius: var(--radius);
 }
 .vplot-point {
   position: absolute;
@@ -185,8 +187,9 @@
 }
 .fold {
   margin: var(--space-4) 0 0;
-  background: var(--panel);
-  border: 1px solid var(--panel-edge);
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 .fold > summary {
@@ -205,7 +208,7 @@
   }
   .stat {
     padding: var(--space-2) var(--space-3);
-    border-radius: 1.8rem 1.8rem var(--radius) var(--radius);
+    border-radius: var(--radius);
   }
   .stat-figure {
     font-size: 2.2rem;

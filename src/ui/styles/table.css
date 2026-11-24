@@ -56,7 +56,7 @@
   min-height: 2.5rem;
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--bone-muted);
-  border-radius: 2px;
+  border-radius: var(--radius);
   background: var(--stone);
   color: var(--bone);
   font: inherit;
@@ -130,7 +130,7 @@
 }
 /* Rows: a faint stripe, and a lifted row under the pointer or the keyboard. The name stays in view when the table scrolls sideways. */
 #table-host .register-table tbody tr:nth-child(even) {
-  background: var(--panel);
+  background: none;
 }
 #table-host .register-table tbody tr:hover {
   background: var(--stone);
@@ -142,7 +142,7 @@
   background: var(--ground);
 }
 #table-host .register-table tbody tr:nth-child(even) th {
-  background: var(--panel);
+  background: none;
 }
 #table-host .register-table tbody tr:hover th {
   background: var(--stone);
@@ -213,7 +213,7 @@ th[aria-sort='descending'] .sort::after {
   max-width: none;
   margin: 0;
   padding: var(--space-3);
-  background: var(--panel);
+  background: none;
   border-color: var(--panel-edge);
   border-radius: var(--radius);
 }
@@ -381,10 +381,10 @@ th[aria-sort='descending'] .sort::after {
   }
   #table-host .register-table tbody tr {
     display: grid;
-    grid-template-columns: 5.6rem 5.6rem minmax(0, 1fr) auto;
-    column-gap: var(--space-2);
+    grid-template-columns: minmax(0, 5.4rem) minmax(0, 5.4rem) minmax(0, 1fr) auto;
+    column-gap: var(--space-1);
     row-gap: 0.1rem;
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-1) 0;
     border-bottom: 1px solid var(--panel-edge);
     font-size: 0.85rem;
   }

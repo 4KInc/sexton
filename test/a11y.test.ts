@@ -26,11 +26,26 @@ const config = real.config;
 
 type Rgb = [number, number, number];
 const tokensCss = read('src/ui/styles/tokens.css');
+/** OKLCH to sRGB (Ottosson's matrices), clipped to the gamut. The tokens are written in OKLCH. */
+function oklchToRgb(L: number, C: number, hDeg: number): Rgb {
+  const h = (hDeg * Math.PI) / 180;
+  const a = C * Math.cos(h);
+  const b = C * Math.sin(h);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const lin = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s];
+  const gamma = (x: number): number => {
+    const c = Math.min(1, Math.max(0, x));
+    return c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+  };
+  return lin.map((x) => Math.round(gamma(x) * 255)) as Rgb;
+}
+/** The colour of a token that is an opaque `oklch(L C H)`. A token with alpha is a hairline or a glow, never a text or graphic colour. */
 function token(name: string): Rgb {
-  const m = new RegExp(`--${name}:\\s*#([0-9a-fA-F]{6})\\s*;`).exec(tokensCss);
-  if (m === null) throw new Error(`tokens.css has no --${name} hex colour`);
-  const hex = m[1]!;
-  return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)) as Rgb;
+  const m = new RegExp(`--${name}:\\s*oklch\\(([\\d.]+) ([\\d.]+) ([\\d.]+)\\)\\s*;`).exec(tokensCss);
+  if (m === null) throw new Error(`tokens.css has no opaque --${name} oklch colour`);
+  return oklchToRgb(Number(m[1]), Number(m[2]), Number(m[3]));
 }
 const channel = (v: number): number => {
   const s = v / 255;
@@ -43,29 +58,23 @@ function ratio(a: Rgb, b: Rgb): number {
 }
 /** `top` drawn at `alpha` over `under`, as the browser composites it. */
 const over = (top: Rgb, under: Rgb, alpha: number): Rgb => top.map((v, i) => v * alpha + under[i]! * (1 - alpha)) as Rgb;
-
 const ground = token('ground');
 const road = token('road');
 const stone = token('stone');
-/** Every surface text or a graphic can sit on, on screen. The two compositions are the band fills in churchyard.css. */
+/** Every surface text or a graphic can sit on, on screen. The compositions are the fills in churchyard.css. */
 const SURFACES: [string, Rgb][] = [
   ['ground', ground],
-  ['road', road],
-  ['stone', stone],
-  ['shallow band (stone at 0.8 over ground)', over(stone, ground, 0.8)],
-  ['consecrated band (bone at 0.07 over ground)', over(token('bone'), ground, 0.07)],
-  ['wall gradient, top (stone at 0.1 over ground)', over(stone, ground, 0.1)],
-  // Atmosphere around the chart (redesign): the sky behind the page, the panels, the active nav segment.
-  ['sky-top', token('sky-top')],
-  ['sky-glow (the brightest part of the page background)', token('sky-glow')],
-  ['panel', token('panel')],
-  ['moss-deep (the active nav segment)', token('moss-deep')],
+  ['road (the protected zone)', road],
+  ['surface-1', token('surface-1')],
+  ['surface-2', token('surface-2')],
+  ['surface-3 (the lightest)', token('surface-3')],
+  ['consecrated band (bone at 0.03 over surface-1, the top of the sky)', over(token('bone'), token('surface-1'), 0.03)],
+  ['moss-deep (a filled button)', token('moss-deep')],
 ];
 /** Text colours (WCAG AA, 4.5:1). `moss` is only used as a fill, but is held to the text level too. */
-const TEXT = ['bone', 'bone-muted', 'moss'];
+const TEXT = ['bone', 'bone-soft', 'bone-muted', 'moss'];
 /** Graphics and focus (WCAG 1.4.11, 3:1). */
 const GRAPHIC = ['lantern', 'bone-muted', 'bone'];
-
 describe('colour contrast from tokens.css', () => {
   it('prints the table', () => {
     // Visible with `vitest run --reporter verbose`; the assertions below are the gate.
@@ -88,6 +97,11 @@ describe('colour contrast from tokens.css', () => {
       });
     }
   }
+  for (const [name, bg] of SURFACES) {
+    it(`primary text: bone on ${name} is at least 7:1`, () => {
+      expect(ratio(token('bone'), bg)).toBeGreaterThanOrEqual(7);
+    });
+  }
   it('print theme: ink and ink-muted on paper are at least 4.5:1', () => {
     expect(ratio(token('ink'), token('paper'))).toBeGreaterThanOrEqual(4.5);
     expect(ratio(token('ink-muted'), token('paper'))).toBeGreaterThanOrEqual(4.5);
@@ -95,9 +109,9 @@ describe('colour contrast from tokens.css', () => {
   it('the contrast function matches known values', () => {
     expect(ratio([0, 0, 0], [255, 255, 255])).toBeCloseTo(21, 5);
     expect(ratio([255, 255, 255], [255, 255, 255])).toBeCloseTo(1, 5);
-    // The design's own table (5.3): bone on ground 14.0, bone-muted on stone 5.6.
-    expect(ratio(token('bone'), ground)).toBeCloseTo(14.04, 1);
-    expect(ratio(token('bone-muted'), stone)).toBeCloseTo(5.6, 1);
+    // The redesign's levels (OKLCH tokens): primary text is 7:1 or better on every surface, soft and muted text 4.5:1 or better.
+    expect(ratio(token('bone'), ground)).toBeGreaterThan(15);
+    expect(ratio(token('bone-muted'), stone)).toBeGreaterThan(5.5);
   });
 });
 
@@ -150,12 +164,12 @@ describe('stylesheets', () => {
       for (const m of stripComments(css(f)).matchAll(/var\((--[\w-]+)/g)) expect(defined.has(m[1]!), `${f}: ${m[1]}`).toBe(true);
     }
   });
-  it('text on screen uses only bone or bone-muted, and in print only ink or ink-muted', () => {
+  it('text on screen uses only the three bone levels, and in print only ink or ink-muted', () => {
     for (const f of cssFiles) {
       const text = stripComments(css(f));
       const screen = f === 'print.css' ? '' : withoutMedia(text, /print/);
       const print = f === 'print.css' ? text : [...text.matchAll(/@media print\s*\{([\s\S]*)\}/g)].map((m) => m[1]).join('');
-      for (const m of screen.matchAll(/(?<![-\w])color:\s*var\(--([\w-]+)\)/g)) expect(['bone', 'bone-muted'], `${f} color: ${m[1]}`).toContain(m[1]);
+      for (const m of screen.matchAll(/(?<![-\w])color:\s*var\(--([\w-]+)\)/g)) expect(['bone', 'bone-soft', 'bone-muted'], `${f} color: ${m[1]}`).toContain(m[1]);
       for (const m of print.matchAll(/(?<![-\w])color:\s*var\(--([\w-]+)\)/g)) expect(['ink', 'ink-muted', 'bone', 'bone-muted'].includes(m[1]!), `${f} print color: ${m[1]}`).toBe(true);
     }
   });
@@ -461,18 +475,20 @@ describe('verdicts are never shown by colour alone', () => {
   it('the sorted column and the selected stone are marked by more than colour', () => {
     expect(stripComments(css('table.css'))).toMatch(/aria-sort='ascending'\] \.sort::after\s*\{\s*content/);
     expect(stripComments(css('churchyard.css'))).toMatch(/\.stone-link\.selected \.stone-body\s*\{[^}]*stroke-width/);
-    // The current nav segment is filled, has its own border and is bolder, so it is not marked by colour alone.
-    expect(stripComments(css('base.css'))).toMatch(/\[aria-current='page'\]\s*\{[^}]*border-color[^}]*font-weight/);
+    // The current nav link has a hairline underline, so it is not marked by colour alone.
+    expect(stripComments(css('base.css'))).toMatch(/\[aria-current='page'\]\s*\{[^}]*border-bottom:\s*1px solid var\(--bone\)/);
   });
 });
 
 describe('polish step 3: faint stones and the tooltip', () => {
-  const alpha = Number(/\.stone-pos--early\s*\{\s*opacity:\s*([0-9.]+)/.exec(read('src/ui/styles/churchyard.css'))?.[1]);
-  it('a faint stone keeps 3:1 against the ground for its outline and its moss', () => {
+  const alpha = Number(/\.stone-pos--quiet\s*\{\s*opacity:\s*([0-9.]+)/.exec(read('src/ui/styles/churchyard.css'))?.[1]);
+  it('a quiet stone (every stone outside the story, in moss) keeps 3:1 against the ground for its outline and its moss', () => {
     expect(alpha).toBeGreaterThan(0);
     expect(alpha).toBeLessThan(1);
-    for (const name of ['bone', 'moss']) {
-      expect(ratio(over(token(name), token('ground'), alpha), token('ground')), `${name} at ${alpha}`).toBeGreaterThanOrEqual(3);
+    expect(alpha).toBeGreaterThanOrEqual(0.35);
+    expect(alpha).toBeLessThanOrEqual(0.45);
+    for (const bg of ['ground', 'road']) {
+      expect(ratio(over(token('moss'), token(bg), alpha), token(bg)), `moss at ${alpha} on ${bg}`).toBeGreaterThanOrEqual(3);
     }
   });
   it('the tooltip text has 4.5:1 on the tooltip background', () => {

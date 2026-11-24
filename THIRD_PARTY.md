@@ -29,14 +29,13 @@ Sexton does not republish a licence for CelesTrak data. If you reuse the files i
 | ESA's Annual Space Environment Report, Issues 9.1 and 10 | https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I9R1_20251021.pdf and `..._I10R1_20260908.pdf` | One quoted sentence with its page, with the link. |
 | Roberts (2025), Georgia Tech | https://iac.gatech.edu/publications/pub/8089 | Credited for the idea. The paper was not opened. |
 
-## Font
-
+## Fonts
 | Font | Licence | Files |
 | --- | --- | --- |
-| IM FELL English, Igino Marini (copyright 2010) | SIL Open Font License 1.1, https://openfontlicense.org/open-font-license-official-text/ | `src/ui/fonts/im-fell-english-latin.woff2`, licence text in `src/ui/fonts/OFL.txt`. Self-hosted. Origin and hashes: `docs/credits.md`. |
-
-The body text uses the system sans-serif font stack. No font is loaded from another server.
-
+| IM FELL English, Igino Marini (copyright 2010). Display: headings and headstone names | SIL Open Font License 1.1, https://openfontlicense.org/open-font-license-official-text/ | `src/ui/fonts/im-fell-english-latin.woff2`, licence text in `src/ui/fonts/OFL.txt`. |
+| IBM Plex Sans, IBM Corp. (copyright 2017). Body text. Weights 400 and 600 | SIL Open Font License 1.1 | `src/ui/fonts/ibm-plex-sans-latin-400.woff2`, `src/ui/fonts/ibm-plex-sans-latin-600.woff2`, licence text in `src/ui/fonts/OFL-IBM-Plex.txt`. |
+| IBM Plex Mono, IBM Corp. (copyright 2017). Readings and labels: every number, unit, date and NORAD id. Weights 400 and 500 | SIL Open Font License 1.1 | `src/ui/fonts/ibm-plex-mono-latin-400.woff2`, `src/ui/fonts/ibm-plex-mono-latin-500.woff2`, the same licence text. |
+All five are self-hosted latin subsets, loaded with `font-display: swap`. The woff2 files total 136 KB. Origin and hashes: `docs/credits.md`. No font is loaded from another server.
 ## Skill
 | Skill | Source | Licence | Files |
 | --- | --- | --- | --- |

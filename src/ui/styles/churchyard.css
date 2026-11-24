@@ -1,15 +1,283 @@
-/* The churchyard view. Colours come from tokens.css. */
+/* The churchyard view. Colours come from tokens.css.
+   Ledger: hairline rules, serif headings, no boxes. Instrument: engraved scales and mono readings. */
 
-.terms {
-  padding-left: 1.2rem;
+/* The hero: a kicker, one line of pitch, three readings, one line of fine print. */
+.hero {
+  margin: var(--space-3) 0 var(--space-3);
 }
-.count {
+.hero-pitch {
+  margin: var(--space-1) 0 var(--space-2);
+  max-width: none;
+  color: var(--bone-soft);
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  line-height: 1.3;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+.tile {
+  border-top: 1px solid var(--rule);
+}
+.tile--zone {
+  grid-column: 1;
+  grid-row: 1;
+}
+.tile--post-rule {
+  grid-column: 2;
+  grid-row: 1;
+}
+.tile--validation {
+  grid-column: 3;
+  grid-row: 1;
+}
+.tile-link {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  height: 100%;
+  padding: var(--space-1) 0 var(--space-2);
+  text-decoration: none;
+}
+.tile-link:hover .tile-label {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.tile-figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-28);
+  font-weight: 500;
+  line-height: 1.1;
+  text-wrap: nowrap;
+}
+.tile--zone .tile-figure {
+  font-size: var(--fs-72);
+  line-height: 1;
+}
+.tile-of {
+  color: var(--bone-soft);
+  font-size: var(--fs-16);
+  font-weight: 400;
+}
+.tile--zone .tile-of {
+  font-size: var(--fs-28);
+}
+.tile-label {
+  font-size: var(--fs-14);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.tile-sub {
+  color: var(--bone-muted);
+  font-size: var(--fs-12);
+  line-height: 1.35;
+}
+/* One line of fine print. "Limits" opens the full text. */
+.hero-fine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px var(--space-2);
+  margin: var(--space-1) 0 0;
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--rule);
+  color: var(--bone-muted);
+  font-size: var(--fs-12);
+  line-height: 1.5;
+}
+.fine-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+.fine-list li + li {
+  margin-left: var(--space-1);
+  padding-left: var(--space-1);
+  border-left: 1px solid var(--rule-strong);
+}
+.limits > summary {
+  display: inline;
+  cursor: pointer;
   color: var(--bone);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.limits[open] {
+  flex-basis: 100%;
+}
+.limits-body {
+  max-width: 80ch;
+  padding: var(--space-1) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+}
+.limits-body p {
+  margin: 0 0 var(--space-1);
 }
 
+/* The stage: the toolbar, the tour, the caption and legend, then the chart. Sections are set apart by hairlines. */
+.stage {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--rule);
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-1) 0;
+}
+.toolbar .filters-details {
+  flex: 0 0 auto;
+  margin: 0;
+  max-width: none;
+}
+.toolbar .filters-details[open] {
+  flex-basis: 100%;
+}
+.toolbar .filters-details > summary {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.toolbar .filters {
+  max-width: none;
+  background: var(--surface-1);
+}
+.toolbar .status {
+  flex: 1 1 8rem;
+  min-width: 0;
+  margin: 0;
+  max-width: none;
+  overflow: hidden;
+  color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  text-overflow: ellipsis;
+  text-wrap: nowrap;
+}
+.toolbar .skip-link--inline {
+  margin: 0;
+}
+.toolbar-guide {
+  margin-left: auto;
+}
+.stage-head {
+  display: block;
+  padding: 0 0 var(--space-1);
+}
+.stage-lead {
+  min-width: 0;
+}
+/* While the tour is on, its bar stands where the caption stands. */
+.stage-lead:has(.tour:not(.tour--free)) .stage-caption {
+  display: none;
+}
+.stage-caption {
+  margin: 0;
+  max-width: 110ch;
+  font-size: var(--fs-16);
+  line-height: 1.4;
+}
+.stage-terms {
+  margin: 4px 0 0;
+  max-width: 120ch;
+  color: var(--bone-muted);
+  font-size: var(--fs-12);
+  line-height: 1.4;
+}
+.legend-strip {
+  flex: 0 0 auto;
+}
+.legend-strip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+.legend-strip-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-14);
+}
+.stage .chart-note {
+  margin: 0 0 var(--space-1);
+  font-size: var(--fs-14);
+}
+
+/* The guided tour: one bar over the chart. Count, the step, and its three buttons. */
+.tour {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-1);
+  border-left: 2px solid var(--bone);
+}
+.tour--free {
+  display: block;
+  padding: 0;
+  background: none;
+  border-left: 0;
+}
+.tour-count {
+  margin: 0;
+  color: var(--bone-soft);
+  font-size: var(--fs-14);
+  font-weight: 500;
+}
+.tour-line {
+  margin: 0;
+  max-width: 80ch;
+  font-size: var(--fs-16);
+  line-height: 1.35;
+}
+.tour-sub {
+  margin: 2px 0 0;
+  max-width: 90ch;
+  color: var(--bone-muted);
+  font-size: var(--fs-12);
+  line-height: 1.4;
+}
+.tour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* The chart. */
+.plot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
 .chart-wrap {
   margin: 0;
-  border-top: 1px solid var(--panel-edge);
+  border-top: 1px solid var(--rule);
   background: var(--ground);
 }
 .chart {
@@ -18,13 +286,12 @@
   height: auto;
 }
 
-/* The ground */
-/* Atmosphere inside the plot, behind the bands. It marks no value. */
+/* The ground, drawn as an engraving: a quiet sky above, the threshold band hatched, the protected zone cut darker. */
 .sky {
   fill: url(#sky-fade);
 }
 .sky-stop-top {
-  stop-color: var(--sky-top);
+  stop-color: var(--surface-1);
 }
 .sky-stop-bottom {
   stop-color: var(--ground);
@@ -33,16 +300,11 @@
   fill: url(#moon-fade);
 }
 .moon-stop-in {
-  stop-color: var(--sky-glow);
-  stop-opacity: 0.95;
+  stop-color: var(--hero-light);
 }
 .moon-stop-out {
-  stop-color: var(--sky-glow);
+  stop-color: var(--ground);
   stop-opacity: 0;
-}
-.road-edge {
-  stroke: var(--bone);
-  stroke-width: 1.2;
 }
 .band--below {
   fill: var(--ground);
@@ -51,62 +313,117 @@
   fill: var(--road);
 }
 .band--shallow {
-  fill: var(--stone);
-  fill-opacity: 0.8;
+  fill: var(--surface-1);
 }
 .band--wall {
-  fill: url(#wall-shade);
+  fill: url(#wall-hatch);
+}
+.hatch-bg {
+  fill: var(--surface-1);
+}
+.hatch-line {
+  stroke: var(--bone-muted);
+  stroke-width: 0.8;
+  stroke-opacity: 0.55;
 }
 .band--consecrated {
   fill: var(--bone);
-  fill-opacity: 0.07;
+  fill-opacity: 0.03;
 }
-.wall-stop-low {
-  stop-color: var(--stone);
-  stop-opacity: 1;
-}
-.wall-stop-high {
-  stop-color: var(--stone);
-  stop-opacity: 0.1;
+.road-edge {
+  stroke: var(--bone-soft);
+  stroke-width: 1;
 }
 .edge {
-  stroke: var(--bone-muted);
-  stroke-width: 0.8;
-  stroke-dasharray: 2 4;
+  stroke: var(--rule-strong);
+  stroke-width: 0.6;
 }
 .edge--geo {
-  stroke-dasharray: 6 3;
+  stroke-dasharray: 5 4;
+  stroke: var(--bone-muted);
+}
+/* Instrument scales: a rule, a mark at each labelled tick, a minor mark between. Labels are mono. */
+.scale-line {
+  stroke: var(--bone-muted);
+  stroke-width: 0.8;
+}
+.scale-mark {
+  stroke: var(--bone-soft);
+  stroke-width: 1;
+}
+.scale-minor {
+  stroke: var(--bone-muted);
+  stroke-width: 0.8;
+}
+.band-name,
+.tick,
+.axis-title,
+.zone-label,
+.fcc-label,
+.break-label,
+.edge-label {
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
 }
 .band-name,
 .tick,
 .axis-title {
   fill: var(--bone-muted);
-  font: 12px var(--font-body);
+  font-size: 11px;
 }
 .band-name {
-  fill: var(--bone);
+  fill: var(--bone-soft);
+  text-transform: uppercase;
 }
 .axis-title {
-  font-style: italic;
+  text-transform: uppercase;
 }
 .tick--geo {
   fill: var(--bone);
 }
-
+.zone-label {
+  fill: var(--bone-soft);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
 .fcc-line {
   stroke: var(--bone);
-  stroke-width: 1.8;
-  stroke-dasharray: 7 4;
+  stroke-width: 1;
 }
 .fcc-label {
   fill: var(--bone);
-  font: 600 13px var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  stroke: var(--ground);
+  stroke-width: 3px;
+  paint-order: stroke;
+}
+.break-mark {
+  fill: none;
+  stroke: var(--bone-muted);
+  stroke-width: 1;
+}
+.break-label {
+  fill: var(--bone-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.tick--high {
+  font-style: normal;
+}
+.edge-label {
+  fill: var(--bone);
+  font-size: 11px;
   stroke: var(--ground);
   stroke-width: 3px;
   paint-order: stroke;
 }
 
-/* Stones */
+/* Stones. The story, launched on or after the rule date and in or near the zone, is drawn in bone with a ring.
+   Every other stone is drawn in moss, quietly. */
 .stone-link {
   cursor: pointer;
   outline: none;
@@ -115,10 +432,14 @@
   fill: transparent;
 }
 .stone-body {
-  fill: var(--stone);
+  fill: var(--surface-2);
   stroke: var(--bone);
   stroke-width: 1.2;
   stroke-linejoin: round;
+}
+.stone-pos--quiet .stone-body {
+  fill: var(--ground);
+  stroke: var(--moss);
 }
 .stone--unquiet .stone-body {
   fill: none;
@@ -144,6 +465,17 @@
   stroke: var(--bone);
   stroke-width: 1;
 }
+.stone-pos--quiet .ground-line,
+.stone-pos--quiet .mound,
+.stone-pos--quiet .crack {
+  stroke: var(--moss);
+}
+.stone-pos--quiet .carving {
+  fill: var(--moss);
+}
+.stone-pos--quiet {
+  opacity: 0.45;
+}
 .whisker line {
   stroke: var(--bone);
   stroke-width: 1.2;
@@ -152,9 +484,13 @@
 .whisker line:nth-child(n + 2) {
   stroke-dasharray: none;
 }
-
 .stone-link:hover .stone-body {
   stroke-width: 2;
+}
+.stone-link:hover .stone-pos--quiet,
+.stone-link:focus-visible .stone-pos--quiet,
+.stone-link.selected .stone-pos--quiet {
+  opacity: 1;
 }
 .stone-link:focus-visible .hit {
   stroke: var(--lantern);
@@ -163,257 +499,9 @@
 .stone-link.selected .stone-body {
   stroke: var(--lantern);
   stroke-width: 2.4;
+  filter: drop-shadow(0 0 7px var(--lantern-glow));
 }
-
-/* Sway. Without motion, or with reduced motion, the stone is drawn at its sway angle and stays put. */
-.sway {
-  transform-origin: 0 0;
-  transform: rotate(var(--sway-angle));
-}
-@media (prefers-reduced-motion: no-preference) {
-  .sway {
-    animation: sway 8s ease-in-out infinite;
-    animation-delay: var(--sway-delay);
-  }
-}
-@keyframes sway {
-  0%,
-  100% {
-    transform: rotate(calc(var(--sway-angle) * -1));
-  }
-  50% {
-    transform: rotate(var(--sway-angle));
-  }
-}
-
-/* Card: the selected stone. On a wide screen it floats over the corner of the chart that is farther from the stone. */
-.plot {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-.card {
-  order: 1;
-  margin: 0;
-  padding: var(--space-3);
-  border-top: 1px solid var(--panel-edge);
-  background: var(--panel);
-}
-.card:has(.card-name) {
-  order: -1;
-  border: 1px solid var(--bone-muted);
-  border-color: var(--lantern);
-  border-radius: var(--radius);
-  box-shadow: 0 0 2rem var(--lantern-glow);
-  margin: var(--space-3);
-}
-@media (min-width: 900px) {
-  .card:has(.card-name) {
-    position: absolute;
-    top: calc(var(--plot-top, 0%) + var(--space-2));
-    right: calc(var(--plot-right, 0%) + var(--space-2));
-    z-index: 2;
-    order: 0;
-    width: 21.5rem;
-    margin: 0;
-    max-height: calc(100% - var(--plot-top, 0%) - var(--plot-bottom, 0%) - 2 * var(--space-2));
-    overflow-y: auto;
-  }
-  /* On the left, the card starts at the plot's own left edge, so the axis labels stay readable. */
-  .card--left:has(.card-name) {
-    right: auto;
-    left: calc(var(--axis, 0%) + var(--space-2));
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .card:has(.card-name) {
-    animation: card-in 0.35s ease-out;
-  }
-}
-@keyframes card-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-/* An h2, so the page goes h1, h2 with no skipped level. */
-.card-name {
-  margin: 0 0 var(--space-2);
-  font-size: 1.35rem;
-}
-.card-id {
-  display: block;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  color: var(--bone-muted);
-}
-.card-data {
-  display: grid;
-  gap: var(--space-1);
-  margin: var(--space-3) 0 var(--space-2);
-}
-.card-data div {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0 var(--space-3);
-  padding-bottom: var(--space-1);
-  border-bottom: 1px solid var(--panel-edge);
-}
-.card-data dt {
-  color: var(--bone-muted);
-}
-.card-data dd {
-  margin: 0;
-}
-.card-notes {
-  padding-left: 1.1rem;
-  margin: var(--space-2) 0;
-  font-size: 0.85rem;
-  color: var(--bone-muted);
-}
-.card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: var(--space-3) 0 0;
-}
-.card-empty {
-  margin: 0;
-  max-width: none;
-  color: var(--bone-muted);
-  font-size: 0.9rem;
-}
-/* Verdict badge: the word large, its meaning under it, smaller. The stone shape is the same one the chart draws. */
-.badge {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  background: var(--stone);
-  border: 1px solid var(--bone-muted);
-  border-radius: var(--radius);
-}
-.badge .glyph {
-  margin-top: 0.2rem;
-}
-.badge-text {
-  display: grid;
-  gap: 0.15rem;
-  margin: 0;
-}
-.badge-word {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  line-height: 1.1;
-}
-.badge-meaning {
-  color: var(--bone-muted);
-  font-size: 0.85rem;
-  line-height: 1.35;
-}
-
-/* Legend */
-.legend-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 var(--space-2);
-  display: grid;
-  gap: var(--space-2);
-}
-.legend-list li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-.legend-list--glyphs li {
-  align-items: flex-start;
-}
-.glyph {
-  flex: none;
-  overflow: visible;
-}
-.swatch {
-  flex: none;
-  width: 1.5rem;
-  height: 1rem;
-  border: 1px solid var(--bone-muted);
-}
-.swatch--below {
-  background: var(--ground);
-}
-.swatch--road {
-  background: var(--road);
-}
-.swatch--shallow {
-  background: var(--stone);
-}
-.swatch--wall {
-  background: linear-gradient(to top, var(--stone), var(--ground));
-}
-.swatch--consecrated {
-  background: var(--bone);
-  opacity: 0.25;
-}
-.legend-notes li {
-  display: list-item;
-  margin-left: 1.2rem;
-  list-style: disc;
-}
-
-@media (max-width: 600px) {
-  h1 {
-    font-size: 1.6rem;
-  }
-  .card-data dt {
-    min-width: 0;
-  }
-}
-/* High ground and the edges */
-.break-mark {
-  fill: none;
-  stroke: var(--bone);
-  stroke-width: 1.2;
-}
-.break-label {
-  fill: var(--bone-muted);
-  font: italic 11px var(--font-body);
-}
-.tick--high {
-  font-style: italic;
-}
-.edge-label {
-  fill: var(--bone);
-  font: 12px var(--font-body);
-  stroke: var(--ground);
-  stroke-width: 3px;
-  paint-order: stroke;
-}
-/* Phone: the chart keeps its natural size and scrolls sideways inside its own box, never the page. */
-.chart-note {
-  margin: var(--space-2) 0 0;
-}
-.chart-wrap--scroll {
-  max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-}
-.chart--natural {
-  width: auto;
-  max-width: none;
-}
-/* Launch era (data: launched before the FCC rule date). Faint, never hidden. Full strength on hover, focus and selection. */
-.stone-pos--early {
-  opacity: 0.65;
-}
-.stone-link:hover .stone-pos--early,
-.stone-link:focus-visible .stone-pos--early,
-.stone-link.selected .stone-pos--early {
-  opacity: 1;
-}
-/* A ring: launched on or after the rule date, perigee below the IADC threshold. A shape, so colour is not the only cue. */
+/* A ring: launched on or after the rule date and the perigee is below the IADC disposal threshold under the stated assumptions. */
 .flag-ring {
   fill: var(--ground);
   fill-opacity: 0.75;
@@ -431,16 +519,270 @@
   stroke: var(--ground);
   stroke-width: 3px;
 }
+/* Sway. Without motion, or with reduced motion, the stone is drawn at its sway angle and stays put. */
+.sway {
+  transform-origin: 0 0;
+  transform: rotate(var(--sway-angle));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sway {
+    animation: sway 8s ease-in-out infinite;
+    animation-delay: var(--sway-delay);
+  }
+  .stone-pos {
+    transition: opacity 0.4s;
+  }
+}
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(calc(var(--sway-angle) * -1));
+  }
+  50% {
+    transform: rotate(var(--sway-angle));
+  }
+}
+/* The tour lights one thing at a time. The others step back. No step needs motion. */
+.plot[data-tour='1'] .band:not(.band--road),
+.plot[data-tour='1'] .scale-line {
+  opacity: 0.35;
+}
+.plot[data-tour='1'] .road-edge {
+  stroke: var(--bone);
+  stroke-width: 2.4;
+}
+.plot[data-tour='1'] .zone-label {
+  fill: var(--bone);
+}
+.plot[data-tour='2'] .fcc-line {
+  stroke-width: 3;
+}
+.plot[data-tour='2'] .fcc-label {
+  font-size: 13px;
+}
+.plot[data-tour='2'] .stone-pos--early {
+  opacity: 0.15;
+}
+.plot[data-tour='3'] .stone-pos--quiet {
+  opacity: 0.2;
+}
+.plot[data-tour='3'] .stone-pos--ring {
+  filter: drop-shadow(0 0 5px var(--story-glow));
+}
+.plot[data-tour='4'] .stone-pos--quiet {
+  opacity: 0.3;
+}
+/* An unmarked-bones marker. */
+.bone-mark {
+  fill: none;
+  stroke: var(--bone-muted);
+  stroke-width: 1.2;
+}
+
+/* The card: the selected stone, raised on a lighter surface with a soft shadow and no border. It floats inside the plot. */
+.card {
+  order: 1;
+  margin: 0;
+  padding: var(--space-2) 0 0;
+  border-top: 1px solid var(--rule);
+}
+.card:has(.card-name) {
+  order: -1;
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border-top: 0;
+  background: var(--surface-2);
+  box-shadow: 0 14px 36px var(--shadow), 0 0 44px var(--lantern-glow);
+}
+@media (min-width: 900px) {
+  .card:has(.card-name) {
+    position: absolute;
+    top: calc(var(--plot-top, 0%) + var(--space-1));
+    right: calc(var(--plot-right, 0%) + var(--space-1));
+    z-index: 2;
+    order: 0;
+    width: 22rem;
+    margin: 0;
+    max-height: calc(100% - var(--plot-top, 0%) - var(--plot-bottom, 0%) - 2 * var(--space-1));
+    overflow-y: auto;
+  }
+  /* On the left, the card starts at the plot's own left edge, so the axis labels stay readable. */
+  .card--left:has(.card-name) {
+    right: auto;
+    left: calc(var(--axis, 0%) + var(--space-1));
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card:has(.card-name) {
+    animation: card-in 0.35s ease-out;
+  }
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* An h2, so the page goes h1, h2 with no skipped level. */
+.card-name {
+  margin: 0 0 var(--space-1);
+  font-size: var(--fs-28);
+}
+.card-id {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  color: var(--bone-muted);
+}
+.card-data {
+  display: grid;
+  gap: 0;
+  margin: var(--space-2) 0 var(--space-1);
+}
+.card-data div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 var(--space-2);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.card-data dt {
+  color: var(--bone-muted);
+  font-size: var(--fs-14);
+}
+.card-data dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-14);
+}
+.card-notes {
+  padding-left: 1.1rem;
+  margin: var(--space-1) 0;
+  font-size: var(--fs-12);
+  color: var(--bone-muted);
+}
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+}
+.card-empty {
+  margin: 0;
+  max-width: none;
+  color: var(--bone-muted);
+  font-size: var(--fs-14);
+}
+/* The verdict badge: the churchyard word large, its meaning under it, smaller. */
+.badge {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.badge .glyph {
+  margin-top: 0.2rem;
+}
+.badge-text {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.badge-word {
+  font-family: var(--font-display);
+  font-size: var(--fs-28);
+  line-height: 1.1;
+}
+.badge-meaning {
+  color: var(--bone-muted);
+  font-size: var(--fs-14);
+  line-height: 1.35;
+}
+
+/* The guide: everything that explains the chart, closed until asked for. */
+.guide {
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+.guide > summary {
+  padding: var(--space-2) 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  cursor: pointer;
+}
+.guide-body {
+  padding: 0 0 var(--space-3);
+}
+.guide-body .legend {
+  margin-top: var(--space-3);
+}
+.terms {
+  padding-left: 1.2rem;
+}
+.count {
+  color: var(--bone);
+}
+.legend-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-1);
+  display: grid;
+  gap: var(--space-1);
+}
+.legend-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.legend-list--glyphs li {
+  align-items: flex-start;
+}
+.glyph {
+  flex: none;
+  overflow: visible;
+}
+.swatch {
+  flex: none;
+  width: 1.5rem;
+  height: 1rem;
+  border: 1px solid var(--rule-strong);
+}
+.swatch--below {
+  background: var(--ground);
+}
+.swatch--road {
+  background: var(--road);
+}
+.swatch--shallow {
+  background: var(--surface-1);
+}
+.swatch--wall {
+  background: repeating-linear-gradient(135deg, var(--surface-1) 0 3px, var(--bone-muted) 3px 4px);
+}
+.swatch--consecrated {
+  background: var(--surface-1);
+}
+.legend-notes li {
+  display: list-item;
+  margin-left: 1.2rem;
+  list-style: disc;
+}
 /* The tooltip. It shows on hover and focus, and has no motion. */
 .tip {
   position: fixed;
   z-index: 10;
   max-width: 22rem;
-  padding: var(--space-2) var(--space-3);
-  background: var(--stone);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-3);
   color: var(--bone);
-  border: 1px solid var(--bone-muted);
-  font-size: 0.9rem;
+  box-shadow: 0 8px 24px var(--shadow);
+  font-size: var(--fs-14);
   line-height: 1.4;
 }
 .tip[hidden] {
@@ -450,7 +792,17 @@
 .tip-hint {
   color: var(--bone-muted);
 }
-/* On a wide screen the two halves of the intro sit side by side, so the chart starts higher. */
+/* Phone: the chart keeps its natural size and scrolls sideways inside its own box, never the page. */
+.chart-wrap--scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.chart--natural {
+  width: auto;
+  max-width: none;
+}
+/* On a wide screen the two halves of the intro sit side by side. */
 @media (min-width: 1000px) {
   .intro {
     display: grid;
@@ -458,237 +810,37 @@
     column-gap: var(--space-5);
   }
 }
-
-/* Hero: three tiles that open the census. Each tile is a stone with an arched top. */
-.hero {
-  margin: 0 0 var(--space-3);
-}
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-width: none;
-}
-.tile-link {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: baseline;
-  column-gap: var(--space-3);
-  row-gap: 0.1rem;
-  height: 100%;
-  padding: 0.7rem 1.25rem 0.65rem;
-  background: linear-gradient(180deg, var(--stone), var(--panel) 85%);
-  border: 1px solid var(--panel-edge);
-  border-radius: 1.8rem 1.8rem var(--radius) var(--radius);
-  text-decoration: none;
-}
-.tile-link:hover {
-  border-color: var(--bone-muted);
-}
-.tile-figure {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  font-family: var(--font-display);
-  font-size: 2.2rem;
-  line-height: 1.05;
-  text-wrap: nowrap;
-}
-.tile-of {
-  font-size: 1.1rem;
-  color: var(--bone-muted);
-}
-.tile-label {
-  font-weight: 600;
-  line-height: 1.25;
-}
-.tile-sub {
-  grid-column: 1 / -1;
-  color: var(--bone-muted);
-  font-size: 0.78rem;
-  line-height: 1.3;
-}
-/* One line of fine print. "Limits" opens the full text. */
-.hero-fine {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.15rem var(--space-3);
-  margin: var(--space-2) 0 0;
-  color: var(--bone-muted);
-  font-size: 0.78rem;
-  line-height: 1.5;
-}
-.fine-list {
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-width: none;
-}
-.fine-list li + li {
-  margin-left: 0.6rem;
-  padding-left: 0.6rem;
-  border-left: 1px solid var(--bone-muted);
-}
-.limits > summary {
-  display: inline;
-  cursor: pointer;
-  color: var(--bone);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-.limits[open] {
-  flex-basis: 100%;
-}
-.limits-body {
-  max-width: 80ch;
-  padding: var(--space-2) 0 0;
-}
-.limits-body p {
-  margin: 0 0 var(--space-1);
-}
-
-/* The stage: the chart in a frame, with its toolbar, caption and compact legend above it. */
-.stage {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--panel-edge);
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, var(--sky-top), var(--panel) 14rem);
-  overflow: clip;
-}
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-4);
-  padding: var(--space-2) var(--space-3) 0;
-}
-.toolbar .filters-details {
-  flex: 0 0 auto;
-  margin: 0;
-  max-width: none;
-}
-.toolbar .filters-details[open] {
-  flex-basis: 100%;
-}
-.toolbar .filters-details > summary {
-  display: inline-block;
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--bone-muted);
-  border-radius: 999px;
-  background: var(--stone);
-}
-.toolbar .filters {
-  max-width: none;
-  border-color: var(--panel-edge);
-  border-radius: var(--radius);
-  background: var(--panel);
-}
-.toolbar .status {
-  flex: 1 1 18rem;
-  margin: 0;
-  max-width: none;
-  color: var(--bone-muted);
-  font-size: 0.88rem;
-}
-.toolbar .skip-link--inline {
-  margin: 0;
-}
-.toolbar-guide {
-  margin-left: auto;
-}
-.stage-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  padding: var(--space-2) var(--space-3) var(--space-3);
-}
-.stage-lead {
-  flex: 1 1 36rem;
-  min-width: 0;
-}
-.stage-caption {
-  margin: 0;
-  max-width: 110ch;
-  font-size: 1rem;
-  line-height: 1.4;
-}
-.stage-terms {
-  margin: 0.15rem 0 0;
-  max-width: 120ch;
-  color: var(--bone-muted);
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-.legend-strip {
-  flex: 0 1 auto;
-}
-.legend-strip-list {
-  display: grid;
-  grid-template-columns: repeat(3, auto);
-  gap: 0 var(--space-4);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-width: none;
-}
-.legend-strip-list li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 0.92rem;
-}
-.stage .chart-note {
-  font-size: 0.85rem;
-  margin: 0 var(--space-3) var(--space-2);
-}
-
-/* The guide: everything that explains the chart, closed until asked for. */
-.guide {
-  margin-top: var(--space-4);
-  border: 1px solid var(--panel-edge);
-  border-radius: var(--radius);
-  background: var(--panel);
-}
-.guide > summary {
-  padding: var(--space-3);
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  cursor: pointer;
-}
-.guide-body {
-  padding: 0 var(--space-3) var(--space-3);
-}
-.guide-body .legend {
-  margin-top: var(--space-4);
-}
-
 @media (max-width: 900px) {
+  .hero-pitch {
+    font-size: var(--fs-16);
+  }
   .tiles {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-2);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 var(--space-2);
   }
-  .tile-link {
-    padding: 0.45rem 1rem;
-    border-radius: 1.4rem 1.4rem var(--radius) var(--radius);
+  .tile--zone {
+    grid-column: 1 / -1;
+    grid-row: 1;
   }
-  .tile-figure {
-    min-width: 4.4rem;
-    font-size: 1.8rem;
+  .tile--post-rule {
+    grid-column: 1;
+    grid-row: 2;
   }
-  .tile-of {
-    font-size: 0.9rem;
+  .tile--validation {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .tile--zone .tile-figure {
+    font-size: var(--fs-44);
+  }
+  .tile--zone .tile-of {
+    font-size: var(--fs-20);
   }
   .tile-sub {
     display: none;
+  }
+  .tile-link {
+    padding: 6px 0;
   }
   /* Phone order: the picture first, then the controls. */
   .stage-head {
@@ -697,7 +849,26 @@
   .stage-lead {
     flex: none;
     order: 0;
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-1) 0;
+  }
+  .tour,
+  .tour--free {
+    order: 0;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'count actions' 'text text';
+  }
+  .tour--free {
+    display: block;
+  }
+  .tour-count {
+    grid-area: count;
+  }
+  .tour-actions {
+    grid-area: actions;
+    justify-content: flex-end;
+  }
+  .tour-text {
+    grid-area: text;
   }
   .stage .chart-note {
     order: 1;
@@ -707,33 +878,21 @@
   }
   .toolbar {
     order: 3;
-    padding-bottom: var(--space-2);
+    padding-bottom: var(--space-1);
   }
   .legend-strip {
-    flex: none;
+    flex: 1 1 100%;
     order: 4;
-    padding: 0 var(--space-3) var(--space-3);
+    padding: 0 0 var(--space-2);
   }
 }
 @media (max-width: 600px) {
-  .site-title {
-    font-size: 2rem;
-  }
-  .site-tagline {
-    font-size: 0.85rem;
-  }
-  .nav-list {
-    width: 100%;
-  }
-  .nav-list a {
-    padding: 0.5rem 0.4rem;
-    font-size: 0.92rem;
-  }
   .toolbar-guide {
     margin-left: 0;
   }
-  .tile-label {
-    font-size: 0.92rem;
+  .hero-fine {
+    margin-top: 4px;
+    line-height: 1.4;
   }
   .fine-list {
     display: block;
@@ -742,26 +901,10 @@
     display: inline;
   }
   .fine-list li + li {
-    margin-left: 0.3rem;
-    padding-left: 0.4rem;
-  }
-  .hero-fine {
-    margin-top: var(--space-1);
-    font-size: 0.74rem;
-    line-height: 1.4;
-  }
-  .stage-lead {
-    padding-top: var(--space-1);
-    padding-bottom: var(--space-2);
+    margin-left: 4px;
+    padding-left: 6px;
   }
   .stage-caption {
-    font-size: 0.95rem;
-  }
-  .tile-link {
-    padding-top: 0.3rem;
-    padding-bottom: 0.3rem;
-  }
-  .tile-label {
-    font-size: 0.86rem;
+    font-size: var(--fs-14);
   }
 }

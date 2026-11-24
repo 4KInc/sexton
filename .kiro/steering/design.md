@@ -14,13 +14,14 @@ A Victorian churchyard at night, seen through a modern instrument. Cinematic and
 
 - Near-black blue-grey ground, bone-white text, moss green, and one lantern amber.
 - Lantern amber is only for focus and selection.
-- Define every colour as a CSS custom property. No hard-coded colours elsewhere.
+- Define every colour as a CSS custom property, in OKLCH. No hard-coded colours elsewhere.
+- The ground is a near-black blue, never #000, with three surfaces that get lighter as they rise. Text is bone at three levels: primary 7:1 or better, secondary and muted 4.5:1 or better on every surface.
+- One story colour: pale bone-white with a ring, for post-rule stones in or near the zone. Every other stone is moss at low emphasis.
 - Every text and background pair meets WCAG AA. Check contrast when choosing or changing a colour.
 
 ## Type
 
-- One serif display face for headings and headstones. Self-hosted, open licence. Record the licence in docs/methodology.md or a credits file.
-- One plain sans for body text and tables.
+- Display: IM Fell English (headings, headstone names). Body: IBM Plex Sans. Readings and labels: IBM Plex Mono with tabular figures for every number, unit, date and NORAD id. All self-hosted, OFL, recorded in THIRD_PARTY.md.
 
 ## Every spooky element carries data
 
@@ -50,4 +51,5 @@ Inside the chart, every mark carries data; if a mark carries no data, leave it o
 
 - Use the churchyard words: fallen, unquiet, shallow grave, uncertain, buried, restless, unmarked bones.
 - Always pair each one, once, with its plain technical meaning. Example: "Shallow grave (perigee below the IADC threshold)".
+- Pair each churchyard word with its plain meaning once per view, at its first appearance (a legend, a column-header note or a badge). Repeated uses, such as table cells and chips, show the word only.
 - Follow language.md.
