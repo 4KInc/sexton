@@ -37,7 +37,7 @@ Each line states a fact and where it comes from. Nothing here is written for the
 - Hooks: 4 hooks in 3 files, triggers `PostFileCreate` and `PostFileSave` (`.kiro/hooks/`). The language-check hook was seen running in the chat UI and in Kiro's log; its output is not returned to the agent (`docs/kiro-journal.md`, Agent hooks).
 - Custom agent: `orbital-coroner`, limited to writing `data/cases/*.md` (`.kiro/agents/orbital-coroner.md`).
 - MCP server: 4 read-only tools, `is_buried`, `census`, `explain`, `list` (`scripts/mcp/server.ts`; `.kiro/settings/mcp.json`). `explain(27378)` and `census()` were answered in Kiro chat (`docs/kiro-journal.md`, MCP).
-- Kiro CLI in CI: manual workflow, written and shape-tested, not yet run; it needs the secret `KIRO_API_KEY` (`.github/workflows/kiro-verify.yml`; `test/kiro-workflow.test.ts`).
+- Kiro CLI in CI: manual workflow, shape-tested and run once with the secret `KIRO_API_KEY`: run 45353477849 on 2026-11-24 passed (56 s): Kiro reported 771 tests in 22 files passing and no change to README.md or data/register.json, and the plain steps agreed (`.github/workflows/kiro-verify.yml`; `test/kiro-workflow.test.ts`).
 - Journal: 41 dated lines (`docs/kiro-journal.md`).
 - Feature-by-feature table: `docs/kiro-usage.md`.
 
@@ -67,4 +67,3 @@ Each line states a fact and where it comes from. Nothing here is written for the
 ## Not done or not checked
 - The Roberts paper and its figure.
 - A real phone, VoiceOver, Safari and Firefox (`docs/polish-report.md`, checklist).
-- A run of the Kiro CLI workflow.

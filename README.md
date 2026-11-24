@@ -66,7 +66,7 @@ The IADC threshold is 235 km + 1000·C_R·A/m above GEO, which is 247 to 280 km 
 
 **The MCP server.** [scripts/mcp/server.ts](scripts/mcp/server.ts) lets an AI assistant ask the register for a verdict, a census, a list or a full ledger. See "Use it from an AI assistant" below.
 
-**Kiro in CI.** [.github/workflows/kiro-verify.yml](.github/workflows/kiro-verify.yml) is started by hand. It installs Kiro CLI, runs it headless to run the tests and rebuild the census, then runs `npm test` and `git diff --exit-code` on `README.md` and `data/register.json` itself, so any difference fails the run. It needs a repository secret named `KIRO_API_KEY` (Settings, Secrets and variables, Actions). It has not been run yet. More in [docs/kiro-usage.md](docs/kiro-usage.md), which maps every Kiro feature to its file and lists every property test.
+**Kiro in CI.** [.github/workflows/kiro-verify.yml](.github/workflows/kiro-verify.yml) is started by hand. It installs Kiro CLI, runs it headless to run the tests and rebuild the census, then runs `npm test` and `git diff --exit-code` on `README.md` and `data/register.json` itself, so any difference fails the run. It needs a repository secret named `KIRO_API_KEY` (Settings, Secrets and variables, Actions). It has been run once: run 45353477849 on 2026-11-24 passed (56 s): Kiro reported 771 tests in 22 files passing and no change to README.md or data/register.json, and the plain steps agreed. More in [docs/kiro-usage.md](docs/kiro-usage.md), which maps every Kiro feature to its file and lists every property test.
 
 ## Limits
 
