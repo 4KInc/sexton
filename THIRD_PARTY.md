@@ -37,6 +37,10 @@ Sexton does not republish a licence for CelesTrak data. If you reuse the files i
 
 The body text uses the system sans-serif font stack. No font is loaded from another server.
 
+## Skill
+| Skill | Source | Licence | Files |
+| --- | --- | --- | --- |
+| frontend-design, Anthropic | https://github.com/anthropics/skills/tree/main/skills/frontend-design | Apache License 2.0 | `.kiro/skills/frontend-design/SKILL.md` and `LICENSE.txt`, copied unchanged. A Kiro instruction file. It is not part of the shipped site. |
 ## Software
 
 Direct dependencies (from `package.json`):
