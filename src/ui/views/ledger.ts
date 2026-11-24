@@ -98,7 +98,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     `<div class="ledger-col ledger-col--side">${identity}${orbit}${status}${snapshot}${cite}${actions}</div></div>` +
     caseFileSection(r, cases) +
     footer +
-    `<p class="ledger-back"><a href="#/table">${esc(LEDGER.back)}</a></p></article>`
+    `</article>`
   );
 }
 /** The page for any NORAD id: a ledger, or a plain note when the object has no verdict or is not in the register. */

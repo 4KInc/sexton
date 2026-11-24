@@ -55,10 +55,10 @@ export const CHURCHYARD_INTRO = {
 
 /** The hero of the churchyard view: one caption sentence, three tiles that link to the census, and the fine print. */
 export const HERO = {
-  caption: 'Each stone is a retired satellite, as tall as its perigee above GEO. The road is the protected zone.',
+  /** The first sentence pair of the guide's lead, so the two cannot drift apart. */
+  caption: `${CHURCHYARD_INTRO.lead.split(':')[0]}.`,
   /** First appearance of GEO and perigee, in small type under the caption (language.md). */
   terms: [TERMS.geo, TERMS.perigee],
-  tilesLabel: 'Key numbers. Each one opens the census.',
   postRule: { label: 'retired payloads launched after the FCC rule', sub: 'On or after 18 March 2002.' },
   zone: {
     of: (n: number): string => `of ${formatCount(n)}`,
@@ -66,8 +66,7 @@ export const HERO = {
     sub: 'Below the IADC disposal threshold, under the stated assumptions.',
   },
   validation: {
-    label: (lo: number, hi: number): string => `Sexton vs ESA ${lo}\u2013${hi}%`,
-    labelNoRange: 'Sexton: buried share',
+    label: (range: readonly [number, number] | null): string => `Sexton${range === null ? ': buried share' : ` vs ESA ${range[0]}\u2013${range[1]}%`}`,
     sub: (year: number): string => `Launched after ${year}. Different groups: a plausibility check.`,
   },
   /** The one-line fine print under the tiles. The full text is behind "Limits". */
@@ -82,7 +81,6 @@ export const HERO = {
   limits: 'Limits',
   guide: 'How to read the churchyard',
   guideHint: 'What the marks and words mean',
-  legendLabel: 'The six verdicts, each with its stone shape',
 } as const;
 /** The methodology page is docs/methodology.md. Only its chrome is here. */
 export const METHOD = {
@@ -201,7 +199,7 @@ export function dataAge(record: Pick<SatRecord, 'orbitSource'>): string {
 
 export const TIP = {
   perigee: (absText: string, below: boolean, uncertaintyKm: number): string => `Perigee ${absText} km ${below ? 'below' : 'above'} GEO, \u00B1${uncertaintyKm} km`,
-  open: 'Click or press Enter to select. Double-click, or Enter again, to open the ledger.',
+  open: 'Click to select. Double-click opens the ledger.',
 } as const;
 export const CARD = {
   ledger: 'Open the ledger',
@@ -213,7 +211,7 @@ export const CARD = {
   borderline: (config: Config): string => `Borderline: within ${config.uncertaintyKm} km of a band edge.`,
   beforeRule: 'Launched before the FCC minimum-perigee rule date (18 March 2002).',
   yearsSinceLaunch: (years: number): string => `${years} ${years === 1 ? 'year' : 'years'} since launch`,
-  empty: 'Click a stone, or focus it and press Enter, to read its card. Escape clears it. Double-click, or Enter again, opens its ledger.',
+  empty: 'Click a stone, or press Enter on it, to read its card. Escape clears it. Double-click, or Enter again, opens its ledger.',
 } as const;
 
 /** Spoken label for a stone link (design 5.4). */
@@ -298,7 +296,6 @@ export const LEDGER = {
   /** The words around the threshold bar (design.md, Layout: the picture first, words second). */
   bar: {
     offWords: (off: 'below' | 'above'): string => `The mark is held at the ${off === 'above' ? 'right' : 'left'} end because p is beyond the bar.`,
-    bandWords: (u: number): string => `The bar around p shows the \u00B1${u} km mean-element uncertainty.`,
     zone: (km: number): string => `${km} km: the edge of the protected zone.`,
     edge: (km: number, x: number): string => `${km} km: the IADC threshold if C_R\u00B7A/m is ${x} m\u00B2/kg.`,
     band: (u: number): string => `The bar around p: \u00B1${u} km, the mean-element uncertainty.`,
@@ -335,8 +332,9 @@ export const LEDGER = {
   footer: (set: string): string => `Sexton register, snapshot ${set}. Source files and their SHA-256 hashes:`,
 } as const;
 export const TABLE = {
-  intro: 'Every object the register holds, with the same numbers as the churchyard. Sort a column with its button.',
+  intro: 'Every object the register holds, with the same numbers as the churchyard.',
   verdictKey: 'The verdict words',
+  sortBy: 'Sort by',
   verdictKeySummary: 'What the verdict words mean',
   caption: 'Objects near GEO in the register',
   sortedBy: (label: string, dir: 'asc' | 'desc'): string => `Sorted by ${label}, ${dir === 'asc' ? 'ascending' : 'descending'}.`,
@@ -408,7 +406,6 @@ export const COMPARISONS: readonly Comparison[] = [
 ];
 /** The big numbers at the top of the census page. */
 export const CENSUS_TILES = {
-  label: 'Key numbers',
   objects: 'objects near GEO in the register',
   retired: 'retired payloads, each with a verdict',
   postRule: 'launched on or after the FCC rule date, 18 March 2002',

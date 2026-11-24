@@ -9,7 +9,7 @@ import type { UiRegister } from '../src/ui/register.ts';
 import { NO_FILTERS } from '../src/ui/state.ts';
 import { censusHtml, statsHtml, validationHtml } from '../src/ui/views/census.ts';
 import { filtersHtml } from '../src/ui/views/filters.ts';
-import { rowHtml } from '../src/ui/views/table.ts';
+import { rowHtml, tableHtml } from '../src/ui/views/table.ts';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const read = (p: string): string => readFileSync(join(ROOT, p), 'utf8');
 const css = (f: string): string => read(`src/ui/styles/${f}`).replace(/\/\*[\s\S]*?\*\//g, '');
@@ -76,7 +76,7 @@ describe('the table', () => {
       expect(row).toContain(`<span class="chip-word">${verdictCopy(v, config).word}</span>`);
       expect(row).toMatch(/aria-hidden="true"/);
     }
-    expect(rowHtml(retired, config)).toContain('<th scope="row"><a href="#/sat/');
+    expect(rowHtml(retired, config)).toContain('<th scope="row" role="rowheader"><a href="#/sat/');
   });
   it('keeps its header in view, stripes its rows, and lifts the row under the pointer', () => {
     const t = css('table.css');
@@ -98,5 +98,64 @@ describe('the table', () => {
     expect(filtersHtml(real.records, NO_FILTERS, config, true, true)).toContain('id="more-filters" data-open');
     // The churchyard form is unchanged: a closed details.
     expect(filtersHtml(real.records, NO_FILTERS, config, false)).toContain('<details class="filters-details">');
+  });
+});
+
+describe('the table on a phone (below 600 px)', () => {
+  const retired = real.records.find((r) => r.norad === 27378)!;
+  const row = rowHtml(retired, config);
+  const phone = css('table.css').slice(css('table.css').indexOf('@media (max-width: 599px)'));
+  it('keeps its table semantics with explicit roles, because a card layout changes the display of every part', () => {
+    const t = tableHtml([retired], config, { key: 'norad', dir: 'asc' });
+    expect(t).toContain('<table class="register-table" role="table">');
+    expect(t).toContain('<thead role="rowgroup"><tr role="row">');
+    expect(t).toContain('<tbody role="rowgroup">');
+    expect(row).toMatch(/^<tr data-norad="27378" role="row"><th scope="row" role="rowheader">/);
+    expect(row.match(/<td role="cell"/g)).toHaveLength(10);
+    expect(t.match(/<th scope="col" role="columnheader"/g)).toHaveLength(11);
+  });
+  it('lists each row\'s cells in the order the card layout expects', () => {
+    // The card places cells by position: 1 name, 2 NORAD, 3 owner, 4 launch, 5 verdict, 6 borderline, 7 p, 8 q, 9 e, 10 source, 11 data age.
+    const cells = [...row.matchAll(/<(?:th|td)[ >][^]*?(?=<(?:th|td)[ >]|<\/tr>)/g)].map((m) => m[0].replace(/<[^>]*>/g, ''));
+    expect(cells).toHaveLength(11);
+    expect(cells[0]).toBe('ECHOSTAR 7');
+    expect(cells[1]).toBe('27378');
+    expect(cells[2]).toBe('US');
+    expect(cells[3]).toBe('2002-02-21');
+    expect(cells[4]).toBe('Unquiet');
+    expect(cells[5]).toBe('No');
+    expect(cells[6]).toBe('+110.1');
+    expect(cells[7]).toBe('+137.1');
+    expect(cells[8]).toBe('0.00032');
+    expect(cells[9]).toBe('GP');
+    expect(cells[10]).toMatch(/^GP mean elements, epoch 2026-11-22/);
+  });
+  it('lays a row out as a card: name and verdict, NORAD and owner and launch, p and q and e, data age', () => {
+    expect(phone).toMatch(/tbody tr\s*\{[^}]*display:\s*grid/);
+    expect(phone).toMatch(/tbody td:nth-child\(5\)\s*\{[^}]*grid-row:\s*1/);
+    expect(phone).toMatch(/tbody td:nth-child\(2\)::before\s*\{\s*content:\s*'NORAD '/);
+    expect(phone).toMatch(/tbody td:nth-child\(7\)::before\s*\{\s*content:\s*'p '/);
+    expect(phone).toMatch(/tbody td:nth-child\(8\)::before\s*\{[^}]*q /);
+    expect(phone).toMatch(/tbody td:nth-child\(9\)::before\s*\{[^}]*e /);
+    expect(phone).toMatch(/tbody td:nth-child\(11\)\s*\{[^}]*grid-row:\s*4/);
+    expect(phone).toMatch(/td:nth-child\(6\),\s*#table-host \.register-table tbody td:nth-child\(10\)\s*\{\s*display:\s*none/);
+  });
+  it('hides the column headers on screen without removing them, and shows them if a sort button gets focus', () => {
+    expect(phone).toMatch(/\.register-table thead\s*\{[^}]*clip-path:\s*inset\(50%\)/);
+    expect(phone).toMatch(/thead:focus-within\s*\{[^}]*position:\s*static/);
+  });
+  it('has a select with name, NORAD id, launch date and perigee above the list, shown only on a phone', async () => {
+    const src = read('src/ui/views/table.ts');
+    expect(src).toContain("const PHONE_SORTS: readonly SortKey[] = ['name', 'norad', 'launch', 'p'];");
+    expect(src).toContain('<label for="sort-by">');
+    expect(src).toContain("sortBy.addEventListener('change', onSortBy)");
+    const t = css('table.css');
+    expect(t).toMatch(/\.sortbar\s*\{\s*display:\s*none/);
+    expect(phone).toMatch(/\.sortbar\s*\{\s*display:\s*flex/);
+  });
+  it('leaves a wide screen as it was: no phone rule is outside the 599 px query', () => {
+    const before = css('table.css').slice(0, css('table.css').indexOf('@media (max-width: 599px)'));
+    expect(before).not.toMatch(/td:nth-child\(11\)/);
+    expect(before).toMatch(/\.register-table thead th\s*\{[^}]*position:\s*sticky/);
   });
 });

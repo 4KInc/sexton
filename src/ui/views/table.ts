@@ -20,12 +20,14 @@ import { chipHtml } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { fineHtml } from './fine.ts';
 
+/** The sorts a phone offers in a select, because it has no column headers. */
+const PHONE_SORTS: readonly SortKey[] = ['name', 'norad', 'launch', 'p'];
 const edgesOf = (config: Config): number[] => [config.protectedZoneKm, config.thresholdLowKm, config.thresholdHighKm];
 
 function headerHtml(sort: Sort): string {
   return SORT_KEYS.map((key) => {
     const aria = sort.key === key ? ` aria-sort="${sort.dir === 'asc' ? 'ascending' : 'descending'}"` : '';
-    return `<th scope="col"${aria}><button type="button" class="sort" data-sort="${key}">${esc(TABLE.columns[key])}</button></th>`;
+    return `<th scope="col" role="columnheader"${aria}><button type="button" class="sort" data-sort="${key}">${esc(TABLE.columns[key])}</button></th>`;
   }).join('');
 }
 
@@ -42,28 +44,30 @@ export function rowHtml(r: SatRecord, config: Config): string {
   const decimals = r.orbitSource.kind === 'GP' ? 1 : 0;
   const name = v.kind === 'verdict' ? `<a href="#/sat/${r.norad}">${esc(r.name)}</a>` : esc(r.name);
   const borderline = v.kind === 'verdict' ? (v.borderline ? TABLE.yes : TABLE.no) : TABLE.notApplicable;
+  const td = (value: string, cls = ''): string => `<td role="cell"${cls}>${value}</td>`;
+  const num = ' class="num-cell"';
   return (
-    `<tr data-norad="${r.norad}"><th scope="row">${name}</th>` +
-    `<td>${r.norad}</td>` +
-    `<td>${esc(r.owner ?? TABLE.unknown)}</td>` +
-    `<td>${esc(r.launchDate ?? TABLE.unknown)}</td>` +
-    `<td>${verdictCell(r, config)}</td>` +
-    `<td>${esc(borderline)}</td>` +
-    `<td class="num-cell">${esc(formatP(r.pKm, r.orbitSource.kind, edgesOf(config)))}</td>` +
-    `<td class="num-cell">${esc(formatSigned(r.qKm, decimals))}</td>` +
-    `<td class="num-cell">${esc(r.e.toFixed(5))}</td>` +
-    `<td>${esc(r.orbitSource.kind)}</td>` +
-    `<td>${esc(dataAge(r))}</td></tr>`
+    `<tr data-norad="${r.norad}" role="row"><th scope="row" role="rowheader">${name}</th>` +
+    td(String(r.norad)) +
+    td(esc(r.owner ?? TABLE.unknown)) +
+    td(esc(r.launchDate ?? TABLE.unknown)) +
+    td(verdictCell(r, config)) +
+    td(esc(borderline)) +
+    td(esc(formatP(r.pKm, r.orbitSource.kind, edgesOf(config))), num) +
+    td(esc(formatSigned(r.qKm, decimals)), num) +
+    td(esc(r.e.toFixed(5)), num) +
+    td(esc(r.orbitSource.kind)) +
+    td(esc(dataAge(r))) +
+    `</tr>`
   );
 }
-
 /** The table for an already filtered set. Sorting happens here. */
 export function tableHtml(shown: readonly SatRecord[], config: Config, sort: Sort): string {
   const rows = sortRecords(shown, sort).map((r) => rowHtml(r, config)).join('');
   return (
     `<div class="table-wrap" role="region" aria-label="${esc(TABLE.scrollLabel)}" tabindex="0">` +
-    `<table class="register-table"><caption>${esc(TABLE.caption)}</caption>` +
-    `<thead><tr>${headerHtml(sort)}</tr></thead><tbody>${rows}</tbody></table></div>`
+    `<table class="register-table" role="table"><caption>${esc(TABLE.caption)}</caption>` +
+    `<thead role="rowgroup"><tr role="row">${headerHtml(sort)}</tr></thead><tbody role="rowgroup">${rows}</tbody></table></div>`
   );
 }
 
@@ -105,6 +109,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
       assumptionsLine(config),
       CHURCHYARD_INTRO.blindSpot,
     ]) +
+    `<div class="sortbar"><label for="sort-by">${esc(TABLE.sortBy)}</label><select id="sort-by">${PHONE_SORTS.map((k) => `<option value="${k}"${state.sort.key === k ? ' selected' : ''}>${esc(TABLE.columns[k])}</option>`).join('')}</select></div>` +
     `<details class="guide guide--table"><summary>${esc(TABLE.verdictKeySummary)}</summary><div class="guide-body">${verdictKeyHtml(config)}</div></details>` +
     `<div id="table-host"></div>`;
   const form = root.querySelector<HTMLFormElement>('#filters')!;
@@ -138,6 +143,14 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     toggle.setAttribute('aria-expanded', String(open));
   };
   form.addEventListener('click', onMore);
+  const sortBy = root.querySelector<HTMLSelectElement>('#sort-by')!;
+  const onSortBy = (): void => {
+    const key = sortBy.value as SortKey;
+    state = { ...state, sort: { key, dir: 'asc' } };
+    replaceQuery(toQuery(state));
+    draw(TABLE.sortedBy(TABLE.columns[key], 'asc'));
+  };
+  sortBy.addEventListener('change', onSortBy);
   const onClick = (event: Event): void => {
     const button = (event.target as Element).closest<HTMLButtonElement>('button[data-sort]');
     if (button === null) return;
@@ -145,6 +158,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     const dir = state.sort.key === key && state.sort.dir === 'asc' ? 'desc' : 'asc';
     state = { ...state, sort: { key, dir } };
     replaceQuery(toQuery(state));
+    sortBy.value = key;
     draw(TABLE.sortedBy(TABLE.columns[key], dir));
     // The header was redrawn, so put focus back on the same button.
     host.querySelector<HTMLButtonElement>(`button[data-sort="${key}"]`)?.focus();
@@ -153,6 +167,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   return () => {
     unwire();
     form.removeEventListener('click', onMore);
+    sortBy.removeEventListener('change', onSortBy);
     host.removeEventListener('click', onClick);
   };
 }

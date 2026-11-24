@@ -72,7 +72,7 @@ describe('thresholdBarHtml', () => {
   it('is described once in words for screen readers, and its drawing is hidden from them', () => {
     expect(html).toContain('role="img"');
     expect(html).toContain(marginsSentence(echostar, config).replace(/&/g, '&amp;'));
-    expect(html).toContain('±25 km mean-element uncertainty');
+    expect(html).toContain('±25 km, the mean-element uncertainty');
     expect(html.match(/aria-hidden="true"/g)!.length).toBeGreaterThanOrEqual(3);
   });
   it('shows p against 200, 247 and 280, with the ±25 km band, and a text key', () => {

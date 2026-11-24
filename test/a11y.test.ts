@@ -385,7 +385,7 @@ describe('labels and landmarks', () => {
   });
   it('the sort buttons are real buttons inside column headers, and the sorted column says which way', () => {
     const html = tableHtml(real.records.slice(0, 5), config, { key: 'norad', dir: 'desc' });
-    expect(html).toMatch(/<th scope="col" aria-sort="descending"><button type="button" class="sort"/);
+    expect(html).toMatch(/<th scope="col" role="columnheader" aria-sort="descending"><button type="button" class="sort"/);
     expect(html.match(/aria-sort=/g)).toHaveLength(1);
   });
   it('the live regions that announce counts and the selected stone are present', () => {

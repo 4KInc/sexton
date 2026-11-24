@@ -394,7 +394,7 @@ export function heroStats(reg: Pick<UiRegister, 'records' | 'config'>, compariso
       id: 'validation',
       value: d.n === 0 ? '\u2013' : `${Math.round((100 * d.central) / d.n)}%`,
       of: null,
-      label: range === null ? HERO.validation.labelNoRange : HERO.validation.label(range[0], range[1]),
+      label: HERO.validation.label(range),
       sub: HERO.validation.sub(d.afterLaunchYear),
     },
   ];
@@ -420,7 +420,7 @@ export function heroHtml(reg: UiRegister): string {
     VALIDATION.intro(d.afterLaunchYear),
   ]);
   return (
-    `<div class="hero"><ul class="tiles" aria-label="${esc(HERO.tilesLabel)}">${tiles}</ul>` +
+    `<div class="hero"><ul class="tiles">${tiles}</ul>` +
     `${fine}</div>`
   );
 }
@@ -429,7 +429,7 @@ export function compactLegendHtml(config: Config): string {
   const items = VERDICT_ORDER.map(
     (v) => `<li>${glyphSvg(v)}<span>${esc(verdictCopy(v, config).word)}</span></li>`,
   ).join('');
-  return `<div class="legend-strip"><ul class="legend-strip-list" aria-label="${esc(HERO.legendLabel)}">${items}</ul></div>`;
+  return `<div class="legend-strip"><ul class="legend-strip-list">${items}</ul></div>`;
 }
 
 export function introHtml(reg: UiRegister): string {

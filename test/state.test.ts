@@ -230,14 +230,15 @@ describe('table view', () => {
     expect(html).toContain('<table');
     expect(html).toContain('<caption>');
     expect(html.match(/<th scope="col"/g)).toHaveLength(11);
-    expect(html.match(/<th scope="row">/g)).toHaveLength(all.length);
+    // Each header cell also has its explicit role, so the table stays a table when a phone lays the rows out as cards.
+    expect(html.match(/<th scope="row" role="rowheader">/g)).toHaveLength(all.length);
   });
   it('every sortable header is a button, and only the sorted column has aria-sort', () => {
     expect(html.match(/<button type="button" class="sort"/g)).toHaveLength(11);
     expect(html.match(/aria-sort=/g)).toHaveLength(1);
-    expect(html).toContain('<th scope="col" aria-sort="ascending"><button type="button" class="sort" data-sort="norad">');
+    expect(html).toContain('<th scope="col" role="columnheader" aria-sort="ascending"><button type="button" class="sort" data-sort="norad">');
     const desc = tableHtml(all, reg.config, { key: 'p', dir: 'desc' });
-    expect(desc).toContain('<th scope="col" aria-sort="descending"><button type="button" class="sort" data-sort="p">');
+    expect(desc).toContain('<th scope="col" role="columnheader" aria-sort="descending"><button type="button" class="sort" data-sort="p">');
     expect(desc.match(/aria-sort=/g)).toHaveLength(1);
   });
   it('objects with no verdict say why, and bones say what they are', () => {

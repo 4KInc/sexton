@@ -24,7 +24,7 @@ const slugOf = (text: string): string => {
   usedIds.add(id);
   return id;
 };
-const SOURCE_HEAD = ['Source', 'Link', 'What was checked'];
+const SOURCE_HEAD = 'Source,Link,What was checked';
 function makeMarked(shift: number, ids = false): Marked {
   return new Marked({
     async: false,
@@ -51,7 +51,7 @@ function makeMarked(shift: number, ids = false): Marked {
       },
       // The Sources table (Source, Link, What was checked) is drawn as citations. Any other table keeps the default.
       table(this, token: Tokens.Table): string | false {
-        if (!ids || token.header.length !== 3 || token.header.some((h, i) => h.text !== SOURCE_HEAD[i])) return false;
+        if (!ids || token.header.map((h) => h.text).join() !== SOURCE_HEAD) return false;
         const p = (cls: string, cell: Tokens.TableCell): string => `<p class="${cls}">${this.parser.parseInline(cell.tokens)}</p>`;
         const items = token.rows.map(([name, link, note]) => `<li class="cite">${p('cite-name', name!)}${p('cite-link', link!)}${p('cite-note', note!)}</li>`);
         return `<ul class="cites">${items.join('')}</ul>\n`;

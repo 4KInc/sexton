@@ -61,7 +61,7 @@ export function thresholdBarHtml(r: Retired, config: Config): string {
   const B = LEDGER.bar;
   const [zone, low, high] = edgesOf(config);
   const pText = formatP(r.pKm, r.orbitSource.kind, edgesOf(config));
-  const label = `${marginsSentence(r, config)} ${B.bandWords(config.uncertaintyKm)}${g.off === null ? '' : ` ${B.offWords(g.off)}`}`;
+  const label = `${marginsSentence(r, config)} ${B.band(config.uncertaintyKm)}${g.off === null ? '' : ` ${B.offWords(g.off)}`}`;
   const mark =
     `<span class="pbar-mark${g.off === null ? '' : ' pbar-mark--off'}" style="left:${r2(g.p)}%"></span>` +
     `<span class="pbar-band" style="left:${r2(g.bandFrom)}%;width:${r2(Math.max(0, g.bandTo - g.bandFrom))}%"></span>`;

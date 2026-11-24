@@ -28,7 +28,7 @@ export function statsHtml(reg: Pick<UiRegister, 'census' | 'records'>): string {
   const tile = (id: string, value: number, label: string, of = ''): string =>
     `<li class="stat"><span class="stat-figure" data-stat="${id}"><span class="num">${formatCount(value)}</span>${of && `<span class="stat-of">${esc(of)}</span>`}</span><span class="stat-label">${esc(label)}</span></li>`;
   return (
-    `<ul class="stats" aria-label="${esc(T.label)}">` +
+    `<ul class="stats">` +
     tile('objects', reg.census.population.total, T.objects) +
     tile('retired', reg.census.retired.total, T.retired) +
     tile('post-rule', s.postRule, T.postRule) +
