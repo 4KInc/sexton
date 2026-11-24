@@ -27,6 +27,11 @@ function textOf(html: string): string {
     .replace(/&amp;/g, '&');
 }
 const ledgerOf = (r: Retired): string => ledgerHtml(r, real);
+/** The badge markup: the word and its meaning, in separate elements. */
+const badgeOf = (verdict: VerdictName): string => {
+  const c = verdictCopy(verdict, real.config);
+  return `<span class="badge-word">${c.word}</span><span class="badge-meaning">${c.meaning.replace(/&/g, '&amp;')}</span>`;
+};
 const textOfLedger = (r: Retired): string => textOf(ledgerOf(r));
 const first = (pick: (r: Retired) => boolean): Retired => {
   const r = retired.find(pick);
@@ -99,7 +104,10 @@ describe('every real ledger', () => {
   it('renders for all 696 retired payloads, with the sections in order', () => {
     expect(html).toHaveLength(696);
     // The case-file section shows only when a record has a case file (test/case-files.test.ts).
-    const order = Object.values(LEDGER.headings).filter((h) => h !== LEDGER.headings.caseFile);
+    // The page has two columns, built column by column: the verdict and its maths on the left, the object on the right.
+    const H = LEDGER.headings;
+    const order = [H.verdict, H.maths, H.assumptions, H.context, H.identity, H.orbit, H.status, H.snapshot, H.cite, H.actions];
+    expect(new Set(order)).toEqual(new Set(Object.values(H).filter((h) => h !== H.caseFile)));
     for (const [i, t] of text.entries()) {
       let at = -1;
       for (const h of order) {
@@ -138,7 +146,8 @@ describe('every real ledger', () => {
       expect(t, String(r.norad)).toContain('Assumes C_R·A/m from 0.012 to 0.045 m²/kg and a mean-element uncertainty of ±25 km.');
       expect(t).toContain('The IADC guidelines are voluntary.');
       expect(t).toContain('applies only to satellites the FCC authorizes, launched on or after 18 March 2002.');
-      expect(t).toContain(verdictCopy(r.verdict.verdict, config).pair);
+      // The header card's badge: the word, then its meaning under it.
+      expect(html[i]).toContain(badgeOf(r.verdict.verdict));
       expect(t).toContain('T = 235 + 1000 × C_R·A/m.');
       expect(t).toContain('T is 247 to 280 km.');
       expect(t).toMatch(
@@ -259,10 +268,9 @@ describe('one example per verdict, from the real register', () => {
     it(`${verdict}`, () => {
       const r = first((x) => x.verdict.verdict === verdict);
       const t = textOfLedger(r);
-      const pair = verdictCopy(verdict, config).pair;
-      expect(t).toContain(pair);
-      // The churchyard word is paired with its meaning once, in the verdict line.
-      expect(t.split(pair)).toHaveLength(2);
+      // The churchyard word is paired with its meaning once, in the badge of the header card.
+      expect(ledgerOf(r).split(badgeOf(verdict))).toHaveLength(2);
+      expect(t).toContain(verdictCopy(verdict, config).meaning);
       const decimals = r.orbitSource.kind === 'GP' ? 1 : 0;
       const ph = formatP(r.pKm, r.orbitSource.kind, EDGES);
       expect(t).toContain(spokenHeight(ph));

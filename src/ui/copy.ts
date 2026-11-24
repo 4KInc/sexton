@@ -294,6 +294,18 @@ export const LEDGER = {
   },
   notGiven: 'not given',
   unknown: 'unknown',
+  /** The words around the threshold bar (design.md, Layout: the picture first, words second). */
+  bar: {
+    unit: 'Perigee above GEO, km',
+    pLabel: (pText: string, off: 'below' | 'above' | null): string => `p = ${pText} km${off === null ? '' : off === 'above' ? ', off the bar to the right' : ', off the bar to the left'}`,
+    offWords: (off: 'below' | 'above'): string => `The mark is held at the ${off === 'above' ? 'right' : 'left'} end because p is beyond the bar.`,
+    bandWords: (u: number): string => `The bar around p shows the \u00B1${u} km mean-element uncertainty.`,
+    zone: (km: number): string => `${km} km: the edge of the protected zone.`,
+    low: (km: number, x: number): string => `${km} km: the IADC threshold if C_R\u00B7A/m is ${x} m\u00B2/kg.`,
+    high: (km: number, x: number): string => `${km} km: the IADC threshold if C_R\u00B7A/m is ${x} m\u00B2/kg.`,
+    p: (pText: string): string => `The mark: p, the perigee above GEO, ${pText} km.`,
+    band: (u: number): string => `The bar around the mark: \u00B1${u} km, the mean-element uncertainty.`,
+  },
   formula: (config: Config): string => `T = ${config.iadc.baseKm} + ${config.iadc.factorKm} × C_R·A/m.`,
   range: (config: Config): string =>
     `With C_R·A/m from ${config.iadc.crAmMin} to ${config.iadc.crAmMax} m²/kg, T is ${config.thresholdLowKm} to ${config.thresholdHighKm} km.`,

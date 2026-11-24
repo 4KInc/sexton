@@ -448,7 +448,7 @@ describe('verdicts are never shown by colour alone', () => {
       // The card is a badge: the word large, the meaning under it. Both are in the card's text.
       expect(cardHtml(r, config)).toContain(`<span class="badge-word">${verdictCopy(word, config).word}</span>`);
       expect(cardHtml(r, config)).toContain(`<span class="badge-meaning">${verdictCopy(word, config).meaning.replace(/&/g, '&amp;')}</span>`);
-      expect(ledgerPageHtml(real, r.norad)).toContain(verdictCopy(word, config).pair.replace(/&/g, '&amp;'));
+      expect(ledgerPageHtml(real, r.norad)).toContain(`<span class="badge-word">${verdictCopy(word, config).word}</span><span class="badge-meaning">${verdictCopy(word, config).meaning.replace(/&/g, '&amp;')}</span>`);
       expect(chartSvg(real, false, null)).toContain(`${r.name.replace(/&/g, '&amp;')}, ${word},`);
     }
   });

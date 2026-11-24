@@ -6,11 +6,13 @@ import { CARD, dataAge, LEDGER, assumptionsLine, CHURCHYARD_INTRO, snapshotLabel
 import { formatE, formatP, formatSigned } from '../format.ts';
 import type { CaseFile } from '../case-file.ts';
 import { CASES } from '../content.ts';
-import { esc } from '../html.ts';
+import { esc, withSansDigits } from '../html.ts';
 import { eccentricityRoundingMatters, edgesOf, isRetired, marginsSentence, orbitNotes, statusLines, verdictSentence } from '../ledger-text.ts';
 import type { Retired } from '../ledger-text.ts';
 import { renderMarkdown } from '../markdown.ts';
 import type { UiRegister } from '../register.ts';
+import { badgeHtml } from './badge.ts';
+import { thresholdBarHtml } from './threshold.ts';
 export { eccentricityRoundingMatters, statusLines, verdictSentence };
 const row = (k: string, v: string): string => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`;
 const section = (id: string, title: string, body: string): string =>
@@ -37,15 +39,17 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     H.identity,
     `<dl class="ledger-data">${row(F.name, r.name)}${row(F.norad, String(r.norad))}${row(F.designator, r.intlDes ?? LEDGER.notGiven)}${row(F.owner, r.owner ?? LEDGER.notGiven)}${row(F.launch, r.launchDate ?? LEDGER.unknown)}</dl>${era}`,
   );
-  const verdict = section('verdict', H.verdict, `<p class="verdict-line"><strong>${esc(verdictCopy(v.verdict, config).pair)}</strong></p>${paras([verdictSentence(r, config)])}`);
+  // The header card's badge carries the churchyard word and its meaning once, so this section holds the sentence only.
+  const verdict = section('verdict', H.verdict, paras([verdictSentence(r, config)]));
   const maths = section(
     'maths',
     H.maths,
-    paras([
-      `${LEDGER.formula(config)} ${LEDGER.range(config)}`,
-      marginsSentence(r, config),
-      `Eccentricity e = ${formatE(r.e, config.iadc.eccentricityMax)}. The IADC limit is ${config.iadc.eccentricityMax}.`,
-    ]),
+    thresholdBarHtml(r, config) +
+      paras([
+        `${LEDGER.formula(config)} ${LEDGER.range(config)}`,
+        marginsSentence(r, config),
+        `Eccentricity e = ${formatE(r.e, config.iadc.eccentricityMax)}. The IADC limit is ${config.iadc.eccentricityMax}.`,
+      ]),
   );
   const assumptions = section(
     'assumptions',
@@ -81,9 +85,19 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     `<footer class="ledger-footer"><p>${esc(LEDGER.footer(reg.snapshot.set))}</p><ul>` +
     reg.snapshot.sources.map((s) => `<li>${esc(s.file)}: <code>${esc(s.sha256)}</code></li>`).join('') +
     `</ul></footer>`;
+  // The header card: who, the verdict as a badge, and the age and assumptions the verdict rests on.
+  const head =
+    `<header class="ledger-head"><div class="ledger-head-id"><p class="ledger-name">${withSansDigits(r.name)}</p>` +
+    `<p class="ledger-norad">NORAD <span class="num">${r.norad}</span></p></div>${badgeHtml(v.verdict, config)}` +
+    `<p class="ledger-head-meta"><span>${esc(snapshotLabel(reg.snapshot.set))}</span> <span>${esc(r.orbitSource.kind === 'GP' ? dataAge(r) : LEDGER.satcatSource)}</span> <span>${esc(assumptionsLine(config))}</span></p></header>`;
+  // Two columns. Left: the verdict and the maths behind it. Right: the object, its elements, its sources and how to cite it.
   return (
-    `<article class="ledger"><p class="print-title">${esc(LEDGER.printTitle)}: NORAD <span class="num">${r.norad}</span></p><p class="snapshot-label">${esc(snapshotLabel(reg.snapshot.set))}</p>` +
-    verdict + identity + maths + orbit + assumptions + snapshot + status + caseFileSection(r, cases) + context + cite + actions + footer +
+    `<article class="ledger"><p class="print-title">${esc(LEDGER.printTitle)}: NORAD <span class="num">${r.norad}</span></p>` +
+    head +
+    `<div class="ledger-grid"><div class="ledger-col ledger-col--main">${verdict}${maths}${assumptions}${context}</div>` +
+    `<div class="ledger-col ledger-col--side">${identity}${orbit}${status}${snapshot}${cite}${actions}</div></div>` +
+    caseFileSection(r, cases) +
+    footer +
     `<p class="ledger-back"><a href="#/table">${esc(LEDGER.back)}</a></p></article>`
   );
 }

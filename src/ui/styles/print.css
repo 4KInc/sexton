@@ -78,4 +78,82 @@
   .case-provisional {
     border-color: var(--ink);
   }
+  /* The header card, the verdict badge and the threshold bar on paper: ink on white, with shapes and hatching, no screen colours. */
+  .ledger-head {
+    margin: 0 0 var(--space-3);
+    padding: var(--space-2) 0;
+    background: none;
+    border: 0;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    border-radius: 0;
+  }
+  .ledger-name,
+  .badge-word {
+    color: var(--ink);
+  }
+  .ledger-norad,
+  .ledger-head-meta,
+  .badge-meaning,
+  .pbar-key,
+  .pbar-tick,
+  .pbar-unit {
+    color: var(--ink-muted);
+  }
+  .ledger-head-meta {
+    border-top-color: var(--ink-muted);
+  }
+  .badge {
+    background: none;
+    border-color: var(--ink);
+  }
+  .badge .stone-body {
+    fill: none;
+    stroke: var(--ink);
+  }
+  .badge .moss,
+  .badge .carving {
+    fill: var(--ink);
+  }
+  .badge .crack,
+  .badge .ground-line,
+  .badge .mound {
+    stroke: var(--ink);
+  }
+  .ledger-section {
+    border-top-color: var(--ink-muted);
+  }
+  .ledger-grid {
+    display: block;
+  }
+  .pbar-track {
+    border-color: var(--ink);
+  }
+  .pbar-seg {
+    background: none;
+  }
+  .pbar-seg--zone {
+    background: var(--ink-muted);
+  }
+  .pbar-seg--wall {
+    background-image: repeating-linear-gradient(135deg, var(--ink) 0 1px, transparent 1px 6px);
+  }
+  .pbar-seg--shallow {
+    background-image: repeating-linear-gradient(90deg, var(--ink-muted) 0 1px, transparent 1px 6px);
+  }
+  .pbar-mark {
+    background: var(--ink);
+  }
+  .pbar-band {
+    background: var(--ink);
+    opacity: 1;
+  }
+  .pbar-label span {
+    background: var(--paper);
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .pbar-tick::before {
+    background: var(--ink-muted);
+  }
 }

@@ -157,12 +157,11 @@ describe('case file on the ledger (section 8)', () => {
     expect(html).toContain(`>${LEDGER.provisional}<`);
     expect(LEDGER.provisional).toBe('Provisional: not yet confirmed against SATCAT');
   });
-  it('puts the notice above the body, and the section between status source and context', () => {
+  it('puts the notice above the body, and the section after the two columns (the last column section is Report and data)', () => {
     const html = ledgerHtml(withFile, real, cases);
     expect(html.indexOf('case-provisional')).toBeLessThan(html.indexOf('case-body'));
     const titles = sectionTitles(html);
-    expect(titles.indexOf(LEDGER.headings.caseFile)).toBe(titles.indexOf(LEDGER.headings.status) + 1);
-    expect(titles.indexOf(LEDGER.headings.context)).toBe(titles.indexOf(LEDGER.headings.caseFile) + 1);
+    expect(titles.indexOf(LEDGER.headings.caseFile)).toBe(titles.indexOf(LEDGER.headings.actions) + 1);
   });
   it('shows no notice for a file that is not provisional', () => {
     const final = new Map([[40258, parseCaseFile('40258.md', FM('Text.'))]]);
