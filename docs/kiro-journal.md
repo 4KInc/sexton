@@ -54,10 +54,11 @@ Third test, 2026-11-22 (census hook, Task 19):
 
 2026-11-23: Task S1 done. The sexton MCP server connected in Kiro and `explain(27378)` and `census()` answered through it (under MCP below); the language-check hook did fire: after each file-tool edit of docs/methodology.md the chat UI showed "Run Command Hook — Language check on save", and Kiro's log has two ContextualHookInvoked entries at 23:55:39 and 23:55:41, but the hook's result is not returned to the agent, so the agent saw no output; `orbital-coroner` was found as a sub-agent and its review of data/cases/40258.md raised one flag (`provisional: false`); 734 tests pass and the build works.
 2026-11-24: Task 18 done. README rewritten (problem first, live link, census, six verdicts, how it was built with Kiro, limits, run/test/build, data refresh, credits, MCP kept); journal hook correction; orbital-coroner told to read docs/spike.md before flagging `provisional`; churchyard intro cut from 11 lines to 10 at 1280 px (chart top 662 px to 622 px); 40258 FCC paragraph rewritten for owner CIS; 734 tests pass and the build works. The screenshot at screenshots/churchyard.png is a placeholder.
+2026-11-24: README live link fixed and screenshot moved to docs/images/churchyard.png (160 KB, not ignored); hook bullets in "What surprised us" reworded; live check of https://4kinc.github.io/sexton/ in headless Chrome passed on the churchyard, #/table (sorting), #/census, #/method and #/sat/27378, with no console errors and no sideways scroll at 375 px; VoiceOver, a real phone and the print view not checked.
 Correction, S1 session: the hooks do fire. After each file-tool edit of `docs/methodology.md` the chat UI showed "Run Command Hook — Language check on save", and Kiro's log has two `ContextualHookInvoked` entries, at 23:55:39 and 23:55:41. The hook's result is not returned to the agent. That is why the agent saw no output in every test above and wrote "not observed". Those tests show what the agent could see. They do not show that the hooks did not run. The user's chat UI and the log are the places to look.
 ## What surprised us
-- The hand-written hook format loaded (4 read, 4 registered) but never fired.
-- The hooks loaded but were disabled because the files had no `"enabled": true`; the panel's Enable button spun without saving.
+- The hook files loaded (4 read, 4 registered) but stayed disabled until each had `"enabled": true`.
+- The panel's Enable button spun without saving, until Kiro was restarted.
 - The census test wrote the real `data/register.json` and README.md.
 - The colour test matched "white" inside `white-space`.
 - The check-language script passed silently when run through a symlinked path.

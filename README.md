@@ -4,9 +4,9 @@ When a geostationary satellite retires, it should be raised into a disposal orbi
 
 Each satellite gets one of six verdicts, with its assumptions and the age of its data beside it. Sexton is built for the Kiroween 2026 Costume Contest: the churchyard is the data model, so every stone's height, moss and sway is a number from the register.
 
-**Live site: <https://4kinc.github.io/sexton/\>\*\*
+**Live site:** https://4kinc.github.io/sexton/
 
-![The churchyard: one stone per retired satellite, taller for a higher perigee](screenshots/churchyard.png)
+![The churchyard: one stone per retired satellite, taller for a higher perigee](docs/images/churchyard.png)
 
 ## Census
 <!-- census:start -->
