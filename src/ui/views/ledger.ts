@@ -66,6 +66,12 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
   const snapshot = section('snapshot', H.snapshot, `${paras([LEDGER.snapshotLine(reg.snapshot.set), ...(reg.sample ? [LEDGER.sampleNote] : [])])}<ul>${sources}</ul>`);
   const status = section('status', H.status, paras(statusLines(r, config)));
   const context = section('context', H.context, paras([CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.noRetirementDate]));
+  const cite = section(
+    'cite',
+    H.cite,
+    `<ul class="cite">${LEDGER.citation(r.name, r.norad, reg.snapshot.set).map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` +
+      paras([assumptionsLine(config), LEDGER.citeNote]),
+  );
   const actions = section(
     'actions',
     H.actions,
@@ -77,7 +83,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     `</ul></footer>`;
   return (
     `<article class="ledger"><p class="print-title">${esc(LEDGER.printTitle)}: NORAD <span class="num">${r.norad}</span></p><p class="snapshot-label">${esc(snapshotLabel(reg.snapshot.set))}</p>` +
-    identity + verdict + maths + assumptions + orbit + snapshot + status + caseFileSection(r, cases) + context + actions + footer +
+    verdict + identity + maths + orbit + assumptions + snapshot + status + caseFileSection(r, cases) + context + cite + actions + footer +
     `<p class="ledger-back"><a href="#/table">${esc(LEDGER.back)}</a></p></article>`
   );
 }

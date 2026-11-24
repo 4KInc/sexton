@@ -8,6 +8,7 @@ import { SCALE } from './svg/scale.ts';
 
 export const SITE = {
   title: 'Sexton',
+  url: 'https://4kinc.github.io/sexton/',
   tagline: 'A register of retired geostationary satellites',
   skipToMain: 'Skip to main content',
   skipToTable: 'Skip the churchyard drawing and go to the table view',
@@ -225,17 +226,26 @@ export const LEDGER = {
   noLedger: (name: string, norad: number, reason: string): string =>
     `${name} (NORAD ${norad}) has no verdict (${reason}), so it has no ledger. Its numbers are in the table.`,
   headings: {
-    identity: 'The object',
     verdict: 'The verdict',
+    identity: 'The object',
     maths: 'The threshold maths',
-    assumptions: 'Assumptions',
     orbit: 'Orbit source and data age',
+    assumptions: 'Assumptions',
     snapshot: 'Snapshot and sources',
     status: 'Status source',
     caseFile: 'Case file',
     context: 'Context',
+    cite: 'Cite this',
     actions: 'Report and data',
   },
+  /** One line each, so the list can be copied as it is. The snapshot date is on its own line. */
+  citation: (name: string, norad: number, snapshotDate: string): string[] => [
+    'Sexton, a register of retired geostationary satellites.',
+    `${name}, NORAD ID ${norad}.`,
+    `${snapshotLabel(snapshotDate)}.`,
+    `${SITE.url}#/sat/${norad}`,
+  ],
+  citeNote: 'A verdict holds only under its assumptions and for the data of this snapshot. Cite them with it.',
   fields: {
     name: 'Name',
     norad: 'NORAD id',

@@ -103,6 +103,7 @@ export function ledgerText(r: Retired, reg: UiRegister, caseFile?: CaseFile): st
   const block = (title: string, lines: readonly string[]): string => `${title}\n${lines.join('\n')}`;
   const parts: string[] = [
     `${LEDGER.printTitle}: NORAD ${r.norad}`,
+    block(H.verdict, [verdictCopy(v.verdict, config).pair, verdictSentence(r, config)]),
     block(H.identity, [
       `${F.name}: ${r.name}`,
       `${F.norad}: ${r.norad}`,
@@ -111,13 +112,11 @@ export function ledgerText(r: Retired, reg: UiRegister, caseFile?: CaseFile): st
       `${F.launch}: ${r.launchDate ?? LEDGER.unknown}`,
       ...(v.era === 'before FCC rule' ? [CARD.beforeRule] : []),
     ]),
-    block(H.verdict, [verdictCopy(v.verdict, config).pair, verdictSentence(r, config)]),
     block(H.maths, [
       `${LEDGER.formula(config)} ${LEDGER.range(config)}`,
       marginsSentence(r, config),
       `Eccentricity e = ${formatE(r.e, config.iadc.eccentricityMax)}. The IADC limit is ${config.iadc.eccentricityMax}.`,
     ]),
-    block(H.assumptions, [assumptionsLine(config), LEDGER.assumedRanges(config), v.borderline ? CARD.borderline(config) : LEDGER.notBorderline(config)]),
     block(H.orbit, [
       r.orbitSource.kind === 'GP' ? dataAge(r) : LEDGER.satcatSource,
       `${F.perigee}: ${pText} km`,
@@ -125,6 +124,7 @@ export function ledgerText(r: Retired, reg: UiRegister, caseFile?: CaseFile): st
       `${F.eccentricity}: ${formatE(r.e, config.iadc.eccentricityMax)}`,
       ...orbitNotes(r, config),
     ]),
+    block(H.assumptions, [assumptionsLine(config), LEDGER.assumedRanges(config), v.borderline ? CARD.borderline(config) : LEDGER.notBorderline(config)]),
     block(H.snapshot, [LEDGER.snapshotLine(reg.snapshot.set), ...(reg.sample ? [LEDGER.sampleNote] : [])]),
     block(H.status, statusLines(r, config)),
   ];
@@ -132,5 +132,6 @@ export function ledgerText(r: Retired, reg: UiRegister, caseFile?: CaseFile): st
     parts.push(block(H.caseFile, [...(caseFile.provisional ? [LEDGER.provisional] : []), caseFile.title, '', caseFile.body]));
   }
   parts.push(block(H.context, [CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.noRetirementDate]));
+  parts.push(block(H.cite, [...LEDGER.citation(r.name, r.norad, reg.snapshot.set), assumptionsLine(config), LEDGER.citeNote]));
   return parts.join('\n\n');
 }

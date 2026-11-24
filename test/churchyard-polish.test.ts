@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
 import { findHits } from '../scripts/check-language.ts';
-import { CHURCHYARD_INTRO, LEGEND, TIP } from '../src/ui/copy.ts';
+import { CHURCHYARD_INTRO, LEDGER, LEGEND, SITE, TIP } from '../src/ui/copy.ts';
+import { parseHash } from '../src/ui/router.ts';
+import { ledgerHtml } from '../src/ui/views/ledger.ts';
 import type { UiRegister } from '../src/ui/register.ts';
 import { chartSvg, introHtml, isFlagged, legendHtml, retiredPayloads, tipHtml } from '../src/ui/views/churchyard.ts';
 
@@ -79,5 +81,34 @@ describe('ring, faint stones and names on the real register', () => {
 describe('first paint', () => {
   it('index.html asks the browser to start the register fetch early', () => {
     expect(readFileSync(join(ROOT, 'index.html'), 'utf8')).toMatch(/<link rel="preload" as="fetch" href="%BASE_URL%register\.json"/);
+  });
+});
+
+describe('polish step 4: a citable ledger', () => {
+  const r = retired.find((x) => x.norad === 27378)!;
+  const html = ledgerHtml(r, real);
+  it('the verdict is the first section, and it names the verdict in plain words', () => {
+    const titles = [...html.matchAll(/<h2 id="ledger-[a-z]+-title">([^<]*)<\/h2>/g)].map((m) => m[1]);
+    expect(titles[0]).toBe(LEDGER.headings.verdict);
+    expect(text(html)).toContain('below the IADC disposal threshold under the stated assumptions');
+  });
+  it('the cite block has the name, NORAD id, snapshot date and a permalink, with the assumptions', () => {
+    const cite = text(html.slice(html.indexOf('id="ledger-cite"')));
+    expect(cite).toContain('ECHOSTAR 7, NORAD ID 27378.');
+    expect(cite).toContain('CelesTrak snapshot, 22 Nov 2026.');
+    expect(cite).toContain('https://4kinc.github.io/sexton/#/sat/27378');
+    expect(cite).toContain('±25 km');
+  });
+  it('the permalink is the ledger route, so the router resolves it to the same satellite', () => {
+    for (const x of retired.slice(0, 50)) {
+      const url = LEDGER.citation(x.name, x.norad, real.snapshot.set).at(-1)!;
+      expect(url.startsWith(SITE.url)).toBe(true);
+      expect(parseHash(url.slice(SITE.url.length))).toMatchObject({ name: 'sat', norad: x.norad });
+    }
+  });
+  it('the cite block has no banned stem and no sentence that pairs a retirement word with a year', () => {
+    const cite = text(html.slice(html.indexOf('id="ledger-cite"')));
+    expect(findHits(cite, 'cite')).toEqual([]);
+    for (const line of LEDGER.citation(r.name, r.norad, real.snapshot.set)) expect(/retire/i.test(line) && /\b(19|20)\d{2}\b/.test(line)).toBe(false);
   });
 });
