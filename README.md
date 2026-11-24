@@ -8,6 +8,18 @@ Each satellite gets one of six verdicts, with its assumptions and the age of its
 
 ![The churchyard: one stone per retired satellite, taller for a higher perigee](docs/images/churchyard.png)
 
+## The headline number
+
+CelesTrak snapshot, 22 Nov 2026. 131 of the 696 retired payloads in the register were launched on or after 18 March 2002, the date of the FCC minimum-perigee rule. 36 of those 131 (27.5%) sit in or near the protected zone: their perigee is below the IADC disposal threshold under the stated assumptions (C_R·A/m from 0.012 to 0.045 m²/kg, mean elements ±25 km). 565 of 696 retired payloads predate any guideline. That is context, not a failure.
+
+As a plausibility check, 27 of 45 retired payloads launched after 2007 are buried (60.0%, band 53.3% to 64.4%). ESA's report gives 70% to 95% for payloads reaching end of life in the last decade. The two count different groups, and Sexton did not adjust its method to match. See [the method page](docs/methodology.md).
+
+The IADC guidelines are voluntary. The FCC rule (47 CFR § 25.283) applies only to satellites the FCC authorizes. The register only sees objects still near GEO.
+
+## Built with Kiro
+
+A spec of 25 tasks, five steering files, four hooks, a custom agent that writes the case files, an MCP server with four tools, and a Kiro CLI workflow in CI. One table maps each to its file: [docs/kiro-usage.md](docs/kiro-usage.md). Details are further down.
+
 ## Census
 <!-- census:start -->
 Counts from the snapshot of 2026-11-22. Run `npm run census` to refresh them.

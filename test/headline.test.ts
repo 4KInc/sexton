@@ -109,3 +109,17 @@ describe('docs/methodology.md states the numbers the engine gives', () => {
     expect(doc).toContain(`${s.predate} of ${s.retired} retired payloads predate any guideline`);
   });
 });
+
+describe('README.md headline states the numbers the engine gives', () => {
+  const readme = readFileSync(join(ROOT, 'README.md'), 'utf8');
+  it('the post-rule group, the predate count and the validation rate for snapshot 2026-11-22', () => {
+    const s = postRuleSummary(real.records);
+    const r = disposalRate(real.records);
+    const pct = (n: number, of: number): string => ((100 * n) / of).toFixed(1);
+    expect(readme).toContain(`${s.postRule} of the ${s.retired} retired payloads`);
+    expect(readme).toContain(`${s.inOrNearZone} of those ${s.postRule} (${pct(s.inOrNearZone, s.postRule)}%)`);
+    expect(readme).toContain(`${s.predate} of ${s.retired} retired payloads predate any guideline`);
+    expect(readme).toContain(`${r.central} of ${r.n} retired payloads launched after ${r.afterLaunchYear} are buried (${pct(r.central, r.n)}%, band ${pct(r.lower, r.n)}% to ${pct(r.upper, r.n)}%)`);
+    expect(readme).toContain('CelesTrak snapshot, 22 Nov 2026');
+  });
+});
