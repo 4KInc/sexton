@@ -59,6 +59,8 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   document.title = `${heading(route)} · ${SITE.title}`;
   renderNav(route);
   main.innerHTML = `<h1 id="page-title" tabindex="-1">${withSansDigits(heading(route))}</h1><div id="view"></div>`;
+  // The nav already says where you are, so the churchyard keeps its heading for screen readers and as the focus target only.
+  el('page-title').classList.toggle('visually-hidden', route.name === 'churchyard');
   const view = el('view');
   if (route.name === 'churchyard') {
     drawnNarrow = window.matchMedia(NARROW).matches;

@@ -19,6 +19,31 @@
 }
 
 /* The ground */
+/* Atmosphere inside the plot, behind the bands. It marks no value. */
+.sky {
+  fill: url(#sky-fade);
+}
+.sky-stop-top {
+  stop-color: var(--sky-top);
+}
+.sky-stop-bottom {
+  stop-color: var(--ground);
+}
+.moon-glow {
+  fill: url(#moon-fade);
+}
+.moon-stop-in {
+  stop-color: var(--sky-glow);
+  stop-opacity: 0.95;
+}
+.moon-stop-out {
+  stop-color: var(--sky-glow);
+  stop-opacity: 0;
+}
+.road-edge {
+  stroke: var(--bone);
+  stroke-width: 1.2;
+}
 .band--below {
   fill: var(--ground);
 }
@@ -70,12 +95,12 @@
 
 .fcc-line {
   stroke: var(--bone);
-  stroke-width: 1;
-  stroke-dasharray: 1 3;
+  stroke-width: 1.8;
+  stroke-dasharray: 7 4;
 }
 .fcc-label {
   fill: var(--bone);
-  font: 12px var(--font-body);
+  font: 600 13px var(--font-body);
   stroke: var(--ground);
   stroke-width: 3px;
   paint-order: stroke;
@@ -388,9 +413,10 @@
 }
 /* A ring: launched on or after the rule date, perigee below the IADC threshold. A shape, so colour is not the only cue. */
 .flag-ring {
-  fill: none;
+  fill: var(--ground);
+  fill-opacity: 0.75;
   stroke: var(--bone);
-  stroke-width: 1.4;
+  stroke-width: 2.2;
 }
 .stone-name {
   fill: var(--bone);
@@ -429,7 +455,7 @@
 
 /* Hero: three tiles that open the census. Each tile is a stone with an arched top. */
 .hero {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-3);
 }
 .tiles {
   display: grid;
@@ -442,13 +468,15 @@
 }
 .tile-link {
   display: grid;
-  grid-template-rows: auto auto 1fr;
-  gap: 0.2rem;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: var(--space-3);
+  row-gap: 0.1rem;
   height: 100%;
-  padding: 0.9rem 1.5rem 0.8rem;
-  background: linear-gradient(180deg, var(--stone), var(--panel) 80%);
+  padding: 0.7rem 1.25rem 0.65rem;
+  background: linear-gradient(180deg, var(--stone), var(--panel) 85%);
   border: 1px solid var(--panel-edge);
-  border-radius: 3rem 3rem var(--radius) var(--radius);
+  border-radius: 1.8rem 1.8rem var(--radius) var(--radius);
   text-decoration: none;
 }
 .tile-link:hover {
@@ -459,32 +487,70 @@
   align-items: baseline;
   gap: var(--space-2);
   font-family: var(--font-display);
-  font-size: 2.6rem;
+  font-size: 2.2rem;
   line-height: 1.05;
+  text-wrap: nowrap;
 }
 .tile-of {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   color: var(--bone-muted);
 }
 .tile-label {
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 .tile-sub {
+  grid-column: 1 / -1;
   color: var(--bone-muted);
-  font-size: 0.82rem;
-  line-height: 1.35;
+  font-size: 0.78rem;
+  line-height: 1.3;
 }
+/* One line of fine print. "Limits" opens the full text. */
 .hero-fine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem var(--space-3);
   margin: var(--space-2) 0 0;
-  max-width: none;
   color: var(--bone-muted);
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.fine-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+.fine-list li + li {
+  margin-left: 0.6rem;
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--bone-muted);
+}
+.limits > summary {
+  display: inline;
+  cursor: pointer;
+  color: var(--bone);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.limits[open] {
+  flex-basis: 100%;
+}
+.limits-body {
+  max-width: 80ch;
+  padding: var(--space-2) 0 0;
+}
+.limits-body p {
+  margin: 0 0 var(--space-1);
 }
 
 /* The stage: the chart in a frame, with its toolbar, caption and compact legend above it. */
 .stage {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--panel-edge);
   border-radius: var(--radius);
   background: linear-gradient(180deg, var(--sky-top), var(--panel) 14rem);
@@ -495,7 +561,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-4);
-  padding: var(--space-3) var(--space-3) 0;
+  padding: var(--space-2) var(--space-3) 0;
 }
 .toolbar .filters-details {
   flex: 0 0 auto;
@@ -528,31 +594,41 @@
 .toolbar .skip-link--inline {
   margin: 0;
 }
+.toolbar-guide {
+  margin-left: auto;
+}
 .stage-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2) var(--space-4);
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+.stage-lead {
+  flex: 1 1 36rem;
+  min-width: 0;
 }
 .stage-caption {
-  flex: 1 1 32rem;
   margin: 0;
-  max-width: 74ch;
+  max-width: 110ch;
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.4;
+}
+.stage-terms {
+  margin: 0.15rem 0 0;
+  max-width: 120ch;
+  color: var(--bone-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 .legend-strip {
   flex: 0 1 auto;
 }
-.toolbar-guide {
-  margin-left: auto;
-}
 .legend-strip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 0 var(--space-4);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -565,7 +641,8 @@
   font-size: 0.92rem;
 }
 .stage .chart-note {
-  margin: var(--space-2) var(--space-3) 0;
+  font-size: 0.85rem;
+  margin: 0 var(--space-3) var(--space-2);
 }
 
 /* The guide: everything that explains the chart, closed until asked for. */
@@ -594,27 +671,42 @@
     gap: var(--space-2);
   }
   .tile-link {
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto auto;
-    column-gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
-    border-radius: 1.6rem 1.6rem var(--radius) var(--radius);
+    padding: 0.45rem 1rem;
+    border-radius: 1.4rem 1.4rem var(--radius) var(--radius);
   }
   .tile-figure {
-    grid-row: 1 / 4;
-    align-self: center;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-    min-width: 4.2rem;
-    font-size: 2.1rem;
+    min-width: 4.4rem;
+    font-size: 1.8rem;
   }
   .tile-of {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
   .tile-sub {
-    grid-column: 2;
-    font-size: 0.78rem;
+    display: none;
+  }
+  /* Phone order: the picture first, then the controls. */
+  .stage-head {
+    display: contents;
+  }
+  .stage-lead {
+    flex: none;
+    order: 0;
+    padding: var(--space-2) var(--space-3);
+  }
+  .stage .chart-note {
+    order: 1;
+  }
+  .plot {
+    order: 2;
+  }
+  .toolbar {
+    order: 3;
+    padding-bottom: var(--space-2);
+  }
+  .legend-strip {
+    flex: none;
+    order: 4;
+    padding: 0 var(--space-3) var(--space-3);
   }
 }
 @media (max-width: 600px) {
@@ -627,11 +719,43 @@
   .nav-list {
     width: 100%;
   }
-  .toolbar-guide {
-    margin-left: 0;
-  }
   .nav-list a {
     padding: 0.5rem 0.4rem;
     font-size: 0.92rem;
+  }
+  .toolbar-guide {
+    margin-left: 0;
+  }
+  .tile-label {
+    font-size: 0.92rem;
+  }
+  .fine-list {
+    display: block;
+  }
+  .fine-list li {
+    display: inline;
+  }
+  .fine-list li + li {
+    margin-left: 0.3rem;
+    padding-left: 0.4rem;
+  }
+  .hero-fine {
+    margin-top: var(--space-1);
+    font-size: 0.74rem;
+    line-height: 1.4;
+  }
+  .stage-lead {
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-2);
+  }
+  .stage-caption {
+    font-size: 0.95rem;
+  }
+  .tile-link {
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+  }
+  .tile-label {
+    font-size: 0.86rem;
   }
 }

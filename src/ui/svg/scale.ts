@@ -13,7 +13,7 @@ export const SCALE = {
   maxKm: 1000,
   pxPerKm: 0.8,
   /** Height of the whole high-ground section. */
-  highPx: 140,
+  highPx: 100,
   /** Log knee of the high-ground curve: y grows as ln(1 + d / highKneeKm), d km above linearMaxKm. */
   highKneeKm: 100,
   /** Height of the strip above maxKm and the strip below minKm, where off-scale stones stand. */

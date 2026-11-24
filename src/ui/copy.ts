@@ -53,20 +53,33 @@ export const CHURCHYARD_INTRO = {
 
 /** The hero of the churchyard view: one caption sentence, three tiles that link to the census, and the fine print. */
 export const HERO = {
-  caption:
-    'Each stone is a retired satellite, as tall as its perigee (the lowest point of its orbit) above GEO (the circular orbit about 35,786 km above the equator, where a satellite stays over one spot).',
+  caption: 'Each stone is a retired satellite, as tall as its perigee above GEO. The road is the protected zone.',
+  /** First appearance of GEO and perigee, in small type under the caption (language.md). */
+  terms: [TERMS.geo, TERMS.perigee],
   tilesLabel: 'Key numbers. Each one opens the census.',
   postRule: { label: 'retired payloads launched after the FCC rule', sub: 'On or after 18 March 2002.' },
   zone: {
     of: (n: number): string => `of ${formatCount(n)}`,
     label: 'in or near the protected zone',
-    sub: 'Perigee below the IADC disposal threshold, under the stated assumptions.',
+    sub: 'Below the IADC disposal threshold, under the stated assumptions.',
   },
   validation: {
     label: (lo: number, hi: number): string => `Sexton vs ESA ${lo}\u2013${hi}%`,
     labelNoRange: 'Sexton: buried share',
-    sub: (year: number): string => `Sexton counts payloads launched after ${year}. The groups differ, so it is a plausibility check.`,
+    sub: (year: number): string => `Launched after ${year}. Different groups: a plausibility check.`,
+    limits: (year: number): string =>
+      `The Sexton share counts retired payloads launched after ${year}, because Sexton has no retirement dates. ESA's range counts payloads reaching end of life in the last decade. The two groups differ, so the comparison is a plausibility check, not a test.`,
   },
+  /** The one-line fine print under the tiles. The full text is behind "Limits". */
+  fine: (snapshot: string, config: Config): string[] => [
+    snapshot,
+    `C_R\u00B7A/m ${config.iadc.crAmMin}\u2013${config.iadc.crAmMax} m\u00B2/kg`,
+    `\u00B1${config.uncertaintyKm} km`,
+    'The register only sees objects still near GEO',
+    'IADC guidelines are voluntary',
+    'FCC rule covers FCC-authorized launches from 18 Mar 2002',
+  ],
+  limits: 'Limits',
   guide: 'How to read the churchyard',
   guideHint: 'What the marks and words mean',
   legendLabel: 'The six verdicts, each with its stone shape',
@@ -188,7 +201,7 @@ export function dataAge(record: Pick<SatRecord, 'orbitSource'>): string {
 
 export const TIP = {
   perigee: (absText: string, below: boolean, uncertaintyKm: number): string => `Perigee ${absText} km ${below ? 'below' : 'above'} GEO, \u00B1${uncertaintyKm} km`,
-  open: 'Click or press Enter to open the ledger.',
+  open: 'Click or press Enter to select. Double-click, or press Enter again, to open the ledger.',
 } as const;
 export const CARD = {
   ledger: 'Open the ledger',
@@ -200,7 +213,7 @@ export const CARD = {
   borderline: (config: Config): string => `Borderline: within ${config.uncertaintyKm} km of a band edge.`,
   beforeRule: 'Launched before the FCC minimum-perigee rule date (18 March 2002).',
   yearsSinceLaunch: (years: number): string => `${years} ${years === 1 ? 'year' : 'years'} since launch`,
-  empty: 'Open a stone to read its ledger. The last stone you opened is marked and shown here.',
+  empty: 'Click a stone, or focus it and press Enter, to read its card. Escape clears it. Double-click, or press Enter again, to open its ledger.',
 } as const;
 
 /** Spoken label for a stone link (design 5.4). */

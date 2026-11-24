@@ -78,12 +78,20 @@ function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
   const plotTop = LAYOUT.top;
   const plotBottom = LAYOUT.top + plotHeight();
   const out: string[] = [];
+  // Night sky behind the ground above the wall, and a faint moon glow over the high ground. Atmosphere, not data.
+  const skyBottom = yOf(config.thresholdHighKm);
+  out.push(`<rect class="sky" x="${f(x)}" y="${f(plotTop)}" width="${f(w)}" height="${f(skyBottom - plotTop)}"/>`);
+  out.push(`<ellipse class="moon-glow" cx="${f(x + w * 0.16)}" cy="${f(yBreak() - 30)}" rx="${f(w * 0.2)}" ry="95"/>`);
   for (const band of bandsOf(config)) {
     // The top band reaches up into the strip for off-scale stones, and the bottom band down into its strip.
     const y1 = band.toKm >= SCALE.maxKm ? plotTop : yOf(band.toKm);
     const y0 = band.fromKm <= SCALE.minKm ? plotBottom : yOf(band.fromKm);
     const copy = bandCopy(band.id, config);
     out.push(`<rect class="band band--${band.id}" x="${f(x)}" y="${f(y1)}" width="${f(w)}" height="${f(y0 - y1)}"/>`);
+    if (band.id === 'road') {
+      // A crisp edge on both sides of the road, so the protected zone reads at a glance.
+      out.push(`<line class="road-edge" x1="${f(x)}" x2="${f(x + w)}" y1="${f(y1)}" y2="${f(y1)}"/><line class="road-edge" x1="${f(x)}" x2="${f(x + w)}" y1="${f(y0)}" y2="${f(y0)}"/>`);
+    }
     if (!narrow) {
       // The name sits in the linear part of its band.
       const ly1 = band.toKm > SCALE.linearMaxKm ? yBreak() : y1;
@@ -283,7 +291,7 @@ export function chartSvg(
     `<svg class="chart${narrow ? ' chart--natural' : ''}" viewBox="0 0 ${f(width)} ${f(height)}"${size} role="group" aria-labelledby="chart-title chart-desc" focusable="false">`,
     `<title id="chart-title">${esc(CHART.title)}</title>`,
     `<desc id="chart-desc">${esc(chartDescription(config))}</desc>`,
-    `<defs>${stoneDefs()}<linearGradient id="wall-shade" x1="0" y1="1" x2="0" y2="0"><stop class="wall-stop-low" offset="0"/><stop class="wall-stop-high" offset="1"/></linearGradient></defs>`,
+    `<defs>${stoneDefs()}<linearGradient id="sky-fade" x1="0" y1="0" x2="0" y2="1"><stop class="sky-stop-top" offset="0"/><stop class="sky-stop-bottom" offset="1"/></linearGradient><radialGradient id="moon-fade"><stop class="moon-stop-in" offset="0"/><stop class="moon-stop-out" offset="1"/></radialGradient><linearGradient id="wall-shade" x1="0" y1="1" x2="0" y2="0"><stop class="wall-stop-low" offset="0"/><stop class="wall-stop-high" offset="1"/></linearGradient></defs>`,
     `<g aria-hidden="true">`,
     bandsSvg(config, cols, narrow),
     `<text class="axis-title" x="8" y="18">${esc(CHART.axisTitle)}</text>`,
@@ -339,6 +347,8 @@ export function cardHtml(r: RetiredRecord | undefined, config: Config): string {
   );
 }
 
+/** What Enter does on a focused stone: select it, or open its ledger when it is already selected. */
+export const enterAction = (selected: number | null, norad: number): 'select' | 'open' => (selected === norad ? 'open' : 'select');
 export interface HeroStat {
   id: 'post-rule' | 'zone' | 'validation';
   /** The big figure. */
@@ -373,23 +383,31 @@ export function heroStats(reg: Pick<UiRegister, 'records' | 'config'>, compariso
 const sansFigure = (text: string): string => esc(text).replace(/\d+%?/g, '<span class="num">$&</span>');
 export function heroHtml(reg: UiRegister): string {
   const config = reg.config;
-  const tiles = heroStats(reg)
+  const stats = heroStats(reg);
+  const tiles = stats
     .map(
       (t) =>
         `<li class="tile tile--${t.id}"><a class="tile-link" href="#/census"><span class="tile-figure">${sansFigure(t.value)}${t.of === null ? '' : `<span class="tile-of">${withSansDigits(t.of)}</span>`}</span>` +
         `<span class="tile-label">${esc(t.label)}</span><span class="tile-sub">${esc(t.sub)}</span></a></li>`,
     )
     .join('');
-  const fine = [
-    snapshotLabel(reg.snapshot.set) + '.',
+  const fine = HERO.fine(snapshotLabel(reg.snapshot.set), config)
+    .map((t) => `<li>${esc(t)}</li>`)
+    .join('');
+  const d = disposalRate(reg.records, config);
+  const limits = [
     assumptionsLine(config),
     CHURCHYARD_INTRO.blindSpot,
     CHURCHYARD_INTRO.voluntary,
-  ].join(' ');
+    CHURCHYARD_INTRO.noRetirementDate,
+    HERO.validation.limits(d.afterLaunchYear),
+  ]
+    .map((t) => `<p>${esc(t)}</p>`)
+    .join('');
   return (
-    `<div class="hero">` +
-    `<ul class="tiles" aria-label="${esc(HERO.tilesLabel)}">${tiles}</ul>` +
-    `<p class="hero-fine">${esc(fine)}</p></div>`
+    `<div class="hero"><ul class="tiles" aria-label="${esc(HERO.tilesLabel)}">${tiles}</ul>` +
+    `<div class="hero-fine"><ul class="fine-list">${fine}</ul>` +
+    `<details class="limits"><summary>${esc(HERO.limits)}</summary><div class="limits-body">${limits}</div></details></div></div>`
   );
 }
 /** The verdict words with their stone shapes, in one row beside the chart. The meanings are in the guide below. */
@@ -432,7 +450,8 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     `<button type="button" class="button button--quiet toolbar-guide" data-open-guide>${esc(HERO.guideHint)}</button>` +
     `</div>` +
     (hasStones
-      ? `<div class="stage-head"><p class="stage-caption">${esc(HERO.caption)}</p>${compactLegendHtml(config)}</div>` +
+      ? `<div class="stage-head"><div class="stage-lead"><p class="stage-caption">${esc(HERO.caption)}</p>` +
+        `<p class="stage-terms">${HERO.terms.map(esc).join(' ')}</p></div>${compactLegendHtml(config)}</div>` +
         (narrow ? `<p class="chart-note">${esc(CHART.scrollNote)} <a id="scroll-table" href="#/table">${esc(CHART.scrollLink)}</a>.</p>` : '') +
         `<div class="plot"><div class="chart-wrap${narrow ? ' chart-wrap--scroll' : ''}" id="chart-host"${narrow ? ` role="region" aria-label="${esc(CHART.scrollRegion)}"` : ''}></div>` +
         `<div class="tip" id="stone-tip" hidden aria-hidden="true"></div>` +
@@ -507,13 +526,19 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       placeCard();
     }
   };
-  // A click or Enter on a stone opens its ledger (the link's own address). The stone is remembered, so it
-  // is marked and shown on the card when the visitor comes back.
-  const onClick = (event: Event): void => {
+  // A click or tap on a stone selects it and shows its card. A double-click, Enter on the selected stone, or the
+  // card's button opens the ledger. A click with a modifier key keeps the link's own behaviour.
+  const openLedger = (norad: number): void => {
+    remembered = norad;
+    window.location.hash = `#/sat/${norad}`;
+  };
+  const onClick = (event: MouseEvent): void => {
     const target = event.target as Element;
     const link = target.closest<SVGAElement>('a.stone-link');
     if (link !== null) {
-      remembered = Number(link.dataset['norad']);
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+      event.preventDefault();
+      select(Number(link.dataset['norad']));
       return;
     }
     if (target.closest('[data-clear]') !== null) select(null);
@@ -525,6 +550,10 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
         guide.scrollIntoView({ block: 'start' });
       }
     }
+  };
+  const onDblClick = (event: MouseEvent): void => {
+    const link = stoneOf(event.target);
+    if (link !== null) openLedger(Number(link.dataset['norad']));
   };
   // The tooltip shows on hover and on keyboard focus, and Escape closes it. It stays while the pointer is over it.
   const tip = root.querySelector<HTMLElement>('#stone-tip');
@@ -580,12 +609,24 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     if (stoneOf(event.target) !== null) hideTip();
   };
   const onKeydown = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape') hideTip();
+    if (event.key === 'Escape') {
+      hideTip();
+      if (selected !== null && event.target instanceof Element && event.target.closest('.plot') !== null) {
+        const back = host?.querySelector<SVGAElement>(`a.stone-link[data-norad="${selected}"]`);
+        select(null);
+        // Focus stays on the stone if the card was the thing that had it.
+        if (back !== null && back !== undefined && !(event.target instanceof SVGElement)) back.focus();
+      }
+      return;
+    }
     const link = stoneOf(event.target);
     if (link === null || event.altKey || event.ctrlKey || event.metaKey) return;
     const norad = Number(link.dataset['norad']);
     if (event.key === 'Enter') {
-      remembered = norad;
+      // Enter selects. Enter on the stone that is already selected opens its ledger.
+      event.preventDefault();
+      if (enterAction(selected, norad) === 'open') openLedger(norad);
+      else select(norad);
       return;
     }
     if (!(NAV_KEYS as readonly string[]).includes(event.key)) return;
@@ -596,6 +637,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     host?.querySelector<SVGAElement>(`a.stone-link[data-norad="${next}"]`)?.focus();
   };
   root.addEventListener('click', onClick);
+  root.addEventListener('dblclick', onDblClick);
   root.addEventListener('focusin', onFocusIn);
   root.addEventListener('focusout', onFocusOut);
   root.addEventListener('keydown', onKeydown);
@@ -608,6 +650,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     root.removeEventListener('pointerout', onOut);
     unwire();
     root.removeEventListener('click', onClick);
+    root.removeEventListener('dblclick', onDblClick);
     root.removeEventListener('focusin', onFocusIn);
     root.removeEventListener('keydown', onKeydown);
   };
