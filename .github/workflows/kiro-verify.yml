@@ -1,0 +1,48 @@
+name: Kiro verify
+# Started by hand only. Kiro CLI runs headless to run the tests and rebuild the census.
+# The pass or fail decision is not left to the model: the steps after Kiro run the same
+# commands again and compare the files, so any difference fails the run.
+# Needs the repository secret KIRO_API_KEY (Settings, Secrets and variables, Actions).
+on:
+  workflow_dispatch:
+concurrency:
+  group: kiro-verify
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Check the API key is set
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+        run: |
+          if [ -z "$KIRO_API_KEY" ]; then
+            echo "The repository secret KIRO_API_KEY is not set. See the README, section Kiro in CI."
+            exit 1
+          fi
+      # The installer is Kiro's own script and is not pinned to a version.
+      - name: Install Kiro CLI
+        run: curl -fsSL https://cli.kiro.dev/install | bash
+      - name: Kiro CLI runs the tests and rebuilds the census
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          kiro-cli chat --v3 --no-interactive --trust-tools=run_command,read_file \
+            "Run npm test, then run npm run census. Do not edit any file. Report the number of tests that passed and whether README.md or data/register.json changed."
+      # The decision. These do not depend on what the model said.
+      - name: Tests must pass
+        run: npm test
+      - name: The census must not change any committed file
+        run: |
+          npm run census
+          git diff --exit-code -- README.md data/register.json

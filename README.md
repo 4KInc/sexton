@@ -48,11 +48,13 @@ The IADC threshold is 235 km + 1000·C_R·A/m above GEO, which is 247 to 280 km 
 
 **Steering.** Five steering files in [.kiro/steering/](.kiro/steering/) set the product, the tech stack, the design, the folder layout and the language rules. [language.md](.kiro/steering/language.md) bans judging words, requires assumptions and data age with every verdict, and forbids any retirement date. `scripts/check-language.ts` enforces it.
 
-**Hooks.** Three hooks in [.kiro/hooks/](.kiro/hooks/) run on the agent's own file edits: the engine tests on `src/engine/`, the census on `data/raw/`, and the language check on `src/ui/`, `data/cases/`, `docs/` and this README. The agent does not see their output, so the journal records what the chat UI showed.
+**Hooks.** Four hooks in three files in [.kiro/hooks/](.kiro/hooks/) run on the agent's own file edits: the engine tests on `src/engine/`, the census on `data/raw/` (on create and on save), and the language check on `src/ui/`, `data/cases/`, `docs/` and this README. The agent does not see their output, so the journal records what the chat UI showed.
 
 **The orbital-coroner agent.** [.kiro/agents/orbital-coroner.md](.kiro/agents/orbital-coroner.md) is a custom agent that writes and reviews the case files in `data/cases/`. It may use only computed fields from `data/register.json` and opened sources, it must cite every number, and it never states a retirement date.
 
 **The MCP server.** [scripts/mcp/server.ts](scripts/mcp/server.ts) lets an AI assistant ask the register for a verdict, a census, a list or a full ledger. See "Use it from an AI assistant" below.
+
+**Kiro in CI.** [.github/workflows/kiro-verify.yml](.github/workflows/kiro-verify.yml) is started by hand. It installs Kiro CLI, runs it headless to run the tests and rebuild the census, then runs `npm test` and `git diff --exit-code` on `README.md` and `data/register.json` itself, so any difference fails the run. It needs a repository secret named `KIRO_API_KEY` (Settings, Secrets and variables, Actions). It has not been run yet. More in [docs/kiro-usage.md](docs/kiro-usage.md), which maps every Kiro feature to its file and lists every property test.
 
 ## Limits
 

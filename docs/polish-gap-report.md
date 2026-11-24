@@ -8,7 +8,7 @@ Written 2026-11-24 before any polish change, from the repository at commit `aeaa
 - Build: `dist/assets/index-*.js` is 140 KB (45 KB gzip), CSS 12 KB, font 60 KB. `register.json` is 1.43 MB (141 KB gzip) and is fetched before anything but "loading" shows.
 - Register, snapshot 2026-11-22: 696 retired payloads. By era: 565 launched before 18 March 2002, 131 on or after it. Of those 131: 81 buried, 14 uncertain, 3 shallow grave, 33 unquiet.
 - Comparison figures: the ESA figure was found in the full report on 2026-11-23 but never marked verified. The Roberts 73% figure has never been found. Both show "pending a checked source".
-- Kiro surfaces already in the repo: spec (3 files), 5 steering files, 3 hook files (3 hooks), the `orbital-coroner` agent, an MCP server with 4 tools, and a journal. Missing: Kiro CLI in CI, `docs/kiro-usage.md`.
+- Kiro surfaces already in the repo: spec (3 files), 5 steering files, 3 hook files (4 hooks), the `orbital-coroner` agent, an MCP server with 4 tools, and a journal. Missing: Kiro CLI in CI, `docs/kiro-usage.md`.
 - Repo hygiene: `LICENSE` exists (MIT, but the holder reads "Org"). No `THIRD_PARTY.md`. `.kiro/` is not ignored, locally or globally (`git check-ignore` prints nothing; no global ignore file is set).
 
 ## Potential Impact
@@ -35,7 +35,7 @@ Strong
 Weak
 - No single document maps each Kiro feature to a file and to what it changed. A judge has to read a long journal.
 - No Kiro CLI run in CI.
-- Some of the seven invariants the owner wants listed are not tested as properties: threshold monotone in C_R·A/m exists; verdict monotone in perigee exists; e > 0.003 never buried exists; perigee ≤ apogee exists. Missing or unclear: JSON and CSV parses classify the same (the register has no JSON input, see Step 5), input order does not change the result (exists for merge, not for the whole engine), mean motion to semi-major axis round-trip (not tested).
+- Some of the seven invariants the owner wants listed are not tested as properties: threshold monotone in C_R·A/m exists; verdict monotone in perigee exists; e > 0.003 never buried exists; perigee ≤ apogee exists. Missing or unclear: JSON and CSV parses classify the same (the register has no JSON input, see Step 5), input order does not change the result (exists for merge and, in `test/engine.test.ts`, for the whole engine; this report first missed the engine one), mean motion to semi-major axis round-trip (not tested). Corrected in Step 5.
 
 Fixes: Step 5 (`docs/kiro-usage.md`, missing property tests, CI workflow), Step 7 (Devpost facts).
 
