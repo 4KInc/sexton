@@ -9,7 +9,7 @@ import { SCALE } from './svg/scale.ts';
 export const SITE = {
   title: 'Sexton',
   url: 'https://4kinc.github.io/sexton/',
-  tagline: 'Which retired geostationary satellites were buried above the belt, and which still drift in it.',
+  tagline: 'Register of retired geostationary satellites',
   skipToMain: 'Skip to main content',
   skipToTable: 'Skip the churchyard drawing and go to the table view',
   sampleBanner: 'Sample data for layout only. This is not the register.',
@@ -53,8 +53,29 @@ export const CHURCHYARD_INTRO = {
     'The register only sees objects still near GEO. Satellites sent much higher, or that left GEO, may be missing.',
 } as const;
 
+/** The guided tour over the churchyard (views/tour.ts). Figures: the FCC order DA 23-888 (docs/methodology.md, Sources). */
+export const TOUR = {
+  label: 'Guided tour',
+  start: 'Take the tour',
+  next: 'Next',
+  back: 'Back',
+  done: 'Explore freely',
+  skip: 'Skip the tour',
+  stepOf: (i: number, n: number): string => `Step ${i} of ${n}.`,
+  steps: {
+    zone: (km: number): string => `The road is the protected zone, \u00B1${km} km around GEO.`,
+    rule: 'The FCC rule covers satellites launched from 18 March 2002.',
+    story: (n: number, of: number): string => `${n} of ${of} launched since then sit in or near the zone.`,
+    echostar: 'EchoStar 7: fined $150,000 by the FCC (DA 23-888). Perigee about 122 km against a planned 300 km.',
+  },
+  zoneSub: 'The zone is shaded and edged. A stone standing on it has not been raised out of it.',
+  ruleSub: 'The rule applies only to satellites the FCC authorizes. Stones launched before the line are dimmed.',
+  echoSub: (p: string): string => `Sexton's own reading from the snapshot: ${p} km above GEO.`,
+} as const;
 /** The hero of the churchyard view: one caption sentence, three tiles that link to the census, and the fine print. */
 export const HERO = {
+  kicker: '\u00A7 01 \u00B7 The churchyard',
+  pitch: 'Which retired geostationary satellites were buried above the belt, and which still drift in it.',
   /** The first sentence pair of the guide's lead, so the two cannot drift apart. */
   caption: `${CHURCHYARD_INTRO.lead.split(':')[0]}.`,
   /** First appearance of GEO and perigee, in small type under the caption (language.md). */
@@ -96,6 +117,9 @@ export const CHART = {
   geoLabel: 'GEO',
   fccLine: 'FCC minimum-perigee rule (launches from 18 Mar 2002)',
   fccLineShort: 'FCC rule line',
+  /** Drawn in small mono capitals on the chart. */
+  fccLabel: 'FCC rule \u00B7 18 Mar 2002',
+  zoneLabel: (km: number): string => `Protected zone \u00B1${km} km`,
   empty: 'No retired payloads in this register.',
   legendTitle: 'The ground, the stones and the marks',
   designatorNote: 'Launch year from the international designator. Moss is not shown.',

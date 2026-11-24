@@ -35,6 +35,7 @@ import { applyFilters, drawnInChurchyard, hasFilters, hashFor, NO_FILTERS, parse
 import type { ViewState } from '../state.ts';
 import { badgeHtml, glyphSvg } from './badge.ts';
 import { fineHtml } from './fine.ts';
+import { moveStep, rememberSkip, tourHtml, tourSkipped, tourSteps } from './tour.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { bandsOf } from '../svg/bands.ts';
 import { stoneBody, stoneDefs } from '../svg/headstone.ts';
@@ -96,6 +97,8 @@ function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
     if (band.id === 'road') {
       // A crisp edge on both sides of the road, so the protected zone reads at a glance.
       out.push(`<line class="road-edge" x1="${f(x)}" x2="${f(x + w)}" y1="${f(y1)}" y2="${f(y1)}"/><line class="road-edge" x1="${f(x)}" x2="${f(x + w)}" y1="${f(y0)}" y2="${f(y0)}"/>`);
+      // The band names itself, in small mono capitals, at its upper left, where it is in view when the page opens.
+      out.push(`<text class="zone-label" x="${f(x + 10)}" y="${f(y1 + 16)}">${esc(CHART.zoneLabel(config.protectedZoneKm))}</text>`);
     }
     if (!narrow) {
       // The name sits in the linear part of its band.
@@ -117,14 +120,22 @@ function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
     out.push(`<text class="${high ? 'tick tick--high' : 'tick'}" x="${f(x - 6)}" y="${f(yOf(km) + 4)}" text-anchor="end">${esc(formatSigned(km, 0))}</text>`);
     if (km === 0) out.push(`<text class="tick tick--geo" x="${f(x + 4)}" y="${f(yOf(km) - 4)}">${esc(CHART.geoLabel)}</text>`);
   }
+  // The y axis as an instrument scale: a rule, a mark at every labelled tick, and a minor mark every 50 km in the linear part.
+  out.push(`<line class="scale-line" x1="${f(x)}" x2="${f(x)}" y1="${f(plotTop)}" y2="${f(plotBottom)}"/>`);
+  for (let km = SCALE.minKm; km <= SCALE.linearMaxKm; km += 50) {
+    const major = ticks.includes(km);
+    out.push(`<line class="${major ? 'scale-mark' : 'scale-minor'}" x1="${f(x - (major ? 6 : 3))}" x2="${f(x)}" y1="${f(yOf(km))}" y2="${f(yOf(km))}"/>`);
+  }
   out.push(breakMark(x, x + w, yBreak()));
   if (!narrow) out.push(`<text class="break-label" x="8" y="${f(yBreak() - 8)}">${esc(CHART.highGround)}</text>`);
   return out.join('');
 }
 function yearAxisSvg(cols: Columns): string {
   const y = LAYOUT.top + plotHeight() + 18;
-  const out: string[] = [];
+  const base = LAYOUT.top + plotHeight();
+  const out: string[] = [`<line class="scale-line" x1="${f(cols.gutter)}" x2="${f(cols.width - LAYOUT.right)}" y1="${f(base)}" y2="${f(base)}"/>`];
   for (const c of cols.list) {
+    out.push(`<line class="${c.from !== null && c.from % 5 === 0 ? 'scale-mark' : 'scale-minor'}" x1="${f(c.x + c.width / 2)}" x2="${f(c.x + c.width / 2)}" y1="${f(base)}" y2="${f(base + (c.from !== null && c.from % 5 === 0 ? 6 : 3))}"/>`);
     const cx = f(c.x + c.width / 2);
     if (c.from === null) {
       out.push(`<text class="tick" x="${cx}" y="${f(y)}" text-anchor="middle"><title>${esc(CHART.unknownYearTitle)}</title>${esc(CHART.unknownYear)}</text>`);
@@ -146,7 +157,7 @@ function fccLineSvg(config: Config, cols: Columns, narrow: boolean): string {
   const flip = x + 340 > cols.width;
   const label = narrow
     ? ''
-    : `<text class="fcc-label" x="${f(flip ? x - 5 : x + 5)}" y="${f(y0 - 10)}" text-anchor="${flip ? 'end' : 'start'}">${esc(CHART.fccLine)}</text>`;
+    : `<text class="fcc-label" x="${f(flip ? x - 5 : x + 5)}" y="${f(y0 - 10)}" text-anchor="${flip ? 'end' : 'start'}">${esc(CHART.fccLabel)}</text>`;
   return `<g class="fcc"><line class="fcc-line" x1="${f(x)}" x2="${f(x)}" y1="${f(y0)}" y2="${f(y1)}"/><title>${esc(CHART.fccLine)}</title>${label}</g>`;
 }
 
@@ -196,7 +207,9 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
   const early = v.era === 'before FCC rule';
   const flagged = isFlagged(r);
   const cls = `stone-link${selected === r.norad ? ' selected' : ''}`;
-  const posCls = `stone-pos${early ? ' stone-pos--early' : ''}${flagged ? ' stone-pos--ring' : ''}`;
+  // The story is the stones launched on or after the rule date that sit in or near the zone. They are drawn in bone with a ring.
+  // Every other stone is drawn quietly in moss.
+  const posCls = `stone-pos${early ? ' stone-pos--early' : ''}${flagged ? ' stone-pos--ring' : ' stone-pos--quiet'}`;
   const ring = flagged
     ? `<rect class="flag-ring" x="${-hw - 2}" y="${-LAYOUT.stoneHeight - 4}" width="${2 * hw + 4}" height="${LAYOUT.stoneHeight + 7}" rx="5"/>`
     : '';
@@ -310,7 +323,7 @@ export function chartSvg(
     `<svg class="chart${narrow ? ' chart--natural' : ''}" viewBox="0 0 ${f(width)} ${f(height)}"${size} role="group" aria-labelledby="chart-title chart-desc" focusable="false">`,
     `<title id="chart-title">${esc(CHART.title)}</title>`,
     `<desc id="chart-desc">${esc(chartDescription(config))}</desc>`,
-    `<defs>${stoneDefs()}<linearGradient id="sky-fade" x1="0" y1="0" x2="0" y2="1"><stop class="sky-stop-top" offset="0"/><stop class="sky-stop-bottom" offset="1"/></linearGradient><radialGradient id="moon-fade"><stop class="moon-stop-in" offset="0"/><stop class="moon-stop-out" offset="1"/></radialGradient><linearGradient id="wall-shade" x1="0" y1="1" x2="0" y2="0"><stop class="wall-stop-low" offset="0"/><stop class="wall-stop-high" offset="1"/></linearGradient></defs>`,
+    `<defs>${stoneDefs()}<linearGradient id="sky-fade" x1="0" y1="0" x2="0" y2="1"><stop class="sky-stop-top" offset="0"/><stop class="sky-stop-bottom" offset="1"/></linearGradient><radialGradient id="moon-fade"><stop class="moon-stop-in" offset="0"/><stop class="moon-stop-out" offset="1"/></radialGradient><pattern id="wall-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="7" height="7"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="7"/></pattern></defs>`,
     `<g aria-hidden="true">`,
     bandsSvg(config, cols, narrow),
     `<text class="axis-title" x="8" y="18">${esc(CHART.axisTitle)}</text>`,
@@ -399,15 +412,12 @@ export function heroStats(reg: Pick<UiRegister, 'records' | 'config'>, compariso
     },
   ];
 }
-/** Digits, and a percent sign after them, in the sans: the serif draws old-style figures. */
-const sansFigure = (text: string): string => esc(text).replace(/\d+%?/g, '<span class="num">$&</span>');
 export function heroHtml(reg: UiRegister): string {
   const config = reg.config;
-  const stats = heroStats(reg);
-  const tiles = stats
+  const tiles = heroStats(reg)
     .map(
       (t) =>
-        `<li class="tile tile--${t.id}"><a class="tile-link" href="#/census"><span class="tile-figure">${sansFigure(t.value)}${t.of === null ? '' : `<span class="tile-of">${withSansDigits(t.of)}</span>`}</span>` +
+        `<li class="tile tile--${t.id}"><a class="tile-link" href="#/census"><span class="tile-figure">${esc(t.value)}${t.of === null ? '' : `<span class="tile-of">${esc(t.of)}</span>`}</span>` +
         `<span class="tile-label">${esc(t.label)}</span><span class="tile-sub">${esc(t.sub)}</span></a></li>`,
     )
     .join('');
@@ -419,15 +429,12 @@ export function heroHtml(reg: UiRegister): string {
     CHURCHYARD_INTRO.noRetirementDate,
     VALIDATION.intro(d.afterLaunchYear),
   ]);
-  return (
-    `<div class="hero"><ul class="tiles">${tiles}</ul>` +
-    `${fine}</div>`
-  );
+  return `<div class="hero"><p class="kicker">${esc(HERO.kicker)}</p><p class="hero-pitch">${esc(HERO.pitch)}</p><ul class="tiles">${tiles}</ul>${fine}</div>`;
 }
 /** The verdict words with their stone shapes, in one row beside the chart. The meanings are in the guide below. */
 export function compactLegendHtml(config: Config): string {
   const items = VERDICT_ORDER.map(
-    (v) => `<li>${glyphSvg(v)}<span>${esc(verdictCopy(v, config).word)}</span></li>`,
+    (v) => `<li title="${esc(verdictCopy(v, config).meaning)}">${glyphSvg(v)}<span>${esc(verdictCopy(v, config).word)}</span></li>`,
   ).join('');
   return `<div class="legend-strip"><ul class="legend-strip-list">${items}</ul></div>`;
 }
@@ -460,12 +467,12 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     `<div class="toolbar">` +
     filtersHtml(reg.records, state.filters, config, hasFilters(state.filters)) +
     `<p class="status" id="chart-status" role="status"></p>` +
-    (hasStones ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>` : '') +
+    (hasStones ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>${compactLegendHtml(config)}` : '') +
     `<button type="button" class="button button--quiet toolbar-guide" data-open-guide>${esc(HERO.guideHint)}</button>` +
     `</div>` +
     (hasStones
-      ? `<div class="stage-head"><div class="stage-lead"><p class="stage-caption">${esc(HERO.caption)}</p>` +
-        `<p class="stage-terms">${HERO.terms.map(esc).join(' ')}</p></div>${compactLegendHtml(config)}</div>` +
+      ? `<div class="stage-head"><div class="stage-lead"><div id="tour-host"></div><p class="stage-caption">${esc(HERO.caption)}</p>` +
+        `<p class="stage-terms">${HERO.terms.map(esc).join(' ')}</p></div></div>` +
         (narrow ? `<p class="chart-note">${esc(CHART.scrollNote)} <a id="scroll-table" href="#/table">${esc(CHART.scrollLink)}</a>.</p>` : '') +
         `<div class="plot"><div class="chart-wrap${narrow ? ' chart-wrap--scroll' : ''}" id="chart-host"${narrow ? ` role="region" aria-label="${esc(CHART.scrollRegion)}"` : ''}></div>` +
         `<div class="tip" id="stone-tip" hidden aria-hidden="true"></div>` +
@@ -548,6 +555,28 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       placeCard();
     }
   };
+  // The guided tour: four steps, then free exploration. It can be skipped, and it remembers that.
+  const steps = tourSteps(reg);
+  const tourHost = root.querySelector<HTMLElement>('#tour-host');
+  let tourStep: number | null = steps.length === 0 || tourSkipped() ? null : 0;
+  const showTour = (focus: string | null): void => {
+    if (tourHost === null) return;
+    tourHost.innerHTML = tourHtml(tourStep, steps);
+    if (plot !== null) {
+      if (tourStep === null) delete plot.dataset['tour'];
+      else plot.dataset['tour'] = String(tourStep + 1);
+    }
+    if (focus !== null) tourHost.querySelector<HTMLElement>(focus)?.focus();
+  };
+  const goTour = (to: number | null, focus: string | null): void => {
+    const before = tourStep === null ? null : steps[tourStep]!.select;
+    tourStep = to;
+    const want = to === null ? null : steps[to]!.select;
+    if (want !== null) select(want);
+    else if (before !== null && selected === before) select(null);
+    showTour(focus);
+  };
+  showTour(null);
   // A click or tap on a stone selects it and shows its card. A double-click, Enter on the selected stone, or the
   // card's button opens the ledger. A click with a modifier key keeps the link's own behaviour.
   const openLedger = (norad: number): void => {
@@ -564,6 +593,16 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       return;
     }
     if (target.closest('[data-clear]') !== null) select(null);
+    const tourBtn = target.closest<HTMLElement>('[data-tour], [data-tour-start]');
+    if (tourBtn !== null && tourStep !== null) {
+      const act = tourBtn.dataset['tour'];
+      if (act === 'next') goTour(moveStep(tourStep, 1, steps.length), '[data-tour="next"], [data-tour="done"]');
+      else if (act === 'back') goTour(moveStep(tourStep, -1, steps.length), tourStep === 1 ? '[data-tour="next"]' : '[data-tour="back"]');
+      else {
+        if (act === 'skip') rememberSkip();
+        goTour(null, '[data-tour-start]');
+      }
+    } else if (tourBtn !== null) goTour(0, '[data-tour="next"]');
     if (target.closest('[data-open-guide]') !== null) {
       const guide = root.querySelector<HTMLDetailsElement>('#guide');
       if (guide !== null) {
