@@ -38,6 +38,7 @@ Third test, 2026-11-22 (census hook, Task 19):
 - I created `data/raw/2026-11-22/` and its files with shell commands (mkdir, cp, a heredoc) and `scripts/snapshot.ts` wrote two more. No hook output appeared and the census did not run: README.md and `data/register.json` were unchanged afterwards. The `PostFileCreate` hook has not been seen firing. File-save tools were not used for `data/raw/`.
 - `npm test` then wrote README.md and `data/register.json`, because `test/census.test.ts` ran the real census against the repository. With a complete snapshot that succeeds. I restored README.md, deleted `data/register.json` and changed the test to run on a copy.
 - `docs/spike.md` and `docs/kiro-journal.md` were saved with shell commands, not file-save tools, so the language-check hook is still unobserved.
+2026-11-23: The hooks loaded but were disabled until each hook object had `"enabled": true`; the panel's Enable button hung until Kiro was restarted.
 2026-11-22: Task 20 done. Engine change (owner's decision): a SATCAT payload with blank or unknown status takes the GPZ table's status (statusSource 'GPZ table', disagreement kept), so retired payloads are 696, not 648; seven deliberate breaks of the rule were each caught by the merge tests. Real register built from the 2026-11-22 set and committed, README census filled in, the two real-data build-register tests now check the real set (byte-identical rebuild); 315 tests pass.
 2026-11-22: Task 8b done. Churchyard fixed for the 696-stone register: linear −300 to +400 km plus a compressed high ground to +1,000 with a zigzag break, one count label per off-scale edge (15 above, 8 below), smaller stones in per-year lanes (overlapping stones 536 → 93 of 696, deterministic by NORAD id), a scrollable chart box on phones, and one Tab stop with arrow keys. Checked in headless Chrome at a true 390 px: no page-level sideways scroll. 341 tests pass.
 2026-11-22: Churchyard polish done. The chart now follows the intro, the filter form is a closed <details> (open when the address has a filter, open on the table), the stray FCC legend bullet is gone, the legend says year columns are uneven, and the unfiltered status line no longer reads like a filter. At 1280×800 the chart top is visible at 662 px, with about 140 px of it above the fold. 344 tests pass.
@@ -51,9 +52,126 @@ Third test, 2026-11-22 (census hook, Task 19):
 
 2026-11-23: Task 16 done. refresh-snapshot.yml (workflow_dispatch only, SHA-pinned, job-level permissions, one concurrency group, no retries) runs snapshot.ts, build-register.ts and `gh pr create` with a body from scripts/pr-body.ts; a test parses the YAML (added the `yaml` dev dependency). Not run.
 
+2026-11-23: Task S1 done. The sexton MCP server connected in Kiro and `explain(27378)` and `census()` answered through it (under MCP below); a file-tool save of docs/methodology.md with the hooks enabled still gave no hook output; `orbital-coroner` was found as a sub-agent and its review of data/cases/40258.md raised one flag (`provisional: false`); 734 tests pass and the build works.
 ## What surprised us
 - The hand-written hook format loaded (4 read, 4 registered) but never fired.
+- The hooks loaded but were disabled because the files had no `"enabled": true`; the panel's Enable button spun without saving.
 - The census test wrote the real `data/register.json` and README.md.
 - The colour test matched "white" inside `white-space`.
 - The check-language script passed silently when run through a symlinked path.
 - The orbital-coroner agent was missing from the registry because it was created mid-session.
+
+## MCP
+
+2026-11-23: Both replies below came from the sexton MCP server in Kiro (tools `explain` and `census`), not from running the script.
+
+### explain(27378)
+
+```
+Exhumation report: NORAD 27378
+
+The object
+Name: ECHOSTAR 7
+NORAD id: 27378
+International designator: 2002-006A
+Owner: US
+Launch date: 2002-02-21
+Launched before the FCC minimum-perigee rule date (18 March 2002).
+
+The verdict
+Unquiet (the orbit reaches the protected zone, perigee at most 200 km above GEO)
+Its perigee is 110.1 km above GEO. Its orbit reaches the protected zone (±200 km). Its perigee is below the IADC disposal threshold under the stated assumptions.
+
+The threshold maths
+T = 235 + 1000 × C_R·A/m. With C_R·A/m from 0.012 to 0.045 m²/kg, T is 247 to 280 km.
+p = +110.1 km. That is 136.9 km below 247 km, 169.9 km below 280 km, and 89.9 km below 200 km, the edge of the protected zone.
+Eccentricity e = 0.00032. The IADC limit is 0.003.
+
+Assumptions
+Assumes C_R·A/m from 0.012 to 0.045 m²/kg and a mean-element uncertainty of ±25 km.
+C_R is taken from 1.2 to 1.5 and A/m from 0.01 to 0.03 m²/kg. The true values for this satellite are not known.
+Not borderline: more than 25 km from every band edge.
+
+Orbit source and data age
+GP mean elements, epoch 2026-11-22 12:28 UTC
+Perigee above GEO: +110.1 km
+Apogee above GEO: +137.1 km
+Eccentricity: 0.00032
+Perigee and apogee are computed from the mean motion and eccentricity in the GP mean elements.
+
+Snapshot and sources
+Snapshot 2026-11-22.
+
+Status source
+Status: retired payload, from SATCAT.
+
+Case file
+EchoStar-7
+
+# What the register shows
+
+- EchoStar-7 has NORAD catalogue number 27378 [register: norad].
+- Its international designator is 2002-006A [register: intlDes].
+- It was launched on 2002-02-21 [register: launchDate].
+- The catalogue lists it as a retired payload [register: status]. The status comes from SATCAT [register: statusSource].
+- Whole years from the launch date to the snapshot date: 24 [register: verdict.yearsSinceLaunch]. This is a count since launch. It is not an age at retirement.
+
+GEO is the circular orbit about 35,786 km above the equator, where a satellite stays over one spot [register: config.geoAltitudeKm]. Perigee is the lowest point of an orbit. Eccentricity is how far an orbit is from a perfect circle. 0 is a circle [docs/methodology.md: definition of eccentricity].
+
+The perigee is 110.1 km above GEO [register: pKm]. The apogee is 137.1 km above GEO [register: qKm]. The eccentricity is 0.0003192 [register: e]. The IADC eccentricity limit is 0.003 [register: config.iadc.eccentricityMax].
+
+Sexton's verdict is "unquiet": the orbit reaches the protected zone [register: verdict.verdict]. The zone is GEO ± 200 km [register: config.protectedZoneKm]. The perigee is 89.9 km inside the zone's upper edge [register: verdict.margins.zone]. The verdict is not borderline [register: verdict.borderline].
+
+The IADC guidelines are voluntary [IADC-02-01 Revision 2: https://orbitaldebris.jsc.nasa.gov/library/IADC-Space-Debris-Guidelines-Revision-2.pdf]. The perigee is below the IADC disposal threshold under the stated assumptions. The threshold runs from 247 km to 280 km above GEO [register: config.thresholdLowKm] [register: config.thresholdHighKm]. The perigee is 136.9 km below the low end [register: verdict.margins.low].
+
+# Assumptions and data age
+
+The verdict assumes a C_R·A/m between 0.012 and 0.045 m²/kg [register: config.iadc.crAmMin] [register: config.iadc.crAmMax]. These are Sexton's assumptions. They are not measured for this satellite. The verdict also allows a mean-element uncertainty of ±25 km [register: config.uncertaintyKm].
+
+The orbit comes from GP mean elements with epoch 2026-11-22T12:28:20.523936 [register: orbitSource.epoch]. The snapshot is 2026-11-22 [register: snapshot.set].
+
+# What the sources say
+
+The IADC guidelines are voluntary: organisations are "encouraged" to use them [IADC-02-01 Revision 2: https://orbitaldebris.jsc.nasa.gov/library/IADC-Space-Debris-Guidelines-Revision-2.pdf].
+
+The FCC minimum-perigee rule, 47 CFR § 25.283, applies only to satellites the FCC authorizes: paragraph (a) covers "a space station authorized to operate in the geostationary satellite orbit under this part" [47 CFR § 25.283: https://www.law.cornell.edu/cfr/text/47/25.283]. Paragraph (d) excludes space stations launched before March 18, 2002 [47 CFR § 25.283: https://www.law.cornell.edu/cfr/text/47/25.283]. EchoStar-7 was launched on 2002-02-21 [register: launchDate], so the rule's launch-date test is not met. The register is marked "before FCC rule" for this reason [register: verdict.era]. Sexton cannot tell whether the FCC authorized this satellite, and licence conditions can still apply.
+
+The FCC has issued a debris penalty that concerns this satellite. Order DA 23-888 records a disposal of EchoStar-7 at 122 km above GEO, against 300 km in the disposal plan in DISH's licence [FCC DA 23-888: https://docs.fcc.gov/public/attachments/DA-23-888A1.txt]. It records a civil penalty of $150,000 [FCC DA 23-888: https://docs.fcc.gov/public/attachments/DA-23-888A1.txt].
+
+The order's figure of 122 km [FCC DA 23-888: https://docs.fcc.gov/public/attachments/DA-23-888A1.txt] and the register's perigee of 110.1 km [register: pKm] come from different sources. Sexton has not reconciled them, and what was checked of the order does not give the date of its measurement. The 300 km is the figure in the licence's plan [FCC DA 23-888: https://docs.fcc.gov/public/attachments/DA-23-888A1.txt]. Sexton's verdict compares the perigee with the IADC formula, not with that plan.
+
+# What this page cannot say
+
+The register does not say when this satellite stopped working or was moved. SATCAT gives a launch date, and GP gives the current orbit. Neither gives any date for the end of its operation.
+
+The register sees only objects still near GEO. Satellites sent much higher, or that left GEO, may be missing.
+
+Context
+The IADC guidelines are voluntary. The FCC minimum-perigee rule (47 CFR § 25.283) applies only to satellites the FCC authorizes, launched on or after 18 March 2002.
+We know each launch date and current orbit. We do not know when a satellite retired.
+```
+
+### census()
+
+```
+Census, snapshot set 2026-11-22
+Objects near GEO in the register: 1,764
+Retired payloads with a verdict: 696
+Verdicts, as shares of retired payloads:
+- fallen: 3 of 696 (0.4%)
+- unquiet: 312 of 696 (44.8%)
+- shallow grave: 30 of 696 (4.3%)
+- restless: 21 of 696 (3.0%)
+- uncertain: 50 of 696 (7.2%)
+- buried: 280 of 696 (40.2%)
+Borderline (perigee within 25 km of a band edge): 141 of 696 (20.3%)
+Where the orbit comes from:
+- GP mean elements: 239 of 696 (34.3%)
+- SATCAT whole-km altitudes: 457 of 696 (65.7%)
+Where the status comes from:
+- SATCAT: 648 of 696 (93.1%)
+- GPZ table: 48 of 696 (6.9%)
+Assumes C_R·A/m from 0.012 to 0.045 m²/kg and a mean-element uncertainty of ±25 km.
+The IADC guidelines are voluntary. The FCC minimum-perigee rule (47 CFR § 25.283) applies only to satellites the FCC authorizes, launched on or after 18 March 2002.
+The register only sees objects still near GEO. Satellites sent much higher, or that left GEO, may be missing.
+```

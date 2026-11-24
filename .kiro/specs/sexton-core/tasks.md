@@ -196,7 +196,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
 
 ## Stretch (only after all tasks above)
 
-- [ ] S1. MCP server
+- [x] S1. MCP server
   - A small stdio MCP server in `scripts/mcp/` that reads `data/register.json`, with no network. Tools: `is_buried(norad)`, `census()`, `explain(norad)` (the ledger text, with assumptions and data age) and `list(verdict)`.
   - Outputs follow language.md.
   - Tests use the fixture register.

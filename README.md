@@ -19,3 +19,31 @@ Counts from the snapshot of 2026-11-22. Run `npm run census` to refresh them.
 
 Verdicts assume a C_R·A/m range of 0.012 to 0.045 m²/kg and a ±25 km uncertainty in mean elements. The IADC guidelines are voluntary. The register only sees objects still near GEO. Satellites sent much higher, or that left GEO, may be missing.
 <!-- census:end -->
+
+## Use it from an AI assistant
+
+`scripts/mcp/server.ts` is a small [MCP](https://modelcontextprotocol.io) server. It talks over stdio, reads `data/register.json` and `data/cases/` only, and makes no network calls and no writes. It needs Node 24 and `npm install`.
+
+It has four read-only tools:
+
+- `is_buried(norad)`: the verdict word, the borderline flag, p and q, the margins and the data age. "Buried" is one of six verdicts, so the answer is never a bare yes or no.
+- `census()`: verdict counts as "n of N", the borderline count, and where orbits and statuses come from.
+- `explain(norad)`: the ledger text, with assumptions and data age, and the case file if there is one.
+- `list(verdict, limit?)`: objects with one verdict, sorted by NORAD id, with the total.
+
+In Kiro, put this in `.kiro/settings/mcp.json`. Other MCP clients use the same `command` and `args`. `autoApprove` lists tool names, and these four only read.
+
+```json
+{
+  "mcpServers": {
+    "sexton": {
+      "command": "node",
+      "args": ["scripts/mcp/server.ts"],
+      "disabled": false,
+      "autoApprove": ["is_buried", "census", "explain", "list"]
+    }
+  }
+}
+```
+
+The replies carry the same assumptions as the site: a C_R·A/m range and a ±25 km mean-element uncertainty. The IADC guidelines are voluntary. The register only sees objects still near GEO.

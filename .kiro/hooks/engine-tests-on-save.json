@@ -10,7 +10,8 @@
       "action": {
         "type": "command",
         "command": "if out=$(npm run --silent test:engine 2>&1); then echo \"Engine tests passed.\"; else echo \"Engine tests FAILED after saving a file in src/engine/:\" >&2; printf \"%s\\n\" \"$out\" | tail -n 80 >&2; exit 1; fi"
-      }
+      },
+      "enabled": true
     }
   ]
 }

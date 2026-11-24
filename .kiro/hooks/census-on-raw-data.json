@@ -10,7 +10,8 @@
       "action": {
         "type": "command",
         "command": "if out=$(npm run --silent census 2>&1); then printf \"%s\\n\" \"$out\"; else echo \"npm run census FAILED. README.md was left unchanged. Reason:\" >&2; printf \"%s\\n\" \"$out\" >&2; exit 1; fi"
-      }
+      },
+      "enabled": true
     },
     {
       "name": "Census on raw data changed",
@@ -21,7 +22,8 @@
       "action": {
         "type": "command",
         "command": "if out=$(npm run --silent census 2>&1); then printf \"%s\\n\" \"$out\"; else echo \"npm run census FAILED. README.md was left unchanged. Reason:\" >&2; printf \"%s\\n\" \"$out\" >&2; exit 1; fi"
-      }
+      },
+      "enabled": true
     }
   ]
 }

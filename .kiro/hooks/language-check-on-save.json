@@ -10,7 +10,8 @@
       "action": {
         "type": "command",
         "command": "if out=$(node scripts/check-language.ts 2>&1); then echo \"Language check passed.\"; else echo \"Language check found banned wording (see .kiro/steering/language.md). Say \\\"below the IADC disposal threshold under the stated assumptions\\\" instead of judging:\" >&2; printf \"%s\\n\" \"$out\" >&2; exit 1; fi"
-      }
+      },
+      "enabled": true
     }
   ]
 }
