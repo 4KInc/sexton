@@ -77,9 +77,17 @@ export function chartDescription(config: Config): string {
   return `Height is perigee above GEO, from ${formatSigned(SCALE.minKm, 0)} to ${formatSigned(SCALE.maxKm, 0)} km. The scale is linear up to ${formatSigned(SCALE.linearMaxKm, 0)} km. Above that, the high ground, it is compressed. Columns are launch years. The bands are set by ${config.protectedZoneKm} km above and below GEO and by the IADC threshold of ${config.thresholdLowKm} to ${config.thresholdHighKm} km.`;
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
+/** "2026-11-22" becomes "CelesTrak snapshot, 22 Nov 2026". Anything that is not a date is shown as given. */
+export function snapshotLabel(set: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(set);
+  const month = m === null ? undefined : MONTHS[Number(m[2]) - 1];
+  if (m === null || month === undefined) return `CelesTrak snapshot, ${set}`;
+  return `CelesTrak snapshot, ${Number(m[3])} ${month} ${m[1]}`;
+}
 export function countLine(shown: number, snapshotDate: string): string {
   const noun = shown === 1 ? 'retired payload' : 'retired payloads';
-  return `${shown} ${noun} in the ${snapshotDate} snapshot.`;
+  return `${snapshotLabel(snapshotDate)}: ${shown} ${noun}.`;
 }
 
 export type BandCopyId = 'below' | 'road' | 'shallow' | 'wall' | 'consecrated';
@@ -314,15 +322,18 @@ export interface Comparison {
   verified: boolean;
   /** Where in the source the figure was found. Required once `verified` is true. */
   where: string | null;
+  /** The published range in percent, for the validation panel. Null when the source gives no range. */
+  range: readonly [number, number] | null;
 }
 export const COMPARISONS: readonly Comparison[] = [
   {
     id: 'esa',
-    source: 'ESA Space Environment Report 2025',
-    figure: 'ESA: 70\u201395% of GEO retirements succeed.',
-    url: 'https://www.esa.int/Space_Safety/Space_Debris/ESA_Space_Environment_Report_2025',
-    verified: false,
-    where: null,
+    source: 'ESA Annual Space Environment Report, Issue 9.1',
+    figure: 'ESA: 70\u201395% of payloads reaching end of life in the last decade clear the GEO protected region successfully. It is a range over the years, not one rate.',
+    url: 'https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I9R1_20251021.pdf',
+    verified: true,
+    where: 'Executive summary, page 7 of 146 (21 October 2025). Issue 10 of 8 September 2026 gives 70\u201390% in the same sentence',
+    range: [70, 95],
   },
   {
     id: 'roberts',
@@ -331,11 +342,43 @@ export const COMPARISONS: readonly Comparison[] = [
     url: 'https://iac.gatech.edu/publications/pub/8089',
     verified: false,
     where: null,
+    range: null,
   },
 ];
+export const VALIDATION = {
+  heading: 'Validation against a published range',
+  intro: (year: number): string =>
+    `Sexton's own share of buried payloads, among retired payloads launched after ${year}, next to a published range. Sexton has no retirement dates, so launch year stands in for them. The two numbers count different groups, so they are a plausibility check, not a test of one against the other.`,
+  sexton: 'Sexton: buried',
+  band: (u: number): string => `Band if every perigee is ${u} km lower or higher`,
+  published: (source: string): string => `Published: ${source}`,
+  sextonValue: (n: number, of: number): string => `${formatCount(n)} of ${formatCount(of)} (${((100 * n) / of).toFixed(1)}%)`,
+  bandValue: (lo: number, hi: number, of: number): string => `${VALIDATION.sextonValue(lo, of)} to ${VALIDATION.sextonValue(hi, of)}`,
+  rangeValue: (lo: number, hi: number): string => `${lo}% to ${hi}%`,
+  below: 'Sexton\u2019s share, and its whole band, are below the published range. Sexton has not adjusted its method to match. Possible reasons, none of them tested, are on the method page.',
+  inside: 'Sexton\u2019s share is inside the published range. Sexton has not adjusted its method to match.',
+  partly: 'Sexton\u2019s band overlaps the published range, but its share is outside it. Sexton has not adjusted its method to match. Possible reasons, none of them tested, are on the method page.',
+  above: 'Sexton\u2019s share is above the published range. Sexton has not adjusted its method to match.',
+  noGroup: (year: number): string => `No retired payload in the register was launched after ${year}.`,
+  noPublished: 'No published range has been checked against its source yet.',
+  notRoberts: 'Roberts (2025) is not shown: the paper has not been opened, and its figure and its method are unchecked.',
+} as const;
+export const HEADLINE = {
+  heading: 'Launched on or after 18 March 2002',
+  lead: (postRule: number, retired: number): string =>
+    `${formatCount(postRule)} of ${formatCount(retired)} retired payloads were launched on or after 18 March 2002, the date of the FCC minimum-perigee rule. This is the group the FCC rule can reach, for satellites the FCC authorizes. The IADC guidelines are voluntary.`,
+  zone: (share: string): string =>
+    `${share} sit in or near the protected zone: unquiet or shallow grave. Their perigee is below the IADC disposal threshold under the stated assumptions.`,
+  caption: 'Retired payloads launched on or after 18 March 2002, by verdict',
+  columns: { verdict: 'Verdict', count: 'Retired payloads', share: 'Share of this group' },
+  predate: (n: number, retired: number): string =>
+    `${formatCount(n)} of ${formatCount(retired)} retired payloads predate any guideline: they were launched before 18 March 2002. This is context, not a failure. Their verdicts are in the tables below.`,
+  unknownLaunch: (n: number): string => `${formatCount(n)} retired payloads have no launch date, so they are in neither group.`,
+  none: 'No retired payload in the register was launched on or after 18 March 2002.',
+} as const;
 export const CENSUS = {
   intro: (date: string): string =>
-    `Counts from the snapshot of ${date}. Every number here comes from the register, and every share shows what it is a share of.`,
+    `${snapshotLabel(date)}. Every number here comes from the register, and every share shows what it is a share of.`,
   fromRegister: 'Retired payloads are satellites that SATCAT or the GPZ table lists as not operational. A verdict is given only to them.',
   headings: {
     population: 'What the register holds',

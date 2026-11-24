@@ -87,7 +87,8 @@ describe('methodology.md sources', () => {
     'https://www.law.cornell.edu/cfr/text/47/25.283',
     'https://orbitaldebris.jsc.nasa.gov/library/IADC-Space-Debris-Guidelines-Revision-2.pdf',
     'https://www.esa.int/Space_Safety/Space_Debris/ESA_Space_Environment_Report_2025',
-    'https://www.sdo.esoc.esa.int/publications/Space_Environment_Report_I9R1_20251021.pdf',
+    'https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I9R1_20251021.pdf',
+    'https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I10R1_20260908.pdf',
     'https://iac.gatech.edu/publications/pub/8089',
     'https://celestrak.org/satcat/satcat-format.php',
     'https://celestrak.org/satcat/status.php',
@@ -105,8 +106,10 @@ describe('methodology.md sources', () => {
     expect((doc.match(/LINK NEEDED/g) ?? []).length).toBeGreaterThanOrEqual(3);
     expect(doc).toMatch(/iadc-home\.org returned 403/);
   });
-  it('does not show the unverified ESA or Roberts comparison figures', () => {
-    expect(doc).not.toMatch(/70\s?(%|\u2013|-|to)\s?95|73\s?%/);
+  it('shows the ESA range only with its place in the report, and never the unverified Roberts figure', () => {
+    expect(doc).toMatch(/Between 70% and 95% do so successfully/);
+    expect(doc).toContain('Executive summary, page 7 of 146');
+    expect(doc).not.toMatch(/\b73\s?%\s+(of|compliant)/);
   });
 });
 

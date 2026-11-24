@@ -21,6 +21,7 @@ export const CONFIG = {
   thresholdHighKm: iadc.baseKm + iadc.factorKm * iadc.crAmMax,
   uncertaintyKm: 25,
   fccRuleDate: '2002-03-18',
+  validation: { afterLaunchYear: 2007 }, // the validation panel counts retired payloads launched after this year
   satcatTypes: { payload: 'PAY', rocketBody: 'R/B', debris: 'DEB' },
   status: { retired: ['-'], living: ['+', 'P', 'B', 'S', 'X'] },
   gpzTableStatus: { 'PAY-': 'retired', 'PAY+': 'living', 'R/B': 'rocket body', 'DEB': 'debris' },

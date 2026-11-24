@@ -35,9 +35,10 @@ describe('comparison figures', () => {
     }
     expect(html).not.toMatch(/70\D{1,3}95|73\s?%/);
   });
-  it('the whole page, as shipped, shows neither figure', () => {
+  it('the whole page, as shipped, shows the checked ESA range and not the Roberts figure', () => {
     const text = textOf(censusHtml(real));
-    expect(text).not.toMatch(/70\D{1,3}95\s?%/);
+    expect(text).toMatch(/70\D{1,3}95\s?%/);
+    expect(text).toContain('Executive summary, page 7 of 146');
     expect(text).not.toMatch(/\b73\s?%/);
     expect(text).toContain('pending a checked source');
   });
@@ -103,7 +104,8 @@ describe('census numbers equal register.census', () => {
       }
     });
     it(`${name}: no percentage appears without "n of N" before it`, () => {
-      const text = textOf(censusHtml(reg));
+      // Percentages that a published source gives (data-published) are not Sexton's shares and have no denominator.
+      const text = textOf(censusHtml(reg).replace(/<(\w+)[^>]*data-published[^>]*>[\s\S]*?<\/\1>/g, ''));
       const all = text.match(/%/g) ?? [];
       const withDenominator = text.match(/[\d,]+ of [\d,]+ \([<>]?\d+(\.\d)?%\)/g) ?? [];
       expect(withDenominator.length).toBe(all.length);

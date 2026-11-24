@@ -202,6 +202,22 @@ A real SATCAT status is never overridden. No operational payload in SATCAT was l
 - **Sway** marks eccentricity above 0.003.
 - **Dotted bar** marks a borderline verdict.
 
+## The group launched on or after 18 March 2002
+The census opens with the retired payloads launched on or after 18 March 2002. That is the date from which 47 CFR § 25.283 can apply, and it is the date Sexton uses for "before FCC rule" (`fccRuleDate`). Earlier launches are shown as context: "565 of 696 retired payloads predate any guideline", counted at snapshot 2026-11-22. That is not a failure. Nobody asked those satellites to meet a rule that did not exist when they launched.
+Inside the group, "in or near the protected zone" means the verdicts unquiet (perigee at most 200 km above GEO) and shallow grave (perigee above 200 km and below the IADC threshold). All six verdicts are listed, so nothing is hidden. The counts come from the same verdicts as the rest of the site. The group is a launch-date split of those verdicts. It changes no verdict.
+The register only sees objects still near GEO. Satellites sent much higher, or that left GEO, may be missing, so every share is a share of what the register sees.
+## Validation against published figures
+Sexton's shares are checked for plausibility against a published range. The check does not change any verdict.
+**What Sexton counts.** Retired payloads launched after 2007 (`validation.afterLaunchYear`). Sexton has no retirement dates, so launch year stands in for "retired after 2007". A satellite launched in 2008 may have reached the end of its operation in any later year, and one launched earlier may have reached it after 2007 as well. The two groups are not the same.
+**Sexton's result, snapshot 2026-11-22.** 27 of 45 retired payloads launched after 2007 are buried (60.0%). The band for the ±25 km mean-element uncertainty moves every perigee and apogee down or up by 25 km and classifies again. It runs from 24 of 45 (53.3%) to 29 of 45 (64.4%). The upper end counts buried and uncertain, because an uncertain perigee is above the low end of the IADC threshold band. One satellite is 2.2 percentage points of 45.
+**ESA.** ESA's Annual Space Environment Report, Issue 9.1, 21 October 2025, Executive summary, page 7 of 146: "Between 85% and 100% of all payloads reaching end-of-life during the last decade in the GEO protected region attempt to comply with space debris mitigation measures. Between 70% and 95% do so successfully, with the compliance trend asymptotically increasing, but notable exceptions in 2015 and 2022." Section 6.2 (page 131) defines a successful attempt as one where the payload clears the GEO protected region in line with the IADC formulation, the same formula Sexton uses. So 70% to 95% is a range over the years of the last decade. It is not one rate. Issue 10 (8 September 2026, page 7 of 152) gives "between 70% and 90%" for the same sentence. Sexton shows the 2025 report's range because the project's brief names that report. Both are checked in the documents.
+**Roberts (2025).** The paper has not been opened by anyone on this project. The Georgia Tech page lists only title, date and author. A Roberts figure for satellites retired after 2007 was reported to Sexton's author. It has not been found in any source that was opened. It is not shown, and the site says the comparison is pending a checked source. Because the paper was not opened, Sexton cannot say that its method is the same as Roberts' method. Sexton's method is the IADC formula and the 0.003 eccentricity limit, in the texts listed under Sources.
+**Where Sexton falls.** 60.0%, and the whole band from 53.3% to 64.4%, is below ESA's range of 70% to 95%. Sexton did not change its method, its assumptions or its threshold to move the number. These are possible reasons. None of them has been tested:
+- The groups differ. ESA counts payloads reaching end of life in the last decade. Sexton counts payloads launched after 2007 that SATCAT or the GPZ table lists as not operational.
+- The register only sees objects still near GEO. A payload moved far above GEO may be missing, and a disposal that went well is more likely to be missing than one that did not. That would lower Sexton's share.
+- Sexton counts "buried" only when the perigee is above the top of the IADC threshold band for every assumed C_R·A/m (280 km above GEO). One payload in the group is "uncertain" instead. ESA's page 131 gives the same formula, and the sections read do not say which C_R·A/m ESA uses for each object.
+- The group is small (45 payloads). Counts of this size move by several percentage points with one satellite.
+- Some SATCAT "not operational" payloads may never have reached a disposal manoeuvre. Sexton cannot tell them from payloads that were disposed of low.
 ## Font
 
 The display serif is IM FELL English, designed by Igino Marini (copyright 2010), under the SIL Open Font License 1.1. It is self-hosted, and the site loads no font from another server. The licence text is in the repository at `src/ui/fonts/OFL.txt`, and `docs/credits.md` records where the files came from.
@@ -223,7 +239,8 @@ A link is listed only if it was opened on 2026-11-23. A link that could not be o
 | IADC Space Debris Mitigation Guidelines, IADC-02-01 Revision 2 (March 2020), as hosted by the NASA Orbital Debris Program Office | https://orbitaldebris.jsc.nasa.gov/library/IADC-Space-Debris-Guidelines-Revision-2.pdf | Opened. Section 2 (page 6) says organisations are "encouraged" to use the guidelines. The GEO formula and the 0.003 limit are on page 11 of the document. This is an older revision than the current one. |
 | IADC Space Debris Mitigation Guidelines, current revision, on the IADC site | LINK NEEDED | iadc-home.org returned 403 Forbidden. |
 | ESA Space Environment Report 2025, summary page | https://www.esa.int/Space_Safety/Space_Debris/ESA_Space_Environment_Report_2025 | Opened. |
-| ESA's Annual Space Environment Report, Issue 9.1, 21 October 2025 | https://www.sdo.esoc.esa.int/publications/Space_Environment_Report_I9R1_20251021.pdf | Opened. Section 6.2 (page 131 of 146) gives the IADC formula for GEO. |
+| ESA's Annual Space Environment Report, Issue 9.1, 21 October 2025 | https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I9R1_20251021.pdf | Opened 2026-11-24. Executive summary, page 7 of 146: the 70% to 95% range for payloads in the GEO protected region. Section 6.2 (page 131 of 146) gives the IADC formula for GEO and defines a successful attempt. |
+| ESA's Annual Space Environment Report, Issue 10, 8 September 2026 | https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I10R1_20260908.pdf | Opened 2026-11-24. Executive summary, page 7 of 152: the same sentence gives 70% to 90%. |
 | Roberts, "Assessing Compliance with Post-mission Disposal Guidelines in Geosynchronous Orbit", IAA Space Traffic Management Conference, March 2025 | https://iac.gatech.edu/publications/pub/8089 | Opened. It is a listing page (title, date, author), not the paper. A link to the paper is LINK NEEDED. |
 | CelesTrak SATCAT format | https://celestrak.org/satcat/satcat-format.php | Opened. Field list, with altitudes in kilometres. |
 | CelesTrak SATCAT operational status codes | https://celestrak.org/satcat/status.php | Opened. Gives the meaning of `+`, `-`, `P`, `B`, `S`, `X`, `D` and `?`. |
@@ -233,7 +250,7 @@ A link is listed only if it was opened on 2026-11-23. A link that could not be o
 | IM FELL English licence file | https://raw.githubusercontent.com/google/fonts/main/ofl/imfellenglish/OFL.txt | Opened. Copyright 2010 Igino Marini. |
 | WGS-72 constants (Earth radius and μ) | LINK NEEDED | No source has been opened. |
 
-The ESA and Roberts comparison figures are not on this page. The census page shows each one only after it has been checked against its source, and until then it says the comparison is pending a checked source.
+The ESA range is shown, because it was found in the report itself (above). The Roberts figure is not on this page. The census page shows a figure only after it has been checked against its source, and until then it says the comparison is pending a checked source.
 
 ## What we do not say
 

@@ -1,10 +1,12 @@
 // The census page (design 5.7, R5.3-R5.5). Pure string builders plus mountCensus.
 // Every number comes from register.census, except the GPZ-table status count, which is counted from
 // the records (the census has no field for it, design 2.8). Every share shows its denominator.
+import { CONFIG } from '../../engine/config.ts';
 import type { Config } from '../../engine/config.ts';
 import type { Census, SatRecord, VerdictName } from '../../engine/types.ts';
-import { CENSUS, CHURCHYARD_INTRO, COMPARISONS, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
+import { CENSUS, CHURCHYARD_INTRO, HEADLINE, VALIDATION, COMPARISONS, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
 import type { Comparison } from '../copy.ts';
+import { disposalRate, postRuleSummary } from '../../engine/headline.ts';
 import { formatCount, formatShare } from '../format.ts';
 import { esc } from '../html.ts';
 import type { UiRegister } from '../register.ts';
@@ -33,7 +35,7 @@ export function comparisonHtml(comparisons: readonly Comparison[] = COMPARISONS)
   const items = comparisons
     .map((c) => {
       if (c.verified && c.where !== null) {
-        return `<li>${esc(c.figure)} ${esc(CENSUS.comparison.verified(c.source, c.where))} <a href="${esc(c.url)}">${esc(c.source)}</a></li>`;
+        return `<li data-published>${esc(c.figure)} ${esc(CENSUS.comparison.verified(c.source, c.where))} <a href="${esc(c.url)}">${esc(c.source)}</a></li>`;
       }
       return `<li>${esc(CENSUS.comparison.pending(c.source))}</li>`;
     })
@@ -137,6 +139,48 @@ function ownerHtml(c: Census, config: Config): string {
   );
 }
 
+/** Sexton's buried share next to a published range, only for a range that was checked in its source. */
+export function validationHtml(records: readonly SatRecord[], comparisons: readonly Comparison[] = COMPARISONS, config: Config = CONFIG): string {
+  const r = disposalRate(records, config);
+  if (r.n === 0) return `<p>${esc(VALIDATION.noGroup(r.afterLaunchYear))}</p>`;
+  const published = comparisons.find((c) => c.verified && c.where !== null && c.range !== null);
+  const head = `<p>${esc(VALIDATION.intro(r.afterLaunchYear))}</p>`;
+  const row = (k: string, v: string, attr: string): string =>
+    `<div><dt>${esc(k)}</dt><dd data-validation="${attr}"${attr === 'published' ? ' data-published' : ''}>${esc(v)}</dd></div>`;
+  let rows =
+    row(VALIDATION.sexton, VALIDATION.sextonValue(r.central, r.n), 'sexton') +
+    row(VALIDATION.band(config.uncertaintyKm), VALIDATION.bandValue(r.lower, r.upper, r.n), 'band');
+  let verdict: string = VALIDATION.noPublished;
+  if (published !== undefined && published.range !== null) {
+    const [lo, hi] = published.range;
+    rows += row(VALIDATION.published(published.source), VALIDATION.rangeValue(lo, hi), 'published');
+    const pct = (n: number): number => (100 * n) / r.n;
+    const centre = pct(r.central);
+    if (centre >= lo && centre <= hi) verdict = VALIDATION.inside;
+    else if (centre > hi) verdict = VALIDATION.above;
+    else verdict = pct(r.upper) >= lo ? VALIDATION.partly : VALIDATION.below;
+  }
+  return `${head}<dl class="ledger-data census-data">${rows}</dl><p data-validation="verdict"><strong>${esc(verdict)}</strong></p><p>${esc(VALIDATION.notRoberts)}</p>`;
+}
+
+/** The first thing on the census page: the group launched on or after the rule date, with the older group as context. */
+export function headlineHtml(records: readonly SatRecord[], config: Config): string {
+  const s = postRuleSummary(records);
+  if (s.postRule === 0) return `<p>${esc(HEADLINE.none)}</p><p data-headline="predate">${esc(HEADLINE.predate(s.predate, s.retired))}</p>`;
+  const rows = VERDICT_ORDER.map((v) => {
+    const n = s.byVerdict[v];
+    return `<tr><th scope="row">${esc(verdictCopy(v, config).pair)}</th><td class="num-cell" data-headline="${esc(v)}">${esc(formatCount(n))}</td>${shareCell(n, s.postRule)}</tr>`;
+  }).join('');
+  return (
+    `<p data-headline="lead">${esc(HEADLINE.lead(s.postRule, s.retired))}</p>` +
+    `<p data-headline="zone"><strong>${esc(HEADLINE.zone(formatShare(s.inOrNearZone, s.postRule)))}</strong></p>` +
+    table(HEADLINE.caption, th(HEADLINE.columns.verdict) + th(HEADLINE.columns.count, true) + th(HEADLINE.columns.share, true), rows) +
+    `<p data-headline="predate">${esc(HEADLINE.predate(s.predate, s.retired))}</p>` +
+    (s.unknownLaunch > 0 ? `<p>${esc(HEADLINE.unknownLaunch(s.unknownLaunch))}</p>` : '') +
+    `<p>${esc(assumptionsLine(config))}</p><p>${esc(CHURCHYARD_INTRO.blindSpot)}</p>`
+  );
+}
+
 /** The whole census page body. */
 export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'>, comparisons: readonly Comparison[] = COMPARISONS): string {
   const c = reg.census;
@@ -144,12 +188,11 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
   const near = config.nearGeo;
   const intro =
     `<p>${esc(CENSUS.intro(c.snapshotDate))}</p>` +
+    `<ul class="terms"><li>${esc(TERMS.geo)}</li><li>${esc(TERMS.perigee)}</li></ul>`;
+  const rest =
     `<p>${esc(CENSUS.fromRegister)}</p>` +
-    `<ul class="terms"><li>${esc(TERMS.geo)}</li><li>${esc(TERMS.perigee)}</li></ul>` +
     `<p>${esc(CHURCHYARD_INTRO.voluntary)}</p>` +
-    `<p>${esc(CHURCHYARD_INTRO.noRetirementDate)}</p>` +
-    `<p>${esc(assumptionsLine(config))}</p>` +
-    `<p>${esc(CHURCHYARD_INTRO.blindSpot)}</p>`;
+    `<p>${esc(CHURCHYARD_INTRO.noRetirementDate)}</p>`;
   const borderline = section(
     'borderline',
     H.borderline,
@@ -172,6 +215,8 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
   return (
     `<div class="census">` +
     intro +
+    section('headline', HEADLINE.heading, headlineHtml(reg.records, config)) +
+    rest +
     section('population', H.population, populationHtml(c)) +
     section('verdicts', H.verdicts, verdictsHtml(c, config)) +
     borderline +
@@ -181,6 +226,7 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
     section('owner', H.owner, ownerHtml(c, config)) +
     gaps +
     blind +
+    section('validation', VALIDATION.heading, validationHtml(reg.records, comparisons)) +
     section('comparison', H.comparison, comparisonHtml(comparisons)) +
     caveat +
     `</div>`

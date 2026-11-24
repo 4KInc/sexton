@@ -2,7 +2,7 @@
 // functions, so tests can read it without a DOM. Sections follow design 5.6.
 // The sentences live in ../ledger-text.ts, which the MCP server shares.
 import type { SatRecord } from '../../engine/types.ts';
-import { CARD, dataAge, LEDGER, assumptionsLine, CHURCHYARD_INTRO, verdictCopy } from '../copy.ts';
+import { CARD, dataAge, LEDGER, assumptionsLine, CHURCHYARD_INTRO, snapshotLabel, verdictCopy } from '../copy.ts';
 import { formatE, formatP, formatSigned } from '../format.ts';
 import type { CaseFile } from '../case-file.ts';
 import { CASES } from '../content.ts';
@@ -76,7 +76,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     reg.snapshot.sources.map((s) => `<li>${esc(s.file)}: <code>${esc(s.sha256)}</code></li>`).join('') +
     `</ul></footer>`;
   return (
-    `<article class="ledger"><p class="print-title">${esc(LEDGER.printTitle)}: NORAD <span class="num">${r.norad}</span></p>` +
+    `<article class="ledger"><p class="print-title">${esc(LEDGER.printTitle)}: NORAD <span class="num">${r.norad}</span></p><p class="snapshot-label">${esc(snapshotLabel(reg.snapshot.set))}</p>` +
     identity + verdict + maths + assumptions + orbit + snapshot + status + caseFileSection(r, cases) + context + actions + footer +
     `<p class="ledger-back"><a href="#/table">${esc(LEDGER.back)}</a></p></article>`
   );
