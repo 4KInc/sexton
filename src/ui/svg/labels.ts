@@ -26,15 +26,13 @@ export interface LabelPlacement {
   leader: { x1: number; y1: number; x2: number; y2: number } | null;
 }
 export const LABEL = {
-  /** The label's text size, in chart units. */
-  fontPx: 11,
   /** Width of one character, with room to spare. IM Fell English capitals run about 7 units at 11 px (measured in a browser: ECHOSTAR 7 is 70 units). */
   charW: 7.4,
   height: 12,
   /** How far outside a stone's own box a label must stay. */
   clear: 2,
   /** Distances for the leader-line candidates. */
-  rings: [30, 46, 66, 92],
+  rings: [30, 48, 72, 100],
 } as const;
 
 const HALF = LAYOUT.stoneWidth / 2 + 1;
@@ -56,21 +54,21 @@ interface Candidate {
 }
 function candidates(item: LabelItem): Candidate[] {
   const mid = item.y - LAYOUT.stoneHeight / 2;
+  const near = (x: number, y: number, anchor: LabelPlacement['anchor']): Candidate => ({ x, y, anchor, leader: false });
   const out: Candidate[] = [
-    { x: item.x + HALF + 6, y: mid + 4, anchor: 'start', leader: false },
-    { x: item.x - HALF - 6, y: mid + 4, anchor: 'end', leader: false },
-    { x: item.x, y: item.y - LAYOUT.stoneHeight - 9, anchor: 'middle', leader: false },
-    { x: item.x, y: item.y + 17, anchor: 'middle', leader: false },
+    near(item.x + HALF + 6, mid + 4, 'start'),
+    near(item.x - HALF - 6, mid + 4, 'end'),
+    near(item.x, item.y - LAYOUT.stoneHeight - 9, 'middle'),
+    near(item.x, item.y + 17, 'middle'),
   ];
-  // Farther out, on a leader line: the four diagonals, then shallower and steeper slants, then straight up, down, right and left.
+  // Farther out, on a leader line: the four diagonals, then shallower and steeper slants, then straight right, left, up and down.
   // Straight up and down come last: a vertical leader can sit on the FCC line and hide there.
-  const dirs: [number, number][] = [[1, -0.7], [-1, -0.7], [1, 0.7], [-1, 0.7], [1, -0.25], [-1, -0.25], [1, 0.25], [-1, 0.25], [1, -1.6], [-1, -1.6], [1, 1.6], [-1, 1.6], [1, 0], [-1, 0], [0, -1], [0, 1]];
+  const dirs = [1, -0.7, -1, -0.7, 1, 0.7, -1, 0.7, 1, -0.25, -1, -0.25, 1, 0.25, -1, 0.25, 1, 0, -1, 0, 0, -1, 0, 1];
   for (const r of LABEL.rings) {
-    for (const [dx, dy] of dirs) {
+    for (let k = 0; k < dirs.length; k += 2) {
+      const [dx, dy] = [dirs[k]!, dirs[k + 1]!];
       const len = Math.hypot(dx, dy);
-      const x = item.x + (dx / len) * r;
-      const y = mid + (dy / len) * r;
-      out.push({ x, y: y + 4, anchor: dx > 0 ? 'start' : dx < 0 ? 'end' : 'middle', leader: true });
+      out.push({ x: item.x + (dx / len) * r, y: mid + (dy / len) * r + 4, anchor: dx > 0 ? 'start' : dx < 0 ? 'end' : 'middle', leader: true });
     }
   }
   return out;
@@ -81,34 +79,28 @@ function candidates(item: LabelItem): Candidate[] {
  * nowhere is put on the candidate that overlaps least, and `unplaced` lists it.
  */
 export function placeLabels(items: readonly LabelItem[], stones: readonly { x: number; y: number }[], bounds: Box): { placements: Map<number, LabelPlacement>; unplaced: number[] } {
-  const obstacles = stones.map((s) => stoneBox(s.x, s.y));
+  const obstacles: Box[] = stones.map((s) => stoneBox(s.x, s.y));
   const placements = new Map<number, LabelPlacement>();
   const unplaced: number[] = [];
-  const taken: Box[] = [];
   for (const item of [...items].sort((a, b) => a.id - b.id)) {
     const w = labelWidth(item.name);
-    let chosen: LabelPlacement | null = null;
-    let fallback: { p: LabelPlacement; score: number } | null = null;
+    const mid = item.y - LAYOUT.stoneHeight / 2;
+    let best: LabelPlacement | null = null;
+    let bestHits = Infinity;
     for (const c of candidates(item)) {
       const box = boxFor(c.x, c.y, c.anchor, w);
       if (!within(box, bounds)) continue;
-      const hits = obstacles.filter((o) => intersects(box, o, LABEL.clear)).length + taken.filter((t) => intersects(box, t, LABEL.clear)).length;
-      const leader = c.leader
-        ? { x1: item.x, y1: item.y - LAYOUT.stoneHeight / 2, x2: c.anchor === 'start' ? c.x - 2 : c.anchor === 'end' ? c.x + 2 : c.x, y2: c.y - (c.y < item.y - LAYOUT.stoneHeight / 2 ? -2 : 6) }
-        : null;
-      const p: LabelPlacement = { id: item.id, x: c.x, y: c.y, anchor: c.anchor, box, leader };
-      if (hits === 0) {
-        chosen = p;
-        break;
-      }
-      if (fallback === null || hits < fallback.score) fallback = { p, score: hits };
+      const hits = obstacles.filter((o) => intersects(box, o, LABEL.clear)).length;
+      if (hits >= bestHits) continue;
+      const lx = c.anchor === 'start' ? c.x - 2 : c.anchor === 'end' ? c.x + 2 : c.x;
+      best = { id: item.id, x: c.x, y: c.y, anchor: c.anchor, box, leader: c.leader ? { x1: item.x, y1: mid, x2: lx, y2: c.y + (c.y < mid ? 2 : -6) } : null };
+      bestHits = hits;
+      if (hits === 0) break;
     }
-    if (chosen === null) {
-      unplaced.push(item.id);
-      chosen = fallback?.p ?? { id: item.id, x: item.x, y: item.y, anchor: 'start', box: boxFor(item.x, item.y, 'start', w), leader: null };
-    }
-    placements.set(item.id, chosen);
-    taken.push(chosen.box);
+    if (best === null || bestHits > 0) unplaced.push(item.id);
+    best ??= { id: item.id, x: item.x, y: item.y, anchor: 'start', box: boxFor(item.x, item.y, 'start', w), leader: null };
+    placements.set(item.id, best);
+    obstacles.push(best.box);
   }
   return { placements, unplaced };
 }

@@ -4,9 +4,10 @@
 import { CONFIG } from '../../engine/config.ts';
 import type { Config } from '../../engine/config.ts';
 import type { Census, SatRecord, VerdictName } from '../../engine/types.ts';
-import { CENSUS, CHURCHYARD_INTRO, HEADLINE, VALIDATION, COMPARISONS, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
+import { CENSUS, CENSUS_TILES, HERO, CHURCHYARD_INTRO, HEADLINE, VALIDATION, COMPARISONS, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
 import type { Comparison } from '../copy.ts';
 import { disposalRate, postRuleSummary } from '../../engine/headline.ts';
+import type { DisposalRate } from '../../engine/headline.ts';
 import { formatCount, formatShare } from '../format.ts';
 import { esc } from '../html.ts';
 import type { UiRegister } from '../register.ts';
@@ -18,8 +19,23 @@ const cell = (path: readonly string[], value: number): string =>
 const dd = (path: readonly string[], value: number): string =>
   `<dd data-census="${esc(JSON.stringify(path))}">${esc(formatCount(value))}</dd>`;
 const shareCell = (n: number, of: number): string => `<td class="num-cell">${esc(formatShare(n, of))}</td>`;
-const section = (id: string, heading: string, body: string): string =>
-  `<section class="census-section" aria-labelledby="census-${id}"><h2 id="census-${id}">${esc(heading)}</h2>${body}</section>`;
+const section = (id: string, heading: string, body: string, wide = false): string =>
+  `<section class="census-section${wide ? ' census-section--wide' : ''}" aria-labelledby="census-${id}"><h2 id="census-${id}">${esc(heading)}</h2>${body}</section>`;
+/** The four big numbers at the top. Not census cells (they have no data-census), so the cell test still counts each census number once. */
+export function statsHtml(reg: Pick<UiRegister, 'census' | 'records'>): string {
+  const s = postRuleSummary(reg.records);
+  const T = CENSUS_TILES;
+  const tile = (id: string, value: number, label: string, of = ''): string =>
+    `<li class="stat"><span class="stat-figure" data-stat="${id}"><span class="num">${formatCount(value)}</span>${of && `<span class="stat-of">${esc(of)}</span>`}</span><span class="stat-label">${esc(label)}</span></li>`;
+  return (
+    `<ul class="stats" aria-label="${esc(T.label)}">` +
+    tile('objects', reg.census.population.total, T.objects) +
+    tile('retired', reg.census.retired.total, T.retired) +
+    tile('post-rule', s.postRule, T.postRule) +
+    tile('zone', s.inOrNearZone, T.zone, HERO.zone.of(s.postRule)) +
+    `</ul>`
+  );
+}
 const paras = (lines: readonly string[]): string => lines.map((l) => `<p>${esc(l)}</p>`).join('');
 const table = (caption: string, head: string, rows: string, extraClass = ''): string =>
   `<div class="table-wrap census-wrap"><table class="register-table census-table${extraClass}"><caption>${esc(caption)}</caption><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -139,30 +155,58 @@ function ownerHtml(c: Census, config: Config): string {
   );
 }
 
+const pctOf = (n: number, of: number): string => String(Math.round((10000 * n) / of) / 100);
+/**
+ * Sexton's band and its central share on one axis from 0 to 100, with the published range above it.
+ * The marks carry counts ("27 of 45"). The only percent signs are inside the published range, which is marked
+ * data-published, because every Sexton share on this page shows "n of N" before its percentage.
+ */
+export function validationChartHtml(r: DisposalRate, published: { source: string; range: readonly [number, number] } | null): string {
+  const C = VALIDATION.chart;
+  const rangeText = published === null ? null : `${published.range[0]}% to ${published.range[1]}%`;
+  const esa =
+    published === null
+      ? ''
+      : `<div class="vplot-row"><span class="vplot-name">${esc(C.esa)}</span><div class="vplot-track">` +
+        `<span class="vplot-esa" data-published style="left:${published.range[0]}%;width:${published.range[1] - published.range[0]}%">${esc(rangeText!)}</span></div></div>`;
+  const sexton =
+    `<div class="vplot-row"><span class="vplot-name">${esc(C.sexton)}</span><div class="vplot-track">` +
+    `<span class="vplot-band" style="left:${pctOf(r.lower, r.n)}%;width:${pctOf(r.upper - r.lower, r.n)}%"></span>` +
+    `<span class="vplot-point" style="left:${pctOf(r.central, r.n)}%"></span>` +
+    `<span class="vplot-label" style="left:${pctOf(r.central, r.n)}%">${esc(C.point(r.central, r.n))}</span>` +
+    `<span class="vplot-band-label" style="left:${pctOf(r.lower, r.n)}%">${esc(C.band(r.lower, r.upper, r.n))}</span></div></div>`;
+  const ticks = [0, 25, 50, 75, 100].map((t) => `<span style="left:${t}%">${t}</span>`).join('');
+  return (
+    `<figure class="vplot" role="img" aria-label="${esc([C.axis, VALIDATION.sextonValue(r.central, r.n), VALIDATION.bandValue(r.lower, r.upper, r.n), rangeText].filter(Boolean).join('. '))}">` +
+    `<div class="vplot-rows" aria-hidden="true">${esa}${sexton}</div>` +
+    `<div class="vplot-axis" aria-hidden="true">${ticks}</div><figcaption class="vplot-caption">${esc(C.axis)}</figcaption></figure>`
+  );
+}
 /** Sexton's buried share next to a published range, only for a range that was checked in its source. */
 export function validationHtml(records: readonly SatRecord[], comparisons: readonly Comparison[] = COMPARISONS, config: Config = CONFIG): string {
   const r = disposalRate(records, config);
   if (r.n === 0) return `<p>${esc(VALIDATION.noGroup(r.afterLaunchYear))}</p>`;
-  const published = comparisons.find((c) => c.verified && c.where !== null && c.range !== null);
-  const head = `<p>${esc(VALIDATION.intro(r.afterLaunchYear))}</p>`;
+  const found = comparisons.find((c) => c.verified && c.where !== null && c.range !== null);
+  const head = `<aside class="vnote"><h3>${esc(VALIDATION.groupsTitle)}</h3><p>${esc(VALIDATION.intro(r.afterLaunchYear))}</p><p>${esc(VALIDATION.notRoberts)}</p></aside>`;
   const row = (k: string, v: string, attr: string): string =>
     `<div><dt>${esc(k)}</dt><dd data-validation="${attr}"${attr === 'published' ? ' data-published' : ''}>${esc(v)}</dd></div>`;
   let rows =
     row(VALIDATION.sexton, VALIDATION.sextonValue(r.central, r.n), 'sexton') +
     row(VALIDATION.band(config.uncertaintyKm), VALIDATION.bandValue(r.lower, r.upper, r.n), 'band');
   let verdict: string = VALIDATION.noPublished;
-  if (published !== undefined && published.range !== null) {
-    const [lo, hi] = published.range;
-    rows += row(VALIDATION.published(published.source), VALIDATION.rangeValue(lo, hi), 'published');
+  let published: { source: string; range: readonly [number, number] } | null = null;
+  if (found !== undefined && found.range !== null) {
+    const [lo, hi] = found.range;
+    published = { source: found.source, range: found.range };
+    rows += row(VALIDATION.published(found.source), VALIDATION.rangeValue(lo, hi), 'published');
     const pct = (n: number): number => (100 * n) / r.n;
     const centre = pct(r.central);
     if (centre >= lo && centre <= hi) verdict = VALIDATION.inside;
     else if (centre > hi) verdict = VALIDATION.above;
     else verdict = pct(r.upper) >= lo ? VALIDATION.partly : VALIDATION.below;
   }
-  return `${head}<dl class="ledger-data census-data">${rows}</dl><p data-validation="verdict"><strong>${esc(verdict)}</strong></p><p>${esc(VALIDATION.notRoberts)}</p>`;
+  return `<div class="vgrid"><div class="vmain">${validationChartHtml(r, published)}<dl class="ledger-data census-data">${rows}</dl><p data-validation="verdict"><strong>${esc(verdict)}</strong></p></div>${head}</div>`;
 }
-
 /** The first thing on the census page: the group launched on or after the rule date, with the older group as context. */
 export function headlineHtml(records: readonly SatRecord[], config: Config): string {
   const s = postRuleSummary(records);
@@ -172,12 +216,13 @@ export function headlineHtml(records: readonly SatRecord[], config: Config): str
     return `<tr><th scope="row">${esc(verdictCopy(v, config).pair)}</th><td class="num-cell" data-headline="${esc(v)}">${esc(formatCount(n))}</td>${shareCell(n, s.postRule)}</tr>`;
   }).join('');
   return (
+    `<div class="headline"><div class="headline-text">` +
     `<p data-headline="lead">${esc(HEADLINE.lead(s.postRule, s.retired))}</p>` +
     `<p data-headline="zone"><strong>${esc(HEADLINE.zone(formatShare(s.inOrNearZone, s.postRule)))}</strong></p>` +
-    table(HEADLINE.caption, th(HEADLINE.columns.verdict) + th(HEADLINE.columns.count, true) + th(HEADLINE.columns.share, true), rows) +
     `<p data-headline="predate">${esc(HEADLINE.predate(s.predate, s.retired))}</p>` +
     (s.unknownLaunch > 0 ? `<p>${esc(HEADLINE.unknownLaunch(s.unknownLaunch))}</p>` : '') +
-    `<p>${esc(assumptionsLine(config))}</p><p>${esc(CHURCHYARD_INTRO.blindSpot)}</p>`
+    `<p>${esc(assumptionsLine(config))}</p><p>${esc(CHURCHYARD_INTRO.blindSpot)}</p></div>` +
+    `<div class="headline-table">${table(HEADLINE.caption, th(HEADLINE.columns.verdict) + th(HEADLINE.columns.count, true) + th(HEADLINE.columns.share, true), rows)}</div></div>`
   );
 }
 
@@ -189,10 +234,6 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
   const intro =
     `<p>${esc(CENSUS.intro(c.snapshotDate))}</p>` +
     `<ul class="terms"><li>${esc(TERMS.geo)}</li><li>${esc(TERMS.perigee)}</li></ul>`;
-  const rest =
-    `<p>${esc(CENSUS.fromRegister)}</p>` +
-    `<p>${esc(CHURCHYARD_INTRO.voluntary)}</p>` +
-    `<p>${esc(CHURCHYARD_INTRO.noRetirementDate)}</p>`;
   const borderline = section(
     'borderline',
     H.borderline,
@@ -212,27 +253,32 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
     paras([CENSUS.blind.filter(near.lowerKm, near.upperKm, near.orbitCenter), CENSUS.blind.consequence]),
   );
   const caveat = section('caveat', H.caveat, `<p>${esc(CENSUS.caveat.intro)}</p><ul>${CENSUS.caveat.points.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`);
-  return (
-    `<div class="census">` +
-    intro +
-    section('headline', HEADLINE.heading, headlineHtml(reg.records, config)) +
-    rest +
+  const rest =
+    `<details class="fold"><summary>${esc(CENSUS.restTitle)}</summary><div class="fold-body">` +
+    `<p>${esc(CENSUS.fromRegister)}</p><p>${esc(CHURCHYARD_INTRO.voluntary)}</p><p>${esc(CHURCHYARD_INTRO.noRetirementDate)}</p></div></details>`;
+  const cols =
     section('population', H.population, populationHtml(c)) +
     section('verdicts', H.verdicts, verdictsHtml(c, config)) +
     borderline +
     section('era', H.era, eraHtml(c)) +
     section('orbit', H.orbit, orbitHtml(c, config)) +
     section('status', H.status, statusHtml(c, reg.records)) +
-    section('owner', H.owner, ownerHtml(c, config)) +
     gaps +
     blind +
-    section('validation', VALIDATION.heading, validationHtml(reg.records, comparisons)) +
     section('comparison', H.comparison, comparisonHtml(comparisons)) +
-    caveat +
+    caveat;
+  return (
+    `<div class="census">` +
+    `<div class="census-top">${intro}</div>` +
+    statsHtml(reg) +
+    section('headline', HEADLINE.heading, headlineHtml(reg.records, config), true) +
+    section('validation', VALIDATION.heading, validationHtml(reg.records, comparisons), true) +
+    `<div class="census-cols">${cols}</div>` +
+    section('owner', H.owner, ownerHtml(c, config), true) +
+    rest +
     `</div>`
   );
 }
-
 /** Draws the census into `root`. Nothing to listen to, so the stop function does nothing. */
 export function mountCensus(root: HTMLElement, reg: UiRegister): () => void {
   root.innerHTML = censusHtml(reg);

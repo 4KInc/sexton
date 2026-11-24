@@ -69,6 +69,10 @@ a {
 h1[tabindex='-1']:focus {
   outline: none;
 }
+.method [tabindex='-1']:focus {
+  /* A heading the contents list has moved to: focus moves for screen readers, and the heading is not a control, so no ring. */
+  outline: none;
+}
 .skip-link {
   position: absolute;
   left: var(--space-2);

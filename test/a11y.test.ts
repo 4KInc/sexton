@@ -181,7 +181,8 @@ describe('stylesheets', () => {
       }
     }
     // The page heading takes focus after a route change for screen readers; it is not a control, so it draws no ring.
-    expect(off).toEqual(["base.css: h1[tabindex='-1']:focus", 'churchyard.css: .stone-link']);
+    // Likewise a method-page heading that the contents list has moved to.
+    expect(off).toEqual(["base.css: h1[tabindex='-1']:focus", "base.css: .method [tabindex='-1']:focus", 'churchyard.css: .stone-link']);
     const churchyard = stripComments(css('churchyard.css'));
     expect(churchyard).toMatch(/\.stone-link:focus-visible \.hit\s*\{[^}]*stroke:\s*var\(--lantern\)/);
   });

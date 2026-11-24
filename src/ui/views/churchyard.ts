@@ -18,8 +18,10 @@ import {
   LEGEND,
   MOSS_STEPS,
   offScaleEdgeText,
+  PAGE_TITLES,
   SITE,
   snapshotLabel,
+  VALIDATION,
   stoneLabel,
   TERMS,
   VERDICT_ORDER,
@@ -32,6 +34,7 @@ import type { UiRegister } from '../register.ts';
 import { applyFilters, drawnInChurchyard, hasFilters, hashFor, NO_FILTERS, parseState } from '../state.ts';
 import type { ViewState } from '../state.ts';
 import { badgeHtml, glyphSvg } from './badge.ts';
+import { fineHtml } from './fine.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { bandsOf } from '../svg/bands.ts';
 import { stoneBody, stoneDefs } from '../svg/headstone.ts';
@@ -408,23 +411,17 @@ export function heroHtml(reg: UiRegister): string {
         `<span class="tile-label">${esc(t.label)}</span><span class="tile-sub">${esc(t.sub)}</span></a></li>`,
     )
     .join('');
-  const fine = HERO.fine(snapshotLabel(reg.snapshot.set), config)
-    .map((t) => `<li>${esc(t)}</li>`)
-    .join('');
   const d = disposalRate(reg.records, config);
-  const limits = [
+  const fine = fineHtml(reg.snapshot.set, config, [
     assumptionsLine(config),
     CHURCHYARD_INTRO.blindSpot,
     CHURCHYARD_INTRO.voluntary,
     CHURCHYARD_INTRO.noRetirementDate,
-    HERO.validation.limits(d.afterLaunchYear),
-  ]
-    .map((t) => `<p>${esc(t)}</p>`)
-    .join('');
+    VALIDATION.intro(d.afterLaunchYear),
+  ]);
   return (
     `<div class="hero"><ul class="tiles" aria-label="${esc(HERO.tilesLabel)}">${tiles}</ul>` +
-    `<div class="hero-fine"><ul class="fine-list">${fine}</ul>` +
-    `<details class="limits"><summary>${esc(HERO.limits)}</summary><div class="limits-body">${limits}</div></details></div></div>`
+    `${fine}</div>`
   );
 }
 /** The verdict words with their stone shapes, in one row beside the chart. The meanings are in the guide below. */
@@ -459,7 +456,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   const hasStones = byId.size > 0;
   root.innerHTML =
     heroHtml(reg) +
-    `<section class="stage" aria-label="${esc(HERO.stage)}">` +
+    `<section class="stage" aria-label="${esc(PAGE_TITLES.churchyard)}">` +
     `<div class="toolbar">` +
     filtersHtml(reg.records, state.filters, config, hasFilters(state.filters)) +
     `<p class="status" id="chart-status" role="status"></p>` +
@@ -518,10 +515,8 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       // The card floats inside the plot, clear of the axis column: tell the stylesheet where the plot starts and ends.
       const vb = host.querySelector('svg')?.viewBox.baseVal;
       if (plot !== null && vb !== undefined && vb.width > 0 && vb.height > 0) {
-        plot.style.setProperty('--axis', `${(model.cols.gutter / vb.width) * 100}%`);
-        plot.style.setProperty('--plot-right', `${(LAYOUT.right / vb.width) * 100}%`);
-        plot.style.setProperty('--plot-top', `${(LAYOUT.top / vb.height) * 100}%`);
-        plot.style.setProperty('--plot-bottom', `${(LAYOUT.bottom / vb.height) * 100}%`);
+        const vars: [string, number, number][] = [['--axis', model.cols.gutter, vb.width], ['--plot-right', LAYOUT.right, vb.width], ['--plot-top', LAYOUT.top, vb.height], ['--plot-bottom', LAYOUT.bottom, vb.height]];
+        for (const [name, n, of] of vars) plot.style.setProperty(name, `${(n / of) * 100}%`);
       }
       const stop = host.querySelector<HTMLElement>('a.stone-link[tabindex="0"]');
       tabStop = stop === null ? null : Number(stop.dataset['norad']);

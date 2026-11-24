@@ -96,6 +96,13 @@
   overflow-x: auto;
   border: 1px solid var(--stone);
 }
+/* The register table scrolls inside its own box both ways, so its header stays in view while the rows move. */
+#table-host .table-wrap {
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+  border-color: var(--panel-edge);
+  border-radius: var(--radius);
+}
 .register-table {
   border-collapse: collapse;
   width: 100%;
@@ -118,6 +125,30 @@
   background: var(--stone);
   position: sticky;
   top: 0;
+  z-index: 2;
+  border-bottom: 1px solid var(--bone-muted);
+}
+/* Rows: a faint stripe, and a lifted row under the pointer or the keyboard. The name stays in view when the table scrolls sideways. */
+#table-host .register-table tbody tr:nth-child(even) {
+  background: var(--panel);
+}
+#table-host .register-table tbody tr:hover {
+  background: var(--stone);
+}
+#table-host .register-table tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--ground);
+}
+#table-host .register-table tbody tr:nth-child(even) th {
+  background: var(--panel);
+}
+#table-host .register-table tbody tr:hover th {
+  background: var(--stone);
+}
+#table-host .register-table tbody td {
+  border-bottom-color: var(--panel-edge);
 }
 .register-table tbody th {
   font-weight: 600;
@@ -149,4 +180,128 @@ th[aria-sort='descending'] .sort::after {
   fill: none;
   stroke: var(--bone-muted);
   stroke-width: 1.2;
+}
+
+/* A verdict in a table cell: the stone shape and the churchyard word. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.1rem var(--space-2) 0.1rem var(--space-1);
+  border: 1px solid var(--bone-muted);
+  border-radius: 999px;
+  text-wrap: nowrap;
+}
+.chip .glyph {
+  width: 1rem;
+  height: 1.2rem;
+}
+.chip-word {
+  font-weight: 600;
+}
+/* The table toolbar: search, filters and the count in one panel. */
+.toolbar--table {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+}
+.filters--bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2) var(--space-3);
+  max-width: none;
+  margin: 0;
+  padding: var(--space-3);
+  background: var(--panel);
+  border-color: var(--panel-edge);
+  border-radius: var(--radius);
+}
+.filters--bar .filters-row,
+.filters--bar .more-filters {
+  display: contents;
+}
+.filters--bar .more-toggle {
+  display: none;
+}
+.filters--bar .field {
+  margin: 0;
+}
+.filters--bar input[type='search'] {
+  min-width: min(100%, 17rem);
+  border-radius: 999px;
+}
+.filters--bar select {
+  max-width: 14rem;
+  border-radius: 999px;
+}
+.filters--bar input::placeholder {
+  color: var(--bone-muted);
+  opacity: 1;
+}
+/* The example under the search box is still read to screen readers (aria-describedby); sighted users get it as the placeholder. */
+.filters--bar .hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.filters--bar .field--check {
+  min-height: 2.5rem;
+}
+.filters--bar .field:has(.check-list) {
+  flex: 1 1 24rem;
+}
+.filters--bar .check-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+.filters--bar .check-list li {
+  align-items: center;
+  padding: 0.15rem var(--space-2);
+  border: 1px solid var(--bone-muted);
+  border-radius: 999px;
+}
+.filters--bar .filters-note {
+  order: 9;
+  flex-basis: 100%;
+  margin: 0;
+  max-width: none;
+  font-size: 0.78rem;
+}
+.filters--bar .filters-clear {
+  margin: 0;
+}
+.toolbar--table .status {
+  margin: 0;
+  max-width: none;
+  color: var(--bone-muted);
+}
+.guide--table {
+  margin: var(--space-2) 0 var(--space-3);
+}
+.guide--table > summary {
+  font-size: 1.05rem;
+  padding: var(--space-2) var(--space-3);
+}
+@media (max-width: 900px) {
+  .filters--bar .more-toggle {
+    display: inline-block;
+    align-self: flex-end;
+  }
+  .filters--bar .more-filters {
+    display: none;
+  }
+  .filters--bar .more-filters[data-open] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-2) var(--space-3);
+    flex-basis: 100%;
+  }
+  #table-host .table-wrap {
+    max-height: calc(100vh - 3rem);
+  }
 }

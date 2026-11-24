@@ -1,18 +1,48 @@
-/* The methodology page. Colours come from tokens.css. */
+/* The methodology page: a contents list beside the text, a readable measure, and the sources as citations. Colours come from tokens.css. */
+.method-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3) var(--space-5);
+  align-items: start;
+}
 .method {
-  max-width: var(--measure);
+  min-width: 0;
+}
+/* Text keeps a line of about 72 characters. Tables, code and the citations use the room beside it. */
+.method > p,
+.method > ul:not(.cites),
+.method > ol,
+.method > h2,
+.method > h3,
+.method > h4 {
+  max-width: 72ch;
+}
+.method > p,
+.method > ul:not(.cites),
+.method > ol {
+  line-height: 1.6;
 }
 .method h2 {
   margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--panel-edge);
+  font-size: 1.6rem;
+}
+.method > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 .method h3 {
   margin-top: var(--space-4);
+  font-size: 1.2rem;
 }
 .method pre {
   overflow-x: auto;
   padding: var(--space-3);
   background: var(--road);
-  border: 1px solid var(--stone);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
   font-size: 0.95rem;
 }
 .method code {
@@ -21,6 +51,8 @@
 .method .method-wrap {
   max-width: 100%;
   margin: var(--space-3) 0;
+  border-color: var(--panel-edge);
+  border-radius: var(--radius);
 }
 .method .method-table {
   min-width: 36rem;
@@ -28,12 +60,113 @@
 .method .method-table td {
   overflow-wrap: anywhere;
 }
+/* Contents. Closed on a phone, open and sticky beside the text on a wide screen. */
+.toc {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+}
+.toc > summary {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+.toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--space-3) var(--space-3);
+  max-width: none;
+}
+.toc a {
+  display: block;
+  padding: 0.2rem 0;
+  color: var(--bone-muted);
+  font-size: 0.9rem;
+  line-height: 1.3;
+  text-decoration: none;
+}
+.toc a:hover {
+  color: var(--bone);
+  text-decoration: underline;
+}
+.toc-3 a {
+  padding-left: var(--space-3);
+  font-size: 0.84rem;
+}
+/* Sources, drawn as citations: the name, the address, and what was checked. */
+.cites {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  margin: var(--space-3) 0;
+  padding: 0;
+  max-width: none;
+}
+.cite {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-left: 3px solid var(--moss);
+  border-radius: var(--radius);
+}
+.cite p {
+  margin: 0;
+  max-width: none;
+  overflow-wrap: anywhere;
+}
+.cite-name {
+  font-weight: 600;
+  line-height: 1.35;
+}
+.cite-link {
+  font-size: 0.85rem;
+}
+.cite-note {
+  color: var(--bone-muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+@media (min-width: 1000px) {
+  .method-layout {
+    grid-template-columns: 17rem minmax(0, 1fr);
+  }
+  .toc {
+    position: sticky;
+    top: var(--space-3);
+    max-height: calc(100vh - 2 * var(--space-3));
+    overflow-y: auto;
+  }
+  /* Open on a wide screen, so the heading that would close it is not needed. */
+  .toc > summary {
+    pointer-events: none;
+    cursor: default;
+    list-style: none;
+  }
+  .toc > summary::-webkit-details-marker {
+    display: none;
+  }
+}
 @media print {
-  .method {
-    max-width: none;
+  .toc {
+    display: none;
+  }
+  .method-layout {
+    display: block;
   }
   .method pre {
     background: var(--paper);
     border-color: var(--ink-muted);
+  }
+  .cite {
+    background: none;
+    border-color: var(--ink-muted);
+  }
+  .cite-note {
+    color: var(--ink-muted);
   }
 }

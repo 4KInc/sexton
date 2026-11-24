@@ -8,7 +8,7 @@ import { findHits, METHODOLOGY_PATH } from '../scripts/check-language.ts';
 import { CONFIG } from '../src/engine/config.ts';
 import { METHODOLOGY } from '../src/ui/content.ts';
 import { parseHash } from '../src/ui/router.ts';
-import { methodHtml } from '../src/ui/views/method.ts';
+import { headingsOf, methodHtml } from '../src/ui/views/method.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const doc = readFileSync(join(ROOT, 'docs/methodology.md'), 'utf8');
@@ -135,8 +135,9 @@ describe('the page at #/method', () => {
   });
   const html = methodHtml();
   it('renders the sections with h2 headings and drops the document title', () => {
-    expect(html).toContain('<h2>Formulas</h2>');
-    expect(html).toContain('<h2>What we do not say</h2>');
+    // Headings carry an id for the contents list, and can take focus when the list moves the page to them.
+    expect(html).toContain('<h2 id="m-formulas" tabindex="-1">Formulas</h2>');
+    expect(html).toContain('<h2 id="m-what-we-do-not-say" tabindex="-1">What we do not say</h2>');
     expect(html).not.toContain('<h1');
   });
   it('renders the sources as links, with rel on external ones', () => {
@@ -145,8 +146,27 @@ describe('the page at #/method', () => {
   it('wraps each table in a labelled scroll box', () => {
     const tables = html.match(/<table /g) ?? [];
     const boxes = html.match(/<div class="table-wrap method-wrap" role="region" aria-label="[^"]+" tabindex="0">/g) ?? [];
-    expect(tables.length).toBeGreaterThan(5);
+    // The Sources table is drawn as citations, so it is not one of these.
+    expect(tables.length).toBeGreaterThan(4);
     expect(boxes.length).toBe(tables.length);
+  });
+  it('draws the Sources table as one citation per row, with its link and what was checked', () => {
+    const section = doc.slice(doc.indexOf('\n## Sources\n'), doc.indexOf('## What we do not say'));
+    const rows = section.split('\n').filter((l) => l.startsWith('| ') && !l.startsWith('| ---') && !l.startsWith('| Source '));
+    expect(html.match(/<li class="cite">/g)).toHaveLength(rows.length);
+    expect(html).toContain('<p class="cite-name">FCC DA 23-888, Order (DISH, EchoStar-7)</p><p class="cite-link"><a href="https://docs.fcc.gov/public/attachments/DA-23-888A1.txt" rel="noopener noreferrer">');
+    expect(html).toContain('<p class="cite-link">LINK NEEDED</p>');
+    expect(html).not.toContain('<th scope="col">Link</th>');
+  });
+  it('has a contents list built from the headings, which moves the page without changing the hash route', () => {
+    const entries = headingsOf(html);
+    expect(entries.map((e) => e.text)).toContain('Formulas');
+    expect(entries.filter((e) => e.level === 2).length).toBeGreaterThan(10);
+    const toc = html.slice(html.indexOf('<details class="toc">'), html.indexOf('</details>'));
+    for (const e of entries) expect(toc).toContain(`<a href="#/method" data-toc="${e.id}">`);
+    expect(new Set(entries.map((e) => e.id)).size).toBe(entries.length);
+    // Every id in the contents is on a heading in the text.
+    for (const e of entries) expect(html).toContain(`id="${e.id}"`);
   });
   it('keeps the formulas as preformatted text', () => {
     expect(html).toContain('<pre><code>n  = mean motion');

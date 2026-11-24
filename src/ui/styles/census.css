@@ -1,9 +1,222 @@
 /* The census page. Colours come from tokens.css. */
-.census {
-  max-width: 60rem;
+.census-top {
+  max-width: 90ch;
+  margin: 0 0 var(--space-3);
+}
+.census-top p {
+  margin: 0 0 var(--space-1);
+}
+.census-top .terms {
+  margin: var(--space-1) 0 0;
+  color: var(--bone-muted);
+  font-size: 0.82rem;
+}
+/* The big numbers: stones with arched tops, as on the churchyard. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  max-width: none;
+}
+.stat {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4) var(--space-3);
+  background: linear-gradient(180deg, var(--stone), var(--panel) 85%);
+  border: 1px solid var(--panel-edge);
+  border-radius: 2.6rem 2.6rem var(--radius) var(--radius);
+}
+.stat-figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  line-height: 1;
+}
+.stat-of {
+  font-size: 1.1rem;
+  color: var(--bone-muted);
+}
+.stat-label {
+  color: var(--bone-muted);
+  line-height: 1.3;
 }
 .census-section {
   margin: var(--space-4) 0;
+  padding: var(--space-3);
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+}
+.census-cols {
+  columns: 2 26rem;
+  column-gap: var(--space-4);
+}
+.census-cols > .census-section {
+  break-inside: avoid;
+  margin-top: 0;
+}
+.census .table-wrap {
+  border-color: var(--panel-edge);
+}
+.headline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3) var(--space-5);
+  align-items: start;
+}
+.headline p {
+  max-width: 68ch;
+}
+.vgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(15rem, 1fr);
+  gap: var(--space-3) var(--space-5);
+  align-items: start;
+}
+.vmain,
+.vnote {
+  min-width: 0;
+}
+.vnote {
+  padding: var(--space-3);
+  background: var(--stone);
+  border: 1px solid var(--bone-muted);
+  border-radius: var(--radius);
+}
+.vnote h3 {
+  margin-top: 0;
+}
+.vnote p {
+  max-width: 60ch;
+  font-size: 0.92rem;
+}
+/* The validation picture: the published range above Sexton's band and its central share, on one axis from 0 to 100. */
+.vplot {
+  margin: 0 0 var(--space-3);
+}
+.vplot-rows {
+  position: relative;
+}
+.vplot-row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+}
+.vplot-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+.vplot-track {
+  position: relative;
+  height: 4.1rem;
+  background-image: repeating-linear-gradient(90deg, var(--panel-edge) 0 1px, transparent 1px 25%);
+  background-size: calc(100% + 1px) 100%;
+  border-right: 1px solid var(--panel-edge);
+}
+.vplot-esa {
+  position: absolute;
+  top: 1.1rem;
+  height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--moss-deep);
+  border: 1px solid var(--moss);
+  border-radius: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-wrap: nowrap;
+}
+.vplot-band {
+  position: absolute;
+  top: 1.45rem;
+  height: 1.1rem;
+  background: var(--stone);
+  border: 1px solid var(--bone);
+  border-radius: 0.3rem;
+}
+.vplot-point {
+  position: absolute;
+  top: 1.15rem;
+  height: 1.8rem;
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--bone);
+}
+.vplot-label,
+.vplot-band-label {
+  position: absolute;
+  font-size: 0.8rem;
+  text-wrap: nowrap;
+}
+.vplot-label {
+  top: 0;
+  transform: translateX(-50%);
+  font-weight: 600;
+}
+.vplot-band-label {
+  bottom: 0;
+  color: var(--bone-muted);
+}
+.vplot-axis {
+  position: relative;
+  height: 1.4rem;
+  margin-left: calc(4.5rem + var(--space-2));
+  color: var(--bone-muted);
+  font-size: 0.78rem;
+}
+.vplot-axis span {
+  position: absolute;
+  top: 0.15rem;
+  transform: translateX(-50%);
+}
+.vplot-caption {
+  margin: 0;
+  padding-left: calc(4.5rem + var(--space-2));
+  color: var(--bone-muted);
+  font-size: 0.78rem;
+}
+.fold {
+  margin: var(--space-4) 0 0;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+}
+.fold > summary {
+  padding: var(--space-3);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.fold-body {
+  padding: 0 var(--space-3) var(--space-3);
+}
+@media (max-width: 900px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .stat {
+    padding: var(--space-2) var(--space-3);
+    border-radius: 1.8rem 1.8rem var(--radius) var(--radius);
+  }
+  .stat-figure {
+    font-size: 2.2rem;
+  }
+  .headline,
+  .vgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .census-cols {
+    columns: 1;
+  }
 }
 .census-section h2 {
   margin-bottom: var(--space-2);

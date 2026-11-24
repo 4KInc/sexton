@@ -2,7 +2,7 @@
 // zone, the two ends of the IADC threshold band, p, and the mean-element uncertainty around p.
 // The geometry is pure (percentages of the bar), so tests can read it without a DOM.
 import type { Config } from '../../engine/config.ts';
-import { LEDGER } from '../copy.ts';
+import { CHART, LEDGER } from '../copy.ts';
 import { formatP } from '../format.ts';
 import { esc } from '../html.ts';
 import { edgesOf, marginsSentence } from '../ledger-text.ts';
@@ -71,18 +71,17 @@ export function thresholdBarHtml(r: Retired, config: Config): string {
     .join('');
   const key = [
     B.zone(zone!),
-    B.low(low!, config.iadc.crAmMin),
-    B.high(high!, config.iadc.crAmMax),
-    B.p(pText),
+    B.edge(low!, config.iadc.crAmMin),
+    B.edge(high!, config.iadc.crAmMax),
     B.band(config.uncertaintyKm),
   ]
     .map((t) => `<li>${esc(t)}</li>`)
     .join('');
   return (
     `<figure class="pbar" role="img" aria-label="${esc(label)}">` +
-    `<div class="pbar-label" aria-hidden="true" style="left:${r2(g.p)}%"><span>${esc(B.pLabel(pText, g.off))}</span></div>` +
+    `<div class="pbar-label" aria-hidden="true" style="left:${r2(g.p)}%"><span>p = ${esc(pText)} km</span></div>` +
     `<div class="pbar-track" aria-hidden="true">${seg('zone', 0, g.zone)}${seg('shallow', g.zone, g.low)}${seg('wall', g.low, g.high)}${seg('above', g.high, 100)}${mark}</div>` +
     `<div class="pbar-ticks" aria-hidden="true">${ticks}</div>` +
-    `<figcaption class="pbar-unit">${esc(B.unit)}</figcaption></figure><ul class="pbar-key">${key}</ul>`
+    `<figcaption class="pbar-unit">${esc(CHART.axisTitle)}</figcaption></figure><ul class="pbar-key">${key}</ul>`
   );
 }

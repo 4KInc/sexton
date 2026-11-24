@@ -18,3 +18,7 @@ export function badgeHtml(verdict: VerdictName, config: Config, size: 'sm' | 'lg
     `<p class="badge-text"><span class="badge-word">${esc(word)}</span><span class="badge-meaning">${esc(meaning)}</span></p></div>`
   );
 }
+/** A verdict in a table cell: the stone shape and the churchyard word. The meaning is in the key above the table. */
+export function chipHtml(verdict: VerdictName, config: Config): string {
+  return `<span class="chip">${glyphSvg(verdict)}<span class="chip-word">${esc(verdictCopy(verdict, config).word)}</span></span>`;
+}

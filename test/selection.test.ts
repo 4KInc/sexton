@@ -141,7 +141,8 @@ describe('the selection card stays inside the plot', () => {
     expect(css).toMatch(/\.card--left:has\(\.card-name\)\s*\{[^}]*left:\s*calc\(var\(--axis, 0%\)/);
     expect(css).toMatch(/right:\s*calc\(var\(--plot-right, 0%\)/);
     expect(css).toMatch(/top:\s*calc\(var\(--plot-top, 0%\)/);
-    expect(source).toContain("plot.style.setProperty('--axis'");
+    expect(source).toContain("['--axis', model.cols.gutter, vb.width]");
+    expect(source).toContain('plot.style.setProperty(name');
   });
 });
 describe('ledger navigation', () => {

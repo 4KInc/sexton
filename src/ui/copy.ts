@@ -69,8 +69,6 @@ export const HERO = {
     label: (lo: number, hi: number): string => `Sexton vs ESA ${lo}\u2013${hi}%`,
     labelNoRange: 'Sexton: buried share',
     sub: (year: number): string => `Launched after ${year}. Different groups: a plausibility check.`,
-    limits: (year: number): string =>
-      `The Sexton share counts retired payloads launched after ${year}, because Sexton has no retirement dates. ESA's range counts payloads reaching end of life in the last decade. The two groups differ, so the comparison is a plausibility check, not a test.`,
   },
   /** The one-line fine print under the tiles. The full text is behind "Limits". */
   fine: (snapshot: string, config: Config): string[] => [
@@ -85,10 +83,10 @@ export const HERO = {
   guide: 'How to read the churchyard',
   guideHint: 'What the marks and words mean',
   legendLabel: 'The six verdicts, each with its stone shape',
-  stage: 'The churchyard',
 } as const;
 /** The methodology page is docs/methodology.md. Only its chrome is here. */
 export const METHOD = {
+  contents: 'On this page',
   tableLabel: 'Table from the methodology. Scroll sideways to see every column.',
 } as const;
 export const CHART = {
@@ -203,7 +201,7 @@ export function dataAge(record: Pick<SatRecord, 'orbitSource'>): string {
 
 export const TIP = {
   perigee: (absText: string, below: boolean, uncertaintyKm: number): string => `Perigee ${absText} km ${below ? 'below' : 'above'} GEO, \u00B1${uncertaintyKm} km`,
-  open: 'Click or press Enter to select. Double-click, or press Enter again, to open the ledger.',
+  open: 'Click or press Enter to select. Double-click, or Enter again, to open the ledger.',
 } as const;
 export const CARD = {
   ledger: 'Open the ledger',
@@ -215,7 +213,7 @@ export const CARD = {
   borderline: (config: Config): string => `Borderline: within ${config.uncertaintyKm} km of a band edge.`,
   beforeRule: 'Launched before the FCC minimum-perigee rule date (18 March 2002).',
   yearsSinceLaunch: (years: number): string => `${years} ${years === 1 ? 'year' : 'years'} since launch`,
-  empty: 'Click a stone, or focus it and press Enter, to read its card. Escape clears it. Double-click, or press Enter again, to open its ledger.',
+  empty: 'Click a stone, or focus it and press Enter, to read its card. Escape clears it. Double-click, or Enter again, opens its ledger.',
 } as const;
 
 /** Spoken label for a stone link (design 5.4). */
@@ -234,6 +232,7 @@ export function stoneLabel(
 }
 
 export const FILTERS = {
+  more: 'Owner, era and verdict filters',
   legend: 'Filter the register',
   note: 'The churchyard and the table share these filters. They are saved in the address, so you can share a filtered view.',
   search: 'Search by name or NORAD id',
@@ -298,15 +297,11 @@ export const LEDGER = {
   unknown: 'unknown',
   /** The words around the threshold bar (design.md, Layout: the picture first, words second). */
   bar: {
-    unit: 'Perigee above GEO, km',
-    pLabel: (pText: string, off: 'below' | 'above' | null): string => `p = ${pText} km${off === null ? '' : off === 'above' ? ', off the bar to the right' : ', off the bar to the left'}`,
     offWords: (off: 'below' | 'above'): string => `The mark is held at the ${off === 'above' ? 'right' : 'left'} end because p is beyond the bar.`,
     bandWords: (u: number): string => `The bar around p shows the \u00B1${u} km mean-element uncertainty.`,
     zone: (km: number): string => `${km} km: the edge of the protected zone.`,
-    low: (km: number, x: number): string => `${km} km: the IADC threshold if C_R\u00B7A/m is ${x} m\u00B2/kg.`,
-    high: (km: number, x: number): string => `${km} km: the IADC threshold if C_R\u00B7A/m is ${x} m\u00B2/kg.`,
-    p: (pText: string): string => `The mark: p, the perigee above GEO, ${pText} km.`,
-    band: (u: number): string => `The bar around the mark: \u00B1${u} km, the mean-element uncertainty.`,
+    edge: (km: number, x: number): string => `${km} km: the IADC threshold if C_R\u00B7A/m is ${x} m\u00B2/kg.`,
+    band: (u: number): string => `The bar around p: \u00B1${u} km, the mean-element uncertainty.`,
   },
   formula: (config: Config): string => `T = ${config.iadc.baseKm} + ${config.iadc.factorKm} × C_R·A/m.`,
   range: (config: Config): string =>
@@ -342,6 +337,7 @@ export const LEDGER = {
 export const TABLE = {
   intro: 'Every object the register holds, with the same numbers as the churchyard. Sort a column with its button.',
   verdictKey: 'The verdict words',
+  verdictKeySummary: 'What the verdict words mean',
   caption: 'Objects near GEO in the register',
   sortedBy: (label: string, dir: 'asc' | 'desc'): string => `Sorted by ${label}, ${dir === 'asc' ? 'ascending' : 'descending'}.`,
   columns: {
@@ -410,8 +406,25 @@ export const COMPARISONS: readonly Comparison[] = [
     range: null,
   },
 ];
+/** The big numbers at the top of the census page. */
+export const CENSUS_TILES = {
+  label: 'Key numbers',
+  objects: 'objects near GEO in the register',
+  retired: 'retired payloads, each with a verdict',
+  postRule: 'launched on or after the FCC rule date, 18 March 2002',
+  zone: 'of those in or near the protected zone',
+} as const;
 export const VALIDATION = {
   heading: 'Validation against a published range',
+  /** The side note beside the picture. */
+  groupsTitle: 'Different groups',
+  chart: {
+    axis: 'Share of payloads that are buried, per cent',
+    sexton: 'Sexton',
+    esa: 'ESA',
+    point: (c: number, n: number): string => `${c} of ${n}`,
+    band: (lo: number, hi: number, n: number): string => `${lo} to ${hi} of ${n}`,
+  },
   intro: (year: number): string =>
     `Sexton's own share of buried payloads, among retired payloads launched after ${year}, next to a published range. Sexton has no retirement dates, so launch year stands in for them. The two numbers count different groups, so they are a plausibility check, not a test of one against the other.`,
   sexton: 'Sexton: buried',
@@ -444,6 +457,7 @@ export const HEADLINE = {
 export const CENSUS = {
   intro: (date: string): string =>
     `${snapshotLabel(date)}. Every number here comes from the register, and every share shows what it is a share of.`,
+  restTitle: 'What these numbers are, and what is voluntary',
   fromRegister: 'Retired payloads are satellites that SATCAT or the GPZ table lists as not operational. A verdict is given only to them.',
   headings: {
     population: 'What the register holds',

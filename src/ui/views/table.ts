@@ -16,7 +16,9 @@ import { esc } from '../html.ts';
 import { replaceQuery } from '../router.ts';
 import { applyFilters, hasFilters, parseState, sortRecords, SORT_KEYS, toQuery } from '../state.ts';
 import type { Sort, SortKey, ViewState } from '../state.ts';
+import { chipHtml } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
+import { fineHtml } from './fine.ts';
 
 const edgesOf = (config: Config): number[] => [config.protectedZoneKm, config.thresholdLowKm, config.thresholdHighKm];
 
@@ -29,7 +31,7 @@ function headerHtml(sort: Sort): string {
 
 function verdictCell(r: SatRecord, config: Config): string {
   const v = r.verdict;
-  if (v.kind === 'verdict') return esc(verdictCopy(v.verdict, config).word);
+  if (v.kind === 'verdict') return chipHtml(v.verdict, config);
   if (v.kind === 'unmarked bones') return esc(TABLE.bones(r.status));
   return esc(TABLE.noVerdict(v.reason));
 }
@@ -86,13 +88,25 @@ export function introHtml(config: Config): string {
 }
 
 /** Draws the table view into `root`. Returns a function that removes the listeners. */
-export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; config: Config }, query: URLSearchParams): () => void {
+export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; config: Config; snapshot: { set: string } }, query: URLSearchParams): () => void {
   let state: ViewState = parseState(query);
+  // The toolbar (search, filters, count) comes first, then one line of fine print. The long text is behind "Limits"
+  // and the verdict key is a closed panel, so the table starts high on the screen.
+  const config = reg.config;
   root.innerHTML =
-    introHtml(reg.config) +
-    filtersHtml(reg.records, state.filters, reg.config, true) +
-    verdictKeyHtml(reg.config) +
-    `<p class="status" id="table-status" role="status"></p><div id="table-host"></div>`;
+    `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, state.filters.owner !== null || state.filters.era !== null || state.filters.verdicts.length > 0 || state.filters.bones, true)}<p class="status" id="table-status" role="status"></p></div>` +
+    fineHtml(reg.snapshot.set, config, [
+      TABLE.intro,
+      TERMS.geo,
+      TERMS.perigee,
+      TERMS.eccentricity,
+      CHURCHYARD_INTRO.voluntary,
+      CHURCHYARD_INTRO.noRetirementDate,
+      assumptionsLine(config),
+      CHURCHYARD_INTRO.blindSpot,
+    ]) +
+    `<details class="guide guide--table"><summary>${esc(TABLE.verdictKeySummary)}</summary><div class="guide-body">${verdictKeyHtml(config)}</div></details>` +
+    `<div id="table-host"></div>`;
   const form = root.querySelector<HTMLFormElement>('#filters')!;
   const status = root.querySelector<HTMLElement>('#table-status')!;
   const host = root.querySelector<HTMLElement>('#table-host')!;
@@ -115,6 +129,15 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     },
     () => draw(''),
   );
+  const onMore = (event: Event): void => {
+    const toggle = (event.target as Element).closest<HTMLButtonElement>('[data-more]');
+    if (toggle === null) return;
+    const more = root.querySelector<HTMLElement>('#more-filters')!;
+    const open = !more.hasAttribute('data-open');
+    more.toggleAttribute('data-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+  };
+  form.addEventListener('click', onMore);
   const onClick = (event: Event): void => {
     const button = (event.target as Element).closest<HTMLButtonElement>('button[data-sort]');
     if (button === null) return;
@@ -129,6 +152,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   host.addEventListener('click', onClick);
   return () => {
     unwire();
+    form.removeEventListener('click', onMore);
     host.removeEventListener('click', onClick);
   };
 }
