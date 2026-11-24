@@ -303,3 +303,52 @@
   width: auto;
   max-width: none;
 }
+/* Launch era (data: launched before the FCC rule date). Faint, never hidden. Full strength on hover, focus and selection. */
+.stone-pos--early {
+  opacity: 0.65;
+}
+.stone-link:hover .stone-pos--early,
+.stone-link:focus-visible .stone-pos--early,
+.stone-link.selected .stone-pos--early {
+  opacity: 1;
+}
+/* A ring: launched on or after the rule date, perigee below the IADC threshold. A shape, so colour is not the only cue. */
+.flag-ring {
+  fill: none;
+  stroke: var(--bone);
+  stroke-width: 1.4;
+}
+.stone-name {
+  fill: var(--bone);
+  font: 11px var(--font-display);
+  paint-order: stroke;
+  stroke: var(--ground);
+  stroke-width: 3px;
+}
+/* The tooltip. It shows on hover and focus, and has no motion. */
+.tip {
+  position: fixed;
+  z-index: 10;
+  max-width: 22rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--stone);
+  color: var(--bone);
+  border: 1px solid var(--bone-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.tip[hidden] {
+  display: none;
+}
+.tip-id,
+.tip-hint {
+  color: var(--bone-muted);
+}
+/* On a wide screen the two halves of the intro sit side by side, so the chart starts higher. */
+@media (min-width: 1000px) {
+  .intro {
+    display: grid;
+    grid-template-columns: minmax(0, var(--measure)) minmax(0, var(--measure));
+    column-gap: var(--space-5);
+  }
+}

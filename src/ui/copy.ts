@@ -42,7 +42,7 @@ export const TERMS = {
 } as const;
 
 export const CHURCHYARD_INTRO = {
-  lead: 'Each stone is a retired satellite. Height is perigee above GEO: tall is graveyard.',
+  lead: 'Each stone is a retired satellite, as tall as its perigee above GEO. The road is the protected zone: a stone standing on it has not been raised out of the zone.',
   voluntary:
     'The IADC guidelines are voluntary. The FCC minimum-perigee rule (47 CFR § 25.283) applies only to satellites the FCC authorizes, launched on or after 18 March 2002.',
   noRetirementDate: 'We know each launch date and current orbit. We do not know when a satellite retired.',
@@ -141,6 +141,9 @@ export const LEGEND = {
   moss: 'Moss: years since launch',
   sway: (config: Config): string => `A swaying stone: eccentricity above ${config.iadc.eccentricityMax}. The wider the sway, the higher the eccentricity.`,
   whisker: (config: Config): string => `Dotted bar: the verdict is within ${config.uncertaintyKm} km of a band edge, the mean-element uncertainty.`,
+  early: 'Faint stone: launched before the date of the vertical line. Full-strength stones were launched on or after it.',
+  ring: 'Ring: launched on or after the date of the vertical line, and the perigee is below the IADC disposal threshold under the stated assumptions.',
+  named: 'Name beside a stone: a case file is written for it.',
   fccLine: 'Vertical line: 18 March 2002, the date from which the FCC minimum-perigee rule applies to the satellites the FCC authorizes.',
   bones: 'Small diamond: unmarked bones, a rocket body or a piece of debris. They carry no name or verdict and show only when switched on.',
   offScale: 'A count at the top or bottom edge: objects above the top limit or below the bottom limit of the scale. Their exact values are on the card and in the ledger.',
@@ -161,6 +164,10 @@ export function dataAge(record: Pick<SatRecord, 'orbitSource'>): string {
   return `GP mean elements, epoch ${date} ${time} UTC`;
 }
 
+export const TIP = {
+  perigee: (absText: string, below: boolean, uncertaintyKm: number): string => `Perigee ${absText} km ${below ? 'below' : 'above'} GEO, \u00B1${uncertaintyKm} km`,
+  open: 'Click or press Enter to open the ledger.',
+} as const;
 export const CARD = {
   ledger: 'Open the ledger',
   close: 'Clear selection',
@@ -171,7 +178,7 @@ export const CARD = {
   borderline: (config: Config): string => `Borderline: within ${config.uncertaintyKm} km of a band edge.`,
   beforeRule: 'Launched before the FCC minimum-perigee rule date (18 March 2002).',
   yearsSinceLaunch: (years: number): string => `${years} ${years === 1 ? 'year' : 'years'} since launch`,
-  empty: 'Select a stone to see its numbers.',
+  empty: 'Open a stone to read its ledger. The last stone you opened is marked and shown here.',
 } as const;
 
 /** Spoken label for a stone link (design 5.4). */

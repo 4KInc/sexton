@@ -454,3 +454,22 @@ describe('verdicts are never shown by colour alone', () => {
     expect(stripComments(css('base.css'))).toMatch(/\[aria-current='page'\]\s*\{[^}]*border-bottom/);
   });
 });
+
+describe('polish step 3: faint stones and the tooltip', () => {
+  const alpha = Number(/\.stone-pos--early\s*\{\s*opacity:\s*([0-9.]+)/.exec(read('src/ui/styles/churchyard.css'))?.[1]);
+  it('a faint stone keeps 3:1 against the ground for its outline and its moss', () => {
+    expect(alpha).toBeGreaterThan(0);
+    expect(alpha).toBeLessThan(1);
+    for (const name of ['bone', 'moss']) {
+      expect(ratio(over(token(name), token('ground'), alpha), token('ground')), `${name} at ${alpha}`).toBeGreaterThanOrEqual(3);
+    }
+  });
+  it('the tooltip text has 4.5:1 on the tooltip background', () => {
+    for (const name of ['bone', 'bone-muted']) expect(ratio(token(name), token('stone')), name).toBeGreaterThanOrEqual(4.5);
+  });
+  it('the tooltip and the ring use tokens only, and nothing in the tooltip moves', () => {
+    const rule = (sel: string): string => new RegExp(`${sel.replace('.', '\\.')}\\s*\\{[^}]*\\}`).exec(read('src/ui/styles/churchyard.css'))![0];
+    for (const sel of ['.tip', '.flag-ring', '.stone-name']) expect(rule(sel), sel).not.toMatch(/#[0-9a-fA-F]{3,6}|rgb\(/);
+    expect(rule('.tip')).not.toMatch(/transition|animation/);
+  });
+});

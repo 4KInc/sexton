@@ -3,6 +3,7 @@
 import type { Config } from '../../engine/config.ts';
 import type { SatRecord, VerdictName } from '../../engine/types.ts';
 import {
+  TIP,
   assumptionsLine,
   bandCopy,
   CARD,
@@ -21,7 +22,7 @@ import {
   VERDICT_ORDER,
   verdictCopy,
 } from '../copy.ts';
-import { formatP, formatSigned, spokenKm } from '../format.ts';
+import { formatP, formatSigned, MINUS, spokenKm } from '../format.ts';
 import { esc, withSansDigits } from '../html.ts';
 import type { UiRegister } from '../register.ts';
 import { applyFilters, drawnInChurchyard, hasFilters, hashFor, NO_FILTERS, parseState } from '../state.ts';
@@ -135,6 +136,22 @@ interface Pos {
   x: number;
   y: number;
 }
+/** Launched on or after the rule date, and below the IADC disposal threshold under the stated assumptions. */
+export function isFlagged(r: RetiredRecord): boolean {
+  const v = r.verdict;
+  return v.era === null && (v.verdict === 'fallen' || v.verdict === 'unquiet' || v.verdict === 'shallow grave');
+}
+/** The text of the tooltip: name, NORAD id, perigee with the mean-element uncertainty, verdict word. */
+export function tipHtml(r: RetiredRecord, config: Config): string {
+  const text = pText(r, config);
+  const below = text.startsWith(MINUS);
+  return (
+    `<strong>${withSansDigits(r.name)}</strong> <span class="tip-id">NORAD ${r.norad}</span>` +
+    `<br>${esc(TIP.perigee(text.replace(/^[+\u2212]/, ''), below, config.uncertaintyKm))}` +
+    `<br>${esc(verdictCopy(r.verdict.verdict, config).word)}` +
+    `<br><span class="tip-hint">${esc(TIP.open)}</span>`
+  );
+}
 function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number | null, tabStop: number | null): string {
   const off = offScale(r.pKm);
   const v = r.verdict;
@@ -157,15 +174,24 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
       `<line x1="${wx - 2}" x2="${wx + 2}" y1="${f(top)}" y2="${f(top)}"/>` +
       `<line x1="${wx - 2}" x2="${wx + 2}" y1="${f(bottom)}" y2="${f(bottom)}"/></g>`;
   }
-  const cls = `stone-link${selected === r.norad ? ' selected' : ''}`;
   const hw = LAYOUT.stoneWidth / 2 + 1;
+  const early = v.era === 'before FCC rule';
+  const flagged = isFlagged(r);
+  const cls = `stone-link${selected === r.norad ? ' selected' : ''}`;
+  const posCls = `stone-pos${early ? ' stone-pos--early' : ''}${flagged ? ' stone-pos--ring' : ''}`;
+  const ring = flagged
+    ? `<rect class="flag-ring" x="${-hw - 2}" y="${-LAYOUT.stoneHeight - 4}" width="${2 * hw + 4}" height="${LAYOUT.stoneHeight + 7}" rx="5"/>`
+    : '';
+  const named = r.caseFile ? `<text class="stone-name" x="${hw + 7}" y="${-LAYOUT.stoneHeight / 2}">${esc(r.name)}</text>` : '';
   return (
     `<a class="${cls}" href="#/sat/${r.norad}" data-norad="${r.norad}" tabindex="${tabStop === r.norad ? 0 : -1}" aria-label="${esc(label)}">` +
     `<title>${esc(label)}</title>` +
-    `<g transform="translate(${f(pos.x)} ${f(pos.y)})">` +
+    `<g class="${posCls}" transform="translate(${f(pos.x)} ${f(pos.y)})">` +
     `<rect class="hit" x="${-hw}" y="${-LAYOUT.stoneHeight - 2}" width="${2 * hw}" height="${LAYOUT.stoneHeight + 3}"/>` +
+    ring +
     shape +
     whisker +
+    named +
     `</g></a>`
   );
 }
@@ -283,6 +309,7 @@ export function legendHtml(config: Config): string {
     `<h3>${esc(LEGEND.moss)}</h3><ul class="legend-list legend-list--glyphs">${moss}</ul>` +
     `<ul class="legend-list legend-notes">` +
     `<li>${esc(LEGEND.sway(config))}</li><li>${esc(LEGEND.whisker(config))}</li>` +
+    `<li>${esc(LEGEND.early)}</li><li>${esc(LEGEND.ring)}</li><li>${esc(LEGEND.named)}</li>` +
     `<li>${esc(LEGEND.fccLine)}</li><li>${esc(LEGEND.bones)}</li><li>${esc(LEGEND.offScale)}</li><li>${esc(LEGEND.unevenYears)}</li></ul></section>`
   );
 }
@@ -314,10 +341,10 @@ export function cardHtml(r: RetiredRecord | undefined, config: Config): string {
 export function introHtml(reg: UiRegister): string {
   const n = retiredPayloads(reg.records).length;
   return (
-    `<p>${esc(CHURCHYARD_INTRO.lead)}</p>` +
-    `<ul class="terms"><li>${esc(TERMS.geo)}</li><li>${esc(TERMS.perigee)}</li><li>${esc(TERMS.eccentricity)}</li></ul>` +
-    `<p>${esc(CHURCHYARD_INTRO.voluntary)} ${esc(CHURCHYARD_INTRO.noRetirementDate)}</p>` +
-    `<p class="count">${esc(countLine(n, reg.snapshot.set))} ${esc(CHURCHYARD_INTRO.blindSpot)}</p>`
+    `<div class="intro"><div class="intro-col"><p>${esc(CHURCHYARD_INTRO.lead)}</p>` +
+    `<ul class="terms"><li>${esc(TERMS.geo)}</li><li>${esc(TERMS.perigee)}</li><li>${esc(TERMS.eccentricity)}</li></ul></div>` +
+    `<div class="intro-col"><p>${esc(CHURCHYARD_INTRO.voluntary)} ${esc(CHURCHYARD_INTRO.noRetirementDate)}</p>` +
+    `<p class="count">${esc(countLine(n, reg.snapshot.set))} ${esc(CHURCHYARD_INTRO.blindSpot)}</p></div></div>`
   );
 }
 
@@ -341,6 +368,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>` +
         (narrow ? `<p class="chart-note">${esc(CHART.scrollNote)} <a id="scroll-table" href="#/table">${esc(CHART.scrollLink)}</a>.</p>` : '') +
         `<div class="chart-wrap${narrow ? ' chart-wrap--scroll' : ''}" id="chart-host"${narrow ? ` role="region" aria-label="${esc(CHART.scrollRegion)}"` : ''}></div>` +
+        `<div class="tip" id="stone-tip" hidden aria-hidden="true"></div>` +
         `<section class="card" id="stone-card" aria-live="polite" aria-label="Selected stone"></section>`
       : `<p class="empty">${esc(CHART.empty)}</p>`) +
     legendHtml(config);
@@ -393,17 +421,53 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     }
     if (card !== null) card.innerHTML = cardHtml(norad === null ? undefined : byId.get(norad), config);
   };
+  // A click or Enter on a stone opens its ledger (the link's own address). The stone is remembered, so it
+  // is marked and shown on the card when the visitor comes back.
   const onClick = (event: Event): void => {
     const target = event.target as Element;
     const link = target.closest<SVGAElement>('a.stone-link');
     if (link !== null) {
-      event.preventDefault();
-      select(Number(link.dataset['norad']));
+      remembered = Number(link.dataset['norad']);
       return;
     }
     if (target.closest('[data-clear]') !== null) select(null);
   };
-  const stoneOf = (target: EventTarget | null): SVGAElement | null => (target instanceof Element ? target.closest<SVGAElement>('a.stone-link') : null);
+  // The tooltip shows on hover and on keyboard focus, and Escape closes it. It stays while the pointer is over it.
+  const tip = root.querySelector<HTMLElement>('#stone-tip');
+  let tipTimer: number | undefined;
+  const hideTip = (): void => {
+    window.clearTimeout(tipTimer);
+    if (tip !== null) tip.hidden = true;
+  };
+  const showTip = (link: SVGAElement): void => {
+    const r = byId.get(Number(link.dataset['norad']));
+    if (tip === null || r === undefined) return;
+    window.clearTimeout(tipTimer);
+    tip.innerHTML = tipHtml(r, config);
+    tip.hidden = false;
+    const box = link.getBoundingClientRect();
+    const w = tip.offsetWidth;
+    const h = tip.offsetHeight;
+    const left = Math.min(Math.max(8, box.left + box.width / 2 - w / 2), Math.max(8, window.innerWidth - w - 8));
+    const above = box.top - h - 8;
+    tip.style.left = `${left}px`;
+    tip.style.top = `${above >= 8 ? above : box.bottom + 8}px`;
+  };
+  const delayHide = (): void => {
+    window.clearTimeout(tipTimer);
+    tipTimer = window.setTimeout(hideTip, 150);
+  };
+  const onOver = (event: Event): void => {
+    const link = stoneOf(event.target);
+    if (link !== null) showTip(link);
+    else if (event.target instanceof Element && event.target.closest('#stone-tip') !== null) window.clearTimeout(tipTimer);
+  };
+  const onOut = (event: Event): void => {
+    if (stoneOf(event.target) !== null || (event.target instanceof Element && event.target.closest('#stone-tip') !== null)) delayHide();
+  };
+  function stoneOf(target: EventTarget | null): SVGAElement | null {
+    return target instanceof Element ? target.closest<SVGAElement>('a.stone-link') : null;
+  }
   /** Moves the Tab stop to one stone. */
   const setTabStop = (norad: number): void => {
     if (host === null || tabStop === norad) return;
@@ -413,15 +477,21 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   };
   const onFocusIn = (event: Event): void => {
     const link = stoneOf(event.target);
-    if (link !== null) setTabStop(Number(link.dataset['norad']));
+    if (link !== null) {
+      setTabStop(Number(link.dataset['norad']));
+      showTip(link);
+    }
+  };
+  const onFocusOut = (event: Event): void => {
+    if (stoneOf(event.target) !== null) hideTip();
   };
   const onKeydown = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape') hideTip();
     const link = stoneOf(event.target);
     if (link === null || event.altKey || event.ctrlKey || event.metaKey) return;
     const norad = Number(link.dataset['norad']);
     if (event.key === 'Enter') {
-      event.preventDefault();
-      select(norad);
+      remembered = norad;
       return;
     }
     if (!(NAV_KEYS as readonly string[]).includes(event.key)) return;
@@ -433,8 +503,15 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   };
   root.addEventListener('click', onClick);
   root.addEventListener('focusin', onFocusIn);
+  root.addEventListener('focusout', onFocusOut);
   root.addEventListener('keydown', onKeydown);
+  root.addEventListener('pointerover', onOver);
+  root.addEventListener('pointerout', onOut);
   return () => {
+    hideTip();
+    root.removeEventListener('focusout', onFocusOut);
+    root.removeEventListener('pointerover', onOver);
+    root.removeEventListener('pointerout', onOut);
     unwire();
     root.removeEventListener('click', onClick);
     root.removeEventListener('focusin', onFocusIn);
