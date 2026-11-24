@@ -316,8 +316,7 @@ export function introHtml(reg: UiRegister): string {
   return (
     `<p>${esc(CHURCHYARD_INTRO.lead)}</p>` +
     `<ul class="terms"><li>${esc(TERMS.geo)}</li><li>${esc(TERMS.perigee)}</li><li>${esc(TERMS.eccentricity)}</li></ul>` +
-    `<p>${esc(CHURCHYARD_INTRO.voluntary)}</p>` +
-    `<p>${esc(CHURCHYARD_INTRO.noRetirementDate)}</p>` +
+    `<p>${esc(CHURCHYARD_INTRO.voluntary)} ${esc(CHURCHYARD_INTRO.noRetirementDate)}</p>` +
     `<p class="count">${esc(countLine(n, reg.snapshot.set))} ${esc(CHURCHYARD_INTRO.blindSpot)}</p>`
   );
 }

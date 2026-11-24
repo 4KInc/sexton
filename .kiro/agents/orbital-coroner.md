@@ -7,6 +7,7 @@ includePowers: false
 resources:
   - file://.kiro/steering/language.md
   - file://docs/methodology.md
+  - file://docs/spike.md
   - file://src/ui/case-file.ts
 permissions:
   rules:
@@ -68,7 +69,7 @@ Body in markdown.
 
 No other keys. The body has no raw HTML. Headings in the body start at `#` and the site shifts them down. Use plain sections such as `# What the register shows`, `# Assumptions and data age`, `# What the sources say`, `# What this page cannot say`.
 
-`provisional` is `true` only for Luch/Olymp (40258), until the owner has checked the SATCAT row in the committed snapshot and changed it. For every other case file, write `false`. Do not change `provisional` in review mode.
+`provisional` is `true` only for Luch/Olymp (40258), until the owner has checked the SATCAT row in the committed snapshot and changed it. For every other case file, write `false`. The owner's SATCAT check for a provisional case is recorded in `docs/spike.md` (Task 21 section). Read it before flagging `provisional` in review mode. Do not change `provisional` in review mode.
 
 ## Write mode
 

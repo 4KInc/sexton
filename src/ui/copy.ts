@@ -42,7 +42,7 @@ export const TERMS = {
 } as const;
 
 export const CHURCHYARD_INTRO = {
-  lead: 'Each stone is a retired satellite. Its height is its perigee above GEO. Satellites that were moved up into the graveyard orbit stand high. Satellites still near the belt stand low.',
+  lead: 'Each stone is a retired satellite. Height is perigee above GEO: tall is graveyard.',
   voluntary:
     'The IADC guidelines are voluntary. The FCC minimum-perigee rule (47 CFR § 25.283) applies only to satellites the FCC authorizes, launched on or after 18 March 2002.',
   noRetirementDate: 'We know each launch date and current orbit. We do not know when a satellite retired.',

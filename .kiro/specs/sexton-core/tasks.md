@@ -161,7 +161,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Confirm colour is never the only cue, and check focus order, the skip link, and reduced motion across all views.
   - _Requirements: 6.10_
 
-- [ ] 18. README
+- [x] 18. README
   - What Sexton is, its limits (language.md), how to run, test and build, how data is refreshed, and credits (Roberts, CelesTrak, font).
   - It must pass the language check.
   - _Requirements: 10.1_
