@@ -8,8 +8,8 @@
 }
 
 .chart-wrap {
-  margin: var(--space-3) 0;
-  border: 1px solid var(--stone);
+  margin: 0;
+  border-top: 1px solid var(--panel-edge);
   background: var(--ground);
 }
 .chart {
@@ -161,57 +161,131 @@
   }
 }
 
-/* Card */
+/* Card: the selected stone. On a wide screen it floats over the corner of the chart that is farther from the stone. */
+.plot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
 .card {
-  max-width: 44rem;
+  order: 1;
+  margin: 0;
   padding: var(--space-3);
-  border: 1px solid var(--bone-muted);
-  background: var(--stone);
+  border-top: 1px solid var(--panel-edge);
+  background: var(--panel);
 }
 .card:has(.card-name) {
+  order: -1;
+  border: 1px solid var(--bone-muted);
   border-color: var(--lantern);
+  border-radius: var(--radius);
+  box-shadow: 0 0 2rem var(--lantern-glow);
+  margin: var(--space-3);
 }
-/* An h2, so the page goes h1, h2 with no skipped level. It keeps the size of a card title. */
+@media (min-width: 900px) {
+  .card:has(.card-name) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    order: 0;
+    width: 21.5rem;
+    max-height: calc(100% - 2 * var(--space-3));
+    overflow-y: auto;
+  }
+  .card--left:has(.card-name) {
+    right: auto;
+    left: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card:has(.card-name) {
+    animation: card-in 0.35s ease-out;
+  }
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* An h2, so the page goes h1, h2 with no skipped level. */
 .card-name {
-  margin-top: 0;
-  font-size: 1.1rem;
+  margin: 0 0 var(--space-2);
+  font-size: 1.35rem;
 }
 .card-id {
+  display: block;
   font-family: var(--font-body);
   font-size: 0.85rem;
   color: var(--bone-muted);
 }
-.card-verdict {
-  font-weight: 600;
-}
 .card-data {
   display: grid;
   gap: var(--space-1);
-  margin: var(--space-2) 0;
+  margin: var(--space-3) 0 var(--space-2);
 }
 .card-data div {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) var(--space-3);
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--panel-edge);
 }
 .card-data dt {
-  min-width: 11rem;
   color: var(--bone-muted);
 }
 .card-data dd {
   margin: 0;
 }
 .card-notes {
-  padding-left: 1.2rem;
+  padding-left: 1.1rem;
+  margin: var(--space-2) 0;
+  font-size: 0.85rem;
+  color: var(--bone-muted);
 }
 .card-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  margin: var(--space-3) 0 0;
 }
 .card-empty {
   margin: 0;
+  max-width: none;
   color: var(--bone-muted);
+  font-size: 0.9rem;
+}
+/* Verdict badge: the word large, its meaning under it, smaller. The stone shape is the same one the chart draws. */
+.badge {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--stone);
+  border: 1px solid var(--bone-muted);
+  border-radius: var(--radius);
+}
+.badge .glyph {
+  margin-top: 0.2rem;
+}
+.badge-text {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+}
+.badge-word {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+.badge-meaning {
+  color: var(--bone-muted);
+  font-size: 0.85rem;
+  line-height: 1.35;
 }
 
 /* Legend */
@@ -350,5 +424,214 @@
     display: grid;
     grid-template-columns: minmax(0, var(--measure)) minmax(0, var(--measure));
     column-gap: var(--space-5);
+  }
+}
+
+/* Hero: three tiles that open the census. Each tile is a stone with an arched top. */
+.hero {
+  margin: 0 0 var(--space-4);
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+.tile-link {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 0.2rem;
+  height: 100%;
+  padding: 0.9rem 1.5rem 0.8rem;
+  background: linear-gradient(180deg, var(--stone), var(--panel) 80%);
+  border: 1px solid var(--panel-edge);
+  border-radius: 3rem 3rem var(--radius) var(--radius);
+  text-decoration: none;
+}
+.tile-link:hover {
+  border-color: var(--bone-muted);
+}
+.tile-figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  line-height: 1.05;
+}
+.tile-of {
+  font-size: 1.3rem;
+  color: var(--bone-muted);
+}
+.tile-label {
+  font-weight: 600;
+  line-height: 1.3;
+}
+.tile-sub {
+  color: var(--bone-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.hero-fine {
+  margin: var(--space-2) 0 0;
+  max-width: none;
+  color: var(--bone-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+/* The stage: the chart in a frame, with its toolbar, caption and compact legend above it. */
+.stage {
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--sky-top), var(--panel) 14rem);
+  overflow: clip;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-3) 0;
+}
+.toolbar .filters-details {
+  flex: 0 0 auto;
+  margin: 0;
+  max-width: none;
+}
+.toolbar .filters-details[open] {
+  flex-basis: 100%;
+}
+.toolbar .filters-details > summary {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--bone-muted);
+  border-radius: 999px;
+  background: var(--stone);
+}
+.toolbar .filters {
+  max-width: none;
+  border-color: var(--panel-edge);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.toolbar .status {
+  flex: 1 1 18rem;
+  margin: 0;
+  max-width: none;
+  color: var(--bone-muted);
+  font-size: 0.88rem;
+}
+.toolbar .skip-link--inline {
+  margin: 0;
+}
+.stage-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3);
+}
+.stage-caption {
+  flex: 1 1 32rem;
+  margin: 0;
+  max-width: 74ch;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.legend-strip {
+  flex: 0 1 auto;
+}
+.toolbar-guide {
+  margin-left: auto;
+}
+.legend-strip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+.legend-strip-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.92rem;
+}
+.stage .chart-note {
+  margin: var(--space-2) var(--space-3) 0;
+}
+
+/* The guide: everything that explains the chart, closed until asked for. */
+.guide {
+  margin-top: var(--space-4);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.guide > summary {
+  padding: var(--space-3);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+.guide-body {
+  padding: 0 var(--space-3) var(--space-3);
+}
+.guide-body .legend {
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 900px) {
+  .tiles {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+  .tile-link {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+    column-gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: 1.6rem 1.6rem var(--radius) var(--radius);
+  }
+  .tile-figure {
+    grid-row: 1 / 4;
+    align-self: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    min-width: 4.2rem;
+    font-size: 2.1rem;
+  }
+  .tile-of {
+    font-size: 0.95rem;
+  }
+  .tile-sub {
+    grid-column: 2;
+    font-size: 0.78rem;
+  }
+}
+@media (max-width: 600px) {
+  .site-title {
+    font-size: 2rem;
+  }
+  .site-tagline {
+    font-size: 0.85rem;
+  }
+  .nav-list {
+    width: 100%;
+  }
+  .toolbar-guide {
+    margin-left: 0;
+  }
+  .nav-list a {
+    padding: 0.5rem 0.4rem;
+    font-size: 0.92rem;
   }
 }

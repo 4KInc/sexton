@@ -55,6 +55,11 @@ const SURFACES: [string, Rgb][] = [
   ['shallow band (stone at 0.8 over ground)', over(stone, ground, 0.8)],
   ['consecrated band (bone at 0.07 over ground)', over(token('bone'), ground, 0.07)],
   ['wall gradient, top (stone at 0.1 over ground)', over(stone, ground, 0.1)],
+  // Atmosphere around the chart (redesign): the sky behind the page, the panels, the active nav segment.
+  ['sky-top', token('sky-top')],
+  ['sky-glow (the brightest part of the page background)', token('sky-glow')],
+  ['panel', token('panel')],
+  ['moss-deep (the active nav segment)', token('moss-deep')],
 ];
 /** Text colours (WCAG AA, 4.5:1). `moss` is only used as a fill, but is held to the text level too. */
 const TEXT = ['bone', 'bone-muted', 'moss'];
@@ -174,7 +179,8 @@ describe('stylesheets', () => {
         if (/outline(-style)?:\s*(none|0)\b/.test(m[2]!)) off.push(`${f}: ${m[1]!.trim()}`);
       }
     }
-    expect(off).toEqual(['churchyard.css: .stone-link']);
+    // The page heading takes focus after a route change for screen readers; it is not a control, so it draws no ring.
+    expect(off).toEqual(["base.css: h1[tabindex='-1']:focus", 'churchyard.css: .stone-link']);
     const churchyard = stripComments(css('churchyard.css'));
     expect(churchyard).toMatch(/\.stone-link:focus-visible \.hit\s*\{[^}]*stroke:\s*var\(--lantern\)/);
   });
@@ -439,7 +445,9 @@ describe('verdicts are never shown by colour alone', () => {
     for (const r of [plain, withCase]) {
       const word = r.verdict.verdict;
       expect(rowHtml(r, config)).toContain(verdictCopy(word, config).word);
-      expect(cardHtml(r, config)).toContain(verdictCopy(word, config).pair.replace(/&/g, '&amp;'));
+      // The card is a badge: the word large, the meaning under it. Both are in the card's text.
+      expect(cardHtml(r, config)).toContain(`<span class="badge-word">${verdictCopy(word, config).word}</span>`);
+      expect(cardHtml(r, config)).toContain(`<span class="badge-meaning">${verdictCopy(word, config).meaning.replace(/&/g, '&amp;')}</span>`);
       expect(ledgerPageHtml(real, r.norad)).toContain(verdictCopy(word, config).pair.replace(/&/g, '&amp;'));
       expect(chartSvg(real, false, null)).toContain(`${r.name.replace(/&/g, '&amp;')}, ${word},`);
     }
@@ -451,7 +459,8 @@ describe('verdicts are never shown by colour alone', () => {
   it('the sorted column and the selected stone are marked by more than colour', () => {
     expect(stripComments(css('table.css'))).toMatch(/aria-sort='ascending'\] \.sort::after\s*\{\s*content/);
     expect(stripComments(css('churchyard.css'))).toMatch(/\.stone-link\.selected \.stone-body\s*\{[^}]*stroke-width/);
-    expect(stripComments(css('base.css'))).toMatch(/\[aria-current='page'\]\s*\{[^}]*border-bottom/);
+    // The current nav segment is filled, has its own border and is bolder, so it is not marked by colour alone.
+    expect(stripComments(css('base.css'))).toMatch(/\[aria-current='page'\]\s*\{[^}]*border-color[^}]*font-weight/);
   });
 });
 

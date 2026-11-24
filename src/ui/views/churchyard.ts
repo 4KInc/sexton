@@ -12,21 +12,26 @@ import {
   chartDescription,
   countLine,
   dataAge,
+  COMPARISONS,
   FILTERS,
+  HERO,
   LEGEND,
   MOSS_STEPS,
   offScaleEdgeText,
   SITE,
+  snapshotLabel,
   stoneLabel,
   TERMS,
   VERDICT_ORDER,
   verdictCopy,
 } from '../copy.ts';
-import { formatP, formatSigned, MINUS, spokenKm } from '../format.ts';
+import { disposalRate, postRuleSummary } from '../../engine/headline.ts';
+import { formatCount, formatP, formatSigned, MINUS, spokenKm } from '../format.ts';
 import { esc, withSansDigits } from '../html.ts';
 import type { UiRegister } from '../register.ts';
 import { applyFilters, drawnInChurchyard, hasFilters, hashFor, NO_FILTERS, parseState } from '../state.ts';
 import type { ViewState } from '../state.ts';
+import { badgeHtml, glyphSvg } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { bandsOf } from '../svg/bands.ts';
 import { stoneBody, stoneDefs } from '../svg/headstone.ts';
@@ -292,10 +297,6 @@ export function chartSvg(
   ];
   return parts.join('');
 }
-function glyphSvg(verdict: VerdictName, moss: 0 | 1 | 2 | 3 | 4 = 0): string {
-  return `<svg class="glyph" viewBox="-14 -26 28 34" width="28" height="34" aria-hidden="true" focusable="false">${stoneBody({ verdict, moss })}</svg>`;
-}
-
 export function legendHtml(config: Config): string {
   const bands = bandsOf(config)
     .map((b) => `<li><span class="swatch swatch--${b.id}" aria-hidden="true"></span>${esc(bandCopy(b.id, config).full)}</li>`)
@@ -331,11 +332,72 @@ export function cardHtml(r: RetiredRecord | undefined, config: Config): string {
   else if (v.yearsSinceLaunch !== null) notes.push(`${CARD.yearsSinceLaunch(v.yearsSinceLaunch)}. Launched ${r.launchDate}.`);
   return (
     `<h2 class="card-name">${withSansDigits(r.name)} <span class="card-id">NORAD ${r.norad}</span></h2>` +
-    `<p class="card-verdict">${esc(verdictCopy(v.verdict, config).pair)}</p>` +
+    badgeHtml(v.verdict, config) +
     `<dl class="card-data">${rows.map(([k, val]) => `<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join('')}</dl>` +
     `<ul class="card-notes">${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` +
-    `<p class="card-actions"><a class="button" href="#/sat/${r.norad}">${esc(CARD.ledger)}</a> <button type="button" class="button" data-clear>${esc(CARD.close)}</button></p>`
+    `<p class="card-actions"><a class="button button--primary" href="#/sat/${r.norad}">${esc(CARD.ledger)}</a> <button type="button" class="button button--quiet" data-clear>${esc(CARD.close)}</button></p>`
   );
+}
+
+export interface HeroStat {
+  id: 'post-rule' | 'zone' | 'validation';
+  /** The big figure. */
+  value: string;
+  /** Said after the figure, on the same line. */
+  of: string | null;
+  label: string;
+  sub: string;
+}
+/**
+ * The three tiles. Every figure comes from the engine's own summaries (the same ones the census page
+ * shows), so a tile can never differ from the census. The ESA range appears only when it was checked in its source.
+ */
+export function heroStats(reg: Pick<UiRegister, 'records' | 'config'>, comparisons = COMPARISONS): HeroStat[] {
+  const s = postRuleSummary(reg.records);
+  const d = disposalRate(reg.records, reg.config);
+  const esa = comparisons.find((c) => c.id === 'esa' && c.verified && c.where !== null && c.range !== null);
+  const range = esa?.range ?? null;
+  return [
+    { id: 'post-rule', value: formatCount(s.postRule), of: null, label: HERO.postRule.label, sub: HERO.postRule.sub },
+    { id: 'zone', value: formatCount(s.inOrNearZone), of: HERO.zone.of(s.postRule), label: HERO.zone.label, sub: HERO.zone.sub },
+    {
+      id: 'validation',
+      value: d.n === 0 ? '\u2013' : `${Math.round((100 * d.central) / d.n)}%`,
+      of: null,
+      label: range === null ? HERO.validation.labelNoRange : HERO.validation.label(range[0], range[1]),
+      sub: HERO.validation.sub(d.afterLaunchYear),
+    },
+  ];
+}
+/** Digits, and a percent sign after them, in the sans: the serif draws old-style figures. */
+const sansFigure = (text: string): string => esc(text).replace(/\d+%?/g, '<span class="num">$&</span>');
+export function heroHtml(reg: UiRegister): string {
+  const config = reg.config;
+  const tiles = heroStats(reg)
+    .map(
+      (t) =>
+        `<li class="tile tile--${t.id}"><a class="tile-link" href="#/census"><span class="tile-figure">${sansFigure(t.value)}${t.of === null ? '' : `<span class="tile-of">${withSansDigits(t.of)}</span>`}</span>` +
+        `<span class="tile-label">${esc(t.label)}</span><span class="tile-sub">${esc(t.sub)}</span></a></li>`,
+    )
+    .join('');
+  const fine = [
+    snapshotLabel(reg.snapshot.set) + '.',
+    assumptionsLine(config),
+    CHURCHYARD_INTRO.blindSpot,
+    CHURCHYARD_INTRO.voluntary,
+  ].join(' ');
+  return (
+    `<div class="hero">` +
+    `<ul class="tiles" aria-label="${esc(HERO.tilesLabel)}">${tiles}</ul>` +
+    `<p class="hero-fine">${esc(fine)}</p></div>`
+  );
+}
+/** The verdict words with their stone shapes, in one row beside the chart. The meanings are in the guide below. */
+export function compactLegendHtml(config: Config): string {
+  const items = VERDICT_ORDER.map(
+    (v) => `<li>${glyphSvg(v)}<span>${esc(verdictCopy(v, config).word)}</span></li>`,
+  ).join('');
+  return `<div class="legend-strip"><ul class="legend-strip-list" aria-label="${esc(HERO.legendLabel)}">${items}</ul></div>`;
 }
 
 export function introHtml(reg: UiRegister): string {
@@ -361,17 +423,23 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   let selected: number | null = remembered !== null && byId.has(remembered) ? remembered : null;
   const hasStones = byId.size > 0;
   root.innerHTML =
-    introHtml(reg) +
+    heroHtml(reg) +
+    `<section class="stage" aria-label="${esc(HERO.stage)}">` +
+    `<div class="toolbar">` +
     filtersHtml(reg.records, state.filters, config, hasFilters(state.filters)) +
     `<p class="status" id="chart-status" role="status"></p>` +
+    (hasStones ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>` : '') +
+    `<button type="button" class="button button--quiet toolbar-guide" data-open-guide>${esc(HERO.guideHint)}</button>` +
+    `</div>` +
     (hasStones
-      ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>` +
+      ? `<div class="stage-head"><p class="stage-caption">${esc(HERO.caption)}</p>${compactLegendHtml(config)}</div>` +
         (narrow ? `<p class="chart-note">${esc(CHART.scrollNote)} <a id="scroll-table" href="#/table">${esc(CHART.scrollLink)}</a>.</p>` : '') +
-        `<div class="chart-wrap${narrow ? ' chart-wrap--scroll' : ''}" id="chart-host"${narrow ? ` role="region" aria-label="${esc(CHART.scrollRegion)}"` : ''}></div>` +
+        `<div class="plot"><div class="chart-wrap${narrow ? ' chart-wrap--scroll' : ''}" id="chart-host"${narrow ? ` role="region" aria-label="${esc(CHART.scrollRegion)}"` : ''}></div>` +
         `<div class="tip" id="stone-tip" hidden aria-hidden="true"></div>` +
-        `<section class="card" id="stone-card" aria-live="polite" aria-label="Selected stone"></section>`
+        `<section class="card" id="stone-card" aria-live="polite" aria-label="Selected stone"></section></div>`
       : `<p class="empty">${esc(CHART.empty)}</p>`) +
-    legendHtml(config);
+    `</section>` +
+    `<details class="guide" id="guide"><summary>${esc(HERO.guide)}</summary><div class="guide-body">${introHtml(reg)}${legendHtml(config)}</div></details>`;
   const form = root.querySelector<HTMLFormElement>('#filters')!;
   const status = root.querySelector<HTMLElement>('#chart-status')!;
   const host = root.querySelector<HTMLElement>('#chart-host');
@@ -381,6 +449,18 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   // The one stone in the Tab order (roving tabindex). It follows focus, and survives a redraw.
   let tabStop: number | null = null;
   let nav: NavItem[] = [];
+  /** The card floats over one corner of the chart. It takes the side away from the selected stone. */
+  const placeCard = (): void => {
+    if (card === null || host === null) return;
+    const stone = host.querySelector<SVGAElement>('a.stone-link.selected');
+    if (stone === null) {
+      card.classList.remove('card--left');
+      return;
+    }
+    const box = host.getBoundingClientRect();
+    const at = stone.getBoundingClientRect();
+    card.classList.toggle('card--left', at.left + at.width / 2 > box.left + box.width / 2);
+  };
   const draw = (): void => {
     const shown = applyFilters(reg.records, state.filters);
     const drawn = drawnInChurchyard(shown);
@@ -400,7 +480,10 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       const stop = host.querySelector<HTMLElement>('a.stone-link[tabindex="0"]');
       tabStop = stop === null ? null : Number(stop.dataset['norad']);
     }
-    if (card !== null) card.innerHTML = cardHtml(selected === null ? undefined : byId.get(selected), config);
+    if (card !== null) {
+      card.innerHTML = cardHtml(selected === null ? undefined : byId.get(selected), config);
+      placeCard();
+    }
     if (skip !== null) skip.href = hashFor('table', state);
     if (scrollLink !== null) scrollLink.href = hashFor('table', state);
   };
@@ -419,7 +502,10 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     for (const a of root.querySelectorAll<SVGAElement>('a.stone-link')) {
       a.classList.toggle('selected', a.dataset['norad'] === String(norad));
     }
-    if (card !== null) card.innerHTML = cardHtml(norad === null ? undefined : byId.get(norad), config);
+    if (card !== null) {
+      card.innerHTML = cardHtml(norad === null ? undefined : byId.get(norad), config);
+      placeCard();
+    }
   };
   // A click or Enter on a stone opens its ledger (the link's own address). The stone is remembered, so it
   // is marked and shown on the card when the visitor comes back.
@@ -431,6 +517,14 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       return;
     }
     if (target.closest('[data-clear]') !== null) select(null);
+    if (target.closest('[data-open-guide]') !== null) {
+      const guide = root.querySelector<HTMLDetailsElement>('#guide');
+      if (guide !== null) {
+        guide.open = true;
+        guide.querySelector('summary')?.focus();
+        guide.scrollIntoView({ block: 'start' });
+      }
+    }
   };
   // The tooltip shows on hover and on keyboard focus, and Escape closes it. It stays while the pointer is over it.
   const tip = root.querySelector<HTMLElement>('#stone-tip');

@@ -9,7 +9,7 @@ import { SCALE } from './svg/scale.ts';
 export const SITE = {
   title: 'Sexton',
   url: 'https://4kinc.github.io/sexton/',
-  tagline: 'A register of retired geostationary satellites',
+  tagline: 'Which retired geostationary satellites were buried above the belt, and which still drift in it.',
   skipToMain: 'Skip to main content',
   skipToTable: 'Skip the churchyard drawing and go to the table view',
   sampleBanner: 'Sample data for layout only. This is not the register.',
@@ -51,6 +51,27 @@ export const CHURCHYARD_INTRO = {
     'The register only sees objects still near GEO. Satellites sent much higher, or that left GEO, may be missing.',
 } as const;
 
+/** The hero of the churchyard view: one caption sentence, three tiles that link to the census, and the fine print. */
+export const HERO = {
+  caption:
+    'Each stone is a retired satellite, as tall as its perigee (the lowest point of its orbit) above GEO (the circular orbit about 35,786 km above the equator, where a satellite stays over one spot).',
+  tilesLabel: 'Key numbers. Each one opens the census.',
+  postRule: { label: 'retired payloads launched after the FCC rule', sub: 'On or after 18 March 2002.' },
+  zone: {
+    of: (n: number): string => `of ${formatCount(n)}`,
+    label: 'in or near the protected zone',
+    sub: 'Perigee below the IADC disposal threshold, under the stated assumptions.',
+  },
+  validation: {
+    label: (lo: number, hi: number): string => `Sexton vs ESA ${lo}\u2013${hi}%`,
+    labelNoRange: 'Sexton: buried share',
+    sub: (year: number): string => `Sexton counts payloads launched after ${year}. The groups differ, so it is a plausibility check.`,
+  },
+  guide: 'How to read the churchyard',
+  guideHint: 'What the marks and words mean',
+  legendLabel: 'The six verdicts, each with its stone shape',
+  stage: 'The churchyard',
+} as const;
 /** The methodology page is docs/methodology.md. Only its chrome is here. */
 export const METHOD = {
   tableLabel: 'Table from the methodology. Scroll sideways to see every column.',
@@ -65,7 +86,7 @@ export const CHART = {
   fccLine: 'FCC minimum-perigee rule (launches from 18 Mar 2002)',
   fccLineShort: 'FCC rule line',
   empty: 'No retired payloads in this register.',
-  legendTitle: 'How to read the churchyard',
+  legendTitle: 'The ground, the stones and the marks',
   designatorNote: 'Launch year from the international designator. Moss is not shown.',
   mossUnknown: 'No moss: launch date unknown.',
   highGround: 'High ground: compressed scale',

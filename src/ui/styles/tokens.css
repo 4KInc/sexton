@@ -16,6 +16,15 @@
   --bone-muted: #a8a99f;
   --moss: #8fae78;
   --lantern: #e8a83e;
+  /* Atmosphere around the chart (design.md, Layout). Never used inside the chart's data marks. */
+  --sky-top: #1a2638;
+  --sky-glow: #263850;
+  --panel: #1a212b;
+  --panel-edge: #3a4656;
+  --moss-deep: #243425;
+  --fog: #9fb4c817;
+  /* Lantern glow: focus and selection only. */
+  --lantern-glow: #e8a83e59;
   /* Print only. */
   --ink: #1a1a1a;
   --ink-muted: #555555;
@@ -30,4 +39,5 @@
   --space-4: 1.5rem;
   --space-5: 2.5rem;
   --measure: 62ch;
+  --radius: 0.5rem;
 }

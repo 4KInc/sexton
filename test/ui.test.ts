@@ -491,7 +491,8 @@ describe('selection card and legend', () => {
   const echostar = retiredPayloads(fixture.records).find((r) => r.norad === 27378)!;
   it('the card shows the verdict with its meaning, p, data age and assumptions', () => {
     const html = cardHtml(echostar, fixture.config);
-    expect(html).toContain('Unquiet (the orbit reaches the protected zone');
+    // The badge: the word, then its meaning under it.
+    expect(html).toContain('<span class="badge-word">Unquiet</span><span class="badge-meaning">the orbit reaches the protected zone');
     expect(html).toContain('+110.4 km');
     expect(html).toContain('GP mean elements, epoch 2026-11-20 12:07 UTC');
     expect(html).toContain('C_R·A/m from 0.012 to 0.045');
