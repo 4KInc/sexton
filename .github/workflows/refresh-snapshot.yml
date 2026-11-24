@@ -1,0 +1,65 @@
+name: Refresh snapshot
+on:
+  workflow_dispatch:
+concurrency:
+  group: refresh-snapshot
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # One try per data set, no retries. snapshot.ts reads the committed manifests
+      # (a fresh checkout has them), so its 2-hour, partial-body and 15-minute rules
+      # hold here. It exits non-zero on any non-200, which fails this step and the job.
+      - name: Download new data
+        id: snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp data/register.json "$RUNNER_TEMP/old-register.json"
+          node scripts/snapshot.ts 2>&1 | tee "$RUNNER_TEMP/snapshot.log"
+          # A download prints "200 <bytes> bytes <file>". Skipped data sets print "skip ...".
+          if grep -q '^200 ' "$RUNNER_TEMP/snapshot.log"; then
+            echo "fetched=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fetched=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing new: every data set was downloaded less than 2 hours ago. No pull request."
+          fi
+      - name: Build the register
+        if: steps.snapshot.outputs.fetched == 'true'
+        run: node scripts/build-register.ts
+      - name: Open the pull request
+        if: steps.snapshot.outputs.fetched == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          set_name="$(date -u +%F)"
+          branch="snapshot/${set_name}"
+          node scripts/pr-body.ts \
+            --old "$RUNNER_TEMP/old-register.json" \
+            --new data/register.json \
+            --set "data/raw/${set_name}" > "$RUNNER_TEMP/pr-body.md"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add data/raw data/register.json
+          git commit -m "Snapshot ${set_name}"
+          git push origin "$branch"
+          gh pr create \
+            --base "$BASE_BRANCH" \
+            --head "$branch" \
+            --title "Snapshot ${set_name}" \
+            --body-file "$RUNNER_TEMP/pr-body.md"

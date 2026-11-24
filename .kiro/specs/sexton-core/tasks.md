@@ -150,7 +150,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Test: every number in the config appears in the file (it's read and matched).
   - _Requirements: 9.1–9.4, 3.8, 5.4_
 
-- [ ] 16. Snapshot refresh Action
+- [x] 16. Snapshot refresh Action
   - `.github/workflows/refresh-snapshot.yml` (design 8.2): workflow_dispatch only, then snapshot, build-register, branch and `gh pr create`, failing with no retries. Use minimal permissions.
   - Don't run it in this task.
   - Tell the user about the "Allow GitHub Actions to create pull requests" setting.

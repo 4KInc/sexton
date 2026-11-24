@@ -49,6 +49,8 @@ Third test, 2026-11-22 (census hook, Task 19):
 2026-11-23: Checked the hooks and the orbital-coroner agent against the Kiro docs. The three hook files and the agent file already match the documented formats and locations, so neither was changed; a file-tool save of docs/methodology.md gave no hook output and `orbital-coroner` is still not found as a sub-agent. Journal updated; 520 tests pass.
 2026-11-23: Task 17 done. Contrast computed from tokens.css (smallest text ratio 5.38, moss on stone; print 7.46), all above AA, now tested; fixes: the stone card was an h3 straight under the h1 (now h2), the focus ring is no longer switched off on the page heading and main, the phone chart now starts below 900 px (at 200% zoom on a laptop the wide chart's text was about 4 px), long addresses in a ledger pushed a 320 px page sideways, and methodology table headers got scope. Checked in headless Chrome at 1280, 640 (200%), 390 and 320 px: no page-level sideways scroll on any route; reduced motion stops all 58 sway animations. VoiceOver and a real phone not checked. 673 tests pass.
 
+2026-11-23: Task 16 done. refresh-snapshot.yml (workflow_dispatch only, SHA-pinned, job-level permissions, one concurrency group, no retries) runs snapshot.ts, build-register.ts and `gh pr create` with a body from scripts/pr-body.ts; a test parses the YAML (added the `yaml` dev dependency). Not run.
+
 ## What surprised us
 - The hand-written hook format loaded (4 read, 4 registered) but never fired.
 - The census test wrote the real `data/register.json` and README.md.
