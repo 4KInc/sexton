@@ -29,6 +29,8 @@ describe('kiro-verify.yml', () => {
     const run = steps.map((s) => String(s.run ?? '')).join('\n');
     expect(run).toMatch(/kiro-cli chat --v3 --no-interactive --trust-tools=/);
     expect(run).not.toMatch(/--trust-all-tools/);
+    // V3 tool IDs from https://kiro.dev/docs/tools/: read_file and execute_bash.
+    expect(run).toContain('--trust-tools=read_file,execute_bash');
   });
   it('fails on any difference by running the tests and diffing the committed files itself', () => {
     const run = steps.map((s) => String(s.run ?? ''));

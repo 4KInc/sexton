@@ -37,7 +37,7 @@ jobs:
           KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          kiro-cli chat --v3 --no-interactive --trust-tools=run_command,read_file \
+          kiro-cli chat --v3 --no-interactive --trust-tools=read_file,execute_bash \
             "Run npm test, then run npm run census. Do not edit any file. Report the number of tests that passed and whether README.md or data/register.json changed."
       # The decision. These do not depend on what the model said.
       - name: Tests must pass
