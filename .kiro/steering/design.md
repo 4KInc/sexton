@@ -8,7 +8,7 @@ This is the costume. The Costume Contest category is judged on the interface.
 
 ## Mood
 
-A quiet Victorian churchyard at night. Not a cartoon. Restraint over gimmicks.
+A Victorian churchyard at night, seen through a modern instrument. Cinematic and atmospheric, never a cartoon. The page should feel designed, not typed.
 
 ## Palette
 
@@ -34,8 +34,13 @@ A quiet Victorian churchyard at night. Not a cartoon. Restraint over gimmicks.
 
 Moss shows years since launch, not data age. SATCAT gives no element date for most graveyard objects, so data age is shown as text next to each object (the GP epoch, or "SATCAT, element date not given"). Moss must never suggest a retirement date.
 
-If a decoration carries no data, leave it out.
+Inside the chart, every mark carries data; if a mark carries no data, leave it out. Around the chart, atmosphere is allowed and wanted: moonlit gradient ground, depth, soft fog or grain, glow on focus, cards and panels. Atmosphere must never look like data and never reduce contrast below WCAG AA.
 
+## Layout
+- The picture first, words second. Every view opens with its main visual or its key numbers above the fold at 1440×900 and 390×844.
+- Use the full width on desktop. No single narrow text column with empty space beside it.
+- Long explanations go in collapsible panels or side notes, not in the opening.
+- Verdicts show as badges: the churchyard word large, with its plain meaning under it, smaller. This still pairs each word with its meaning once.
 ## Motion
 
 - Slow and subtle.
