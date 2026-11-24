@@ -49,6 +49,8 @@ function heading(route: Route): string {
   return PAGE_TITLES[route.name];
 }
 
+/** The list the visitor was last on, so a ledger can link back to it. A visitor who arrives on a ledger came from the churchyard. */
+let lastList: { name: 'churchyard' | 'table'; query: URLSearchParams } = { name: 'churchyard', query: new URLSearchParams() };
 let stopView: (() => void) | null = null;
 let drawnNarrow: boolean | null = null;
 
@@ -58,9 +60,12 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   const main = el('main');
   document.title = `${heading(route)} · ${SITE.title}`;
   renderNav(route);
-  main.innerHTML = `<h1 id="page-title" tabindex="-1">${withSansDigits(heading(route))}</h1><div id="view"></div>`;
-  // The nav already says where you are, so the churchyard keeps its heading for screen readers and as the focus target only.
-  el('page-title').classList.toggle('visually-hidden', route.name === 'churchyard');
+  if (route.name === 'churchyard' || route.name === 'table') lastList = { name: route.name, query: route.query };
+  const back =
+    route.name === 'sat'
+      ? `<p class="back-link"><a href="${esc(hashFor(lastList.name === 'table' ? 'table' : '', parseState(lastList.query)))}">${esc(SITE.backTo[lastList.name])}</a></p>`
+      : '';
+  main.innerHTML = `<h1 id="page-title" tabindex="-1">${withSansDigits(heading(route))}</h1>${back}<div id="view"></div>`;
   const view = el('view');
   if (route.name === 'churchyard') {
     drawnNarrow = window.matchMedia(NARROW).matches;
@@ -76,6 +81,9 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   } else {
     view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
   }
+  // The churchyard and a ledger have a visible title of their own (the nav, or the header card), so their heading stays
+  // for screen readers and as the focus target only.
+  el('page-title').classList.toggle('visually-hidden', route.name === 'churchyard' || view.querySelector('.ledger-head') !== null);
   // After a navigation, move keyboard and screen-reader focus to the new page title.
   if (!isFirst) el('page-title').focus({ preventScroll: false });
 }

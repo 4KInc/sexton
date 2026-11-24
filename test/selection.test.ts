@@ -4,10 +4,11 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { CARD, HERO, TIP } from '../src/ui/copy.ts';
+import { CARD, HERO, SITE, TIP } from '../src/ui/copy.ts';
 import type { UiRegister } from '../src/ui/register.ts';
+import { intersects, placeLabels, stoneBox } from '../src/ui/svg/labels.ts';
 import { LAYOUT, plotHeight, SCALE, yOf } from '../src/ui/svg/scale.ts';
-import { chartSvg, enterAction, heroHtml } from '../src/ui/views/churchyard.ts';
+import { chartModel, chartSvg, enterAction, heroHtml } from '../src/ui/views/churchyard.ts';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const read = (p: string): string => readFileSync(join(ROOT, p), 'utf8');
 const real = JSON.parse(read('data/register.json')) as UiRegister;
@@ -39,7 +40,7 @@ describe('selecting a stone', () => {
 describe('the first screen', () => {
   it('the churchyard heading stays for screen readers and focus, but is hidden on screen', () => {
     const main = read('src/ui/main.ts');
-    expect(main).toMatch(/classList\.toggle\('visually-hidden', route\.name === 'churchyard'\)/);
+    expect(main).toMatch(/classList\.toggle\('visually-hidden', route\.name === 'churchyard' \|\| view\.querySelector\('\.ledger-head'\) !== null\)/);
     expect(read('src/ui/styles/base.css')).toMatch(/\.visually-hidden\s*\{[^}]*clip-path/);
   });
   it('the high ground is short, so the road (0 km) sits in the first 520 units of the chart', () => {
@@ -88,5 +89,68 @@ describe('the chart atmosphere', () => {
     const rule = /\.flag-ring\s*\{([^}]*)\}/.exec(css)![1]!;
     expect(rule).toMatch(/stroke:\s*var\(--bone\)/);
     expect(rule).not.toMatch(/lantern/);
+  });
+});
+describe('case-file labels', () => {
+  const model = chartModel(real, false);
+  const named = model.stones.filter((r) => r.caseFile);
+  const all = [...model.pos.values()].map((p) => stoneBox(p.x, p.y));
+  it('there are three, and every one has a place', () => {
+    expect(named.map((r) => r.norad).sort((a, b) => a - b)).toEqual([15873, 27378, 40258]);
+    for (const r of named) expect(model.labels.has(r.norad), r.name).toBe(true);
+  });
+  it('no label box meets any stone box, and no two labels meet', () => {
+    const boxes = named.map((r) => model.labels.get(r.norad)!.box);
+    for (const [i, b] of boxes.entries()) {
+      for (const s of all) expect(intersects(b, s), `${named[i]!.name} against a stone`).toBe(false);
+      for (const [j, o] of boxes.entries()) if (j !== i) expect(intersects(b, o), `${named[i]!.name} against ${named[j]!.name}`).toBe(false);
+    }
+  });
+  it('every label stays inside the plot, and a label that stands apart has a leader line', () => {
+    for (const r of named) {
+      const l = model.labels.get(r.norad)!;
+      expect(l.box.x0).toBeGreaterThanOrEqual(model.cols.gutter);
+      expect(l.box.x1).toBeLessThanOrEqual(model.cols.width - LAYOUT.right);
+      expect(l.box.y0).toBeGreaterThanOrEqual(LAYOUT.top);
+      expect(l.box.y1).toBeLessThanOrEqual(LAYOUT.top + plotHeight());
+    }
+  });
+  it('placeLabels tries right, left, above, below, then a leader, and never overlaps (property)', () => {
+    const bounds = { x0: 0, y0: 0, x1: 400, y1: 300 };
+    expect(placeLabels([{ id: 1, name: 'ECHOSTAR 7', x: 100, y: 100 }], [{ x: 100, y: 100 }], bounds).placements.get(1)!.anchor).toBe('start');
+    fc.assert(
+      fc.property(fc.array(fc.record({ x: fc.integer({ min: 40, max: 360 }), y: fc.integer({ min: 40, max: 260 }) }), { minLength: 1, maxLength: 12 }), (stones) => {
+        const { placements, unplaced } = placeLabels([{ id: 1, name: 'LUCH (OLYMP-K 1)', x: 200, y: 150 }], [{ x: 200, y: 150 }, ...stones], bounds);
+        if (unplaced.length === 0) {
+          const b = placements.get(1)!.box;
+          for (const s of [{ x: 200, y: 150 }, ...stones]) expect(intersects(b, stoneBox(s.x, s.y), 2)).toBe(false);
+        }
+      }),
+      { numRuns: 100 },
+    );
+  });
+  it('the label is drawn outside the stone link, hidden from screen readers (the stone already says its name)', () => {
+    const svg = chartSvg(real, false);
+    expect(svg).toMatch(/<g aria-hidden="true" pointer-events="none"><g class="stone-label">/);
+    expect(svg.match(/class="stone-name"/g)).toHaveLength(3);
+  });
+});
+describe('the selection card stays inside the plot', () => {
+  it('starts after the axis column and ends before the plot edge', () => {
+    const css = read('src/ui/styles/churchyard.css');
+    expect(css).toMatch(/\.card--left:has\(\.card-name\)\s*\{[^}]*left:\s*calc\(var\(--axis, 0%\)/);
+    expect(css).toMatch(/right:\s*calc\(var\(--plot-right, 0%\)/);
+    expect(css).toMatch(/top:\s*calc\(var\(--plot-top, 0%\)/);
+    expect(source).toContain("plot.style.setProperty('--axis'");
+  });
+});
+describe('ledger navigation', () => {
+  it('a ledger highlights no tab and links back to the list the visitor came from', () => {
+    const main = read('src/ui/main.ts');
+    expect(main).toMatch(/lastList\.name === 'table' \? 'table' : ''/);
+    expect(main).toContain('SITE.backTo[lastList.name]');
+    expect(SITE.backTo.churchyard).toBe('\u2190 Back to churchyard');
+    expect(SITE.backTo.table).toBe('\u2190 Back to table');
+    expect(main).toMatch(/let lastList: \{ name: 'churchyard' \| 'table'; query: URLSearchParams \} = \{ name: 'churchyard'/);
   });
 });

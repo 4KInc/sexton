@@ -17,6 +17,8 @@ export const SITE = {
   loading: 'Loading the register.',
   notFound: 'There is no page at this address.',
   backToChurchyard: 'Back to the churchyard',
+  /** On a ledger page, the link back to the list the visitor came from. */
+  backTo: { churchyard: '\u2190 Back to churchyard', table: '\u2190 Back to table' },
 } as const;
 
 export const NAV = [

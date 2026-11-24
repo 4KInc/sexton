@@ -35,6 +35,8 @@ import { badgeHtml, glyphSvg } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { bandsOf } from '../svg/bands.ts';
 import { stoneBody, stoneDefs } from '../svg/headstone.ts';
+import { placeLabels } from '../svg/labels.ts';
+import type { LabelPlacement } from '../svg/labels.ts';
 import { layoutStones, nextInNav, NAV_KEYS, navSort } from '../svg/layout.ts';
 import type { NavItem, Placed } from '../svg/layout.ts';
 import {
@@ -195,7 +197,6 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
   const ring = flagged
     ? `<rect class="flag-ring" x="${-hw - 2}" y="${-LAYOUT.stoneHeight - 4}" width="${2 * hw + 4}" height="${LAYOUT.stoneHeight + 7}" rx="5"/>`
     : '';
-  const named = r.caseFile ? `<text class="stone-name" x="${hw + 7}" y="${-LAYOUT.stoneHeight / 2}">${esc(r.name)}</text>` : '';
   return (
     `<a class="${cls}" href="#/sat/${r.norad}" data-norad="${r.norad}" tabindex="${tabStop === r.norad ? 0 : -1}" aria-label="${esc(label)}">` +
     `<title>${esc(label)}</title>` +
@@ -204,7 +205,6 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
     ring +
     shape +
     whisker +
-    named +
     `</g></a>`
   );
 }
@@ -228,6 +228,8 @@ export interface ChartModel {
   /** The stones in keyboard order. */
   nav: NavItem[];
   placed: Map<number, Placed>;
+  /** Where each case-file name goes. It never overlaps a stone or another name. */
+  labels: Map<number, LabelPlacement>;
 }
 /**
  * Columns and positions for the chart. `shown` is the filtered set. The layout covers all retired
@@ -253,7 +255,21 @@ export function chartModel(reg: UiRegister, narrow: boolean, shown: readonly Sat
     const p = placed.get(r.norad);
     if (col !== undefined && p !== undefined) nav.push({ id: r.norad, col: cols.list.indexOf(col), y: p.y, dx: p.dx });
   }
-  return { cols, stones, bones, pos, nav: navSort(nav), placed };
+  const named = stones.filter((r) => r.caseFile).map((r) => ({ id: r.norad, name: r.name, x: pos.get(r.norad)!.x, y: pos.get(r.norad)!.y }));
+  const plot = { x0: cols.gutter, y0: LAYOUT.top, x1: cols.width - LAYOUT.right, y1: LAYOUT.top + plotHeight() };
+  const labels = placeLabels(named, [...pos.values()], plot).placements;
+  return { cols, stones, bones, pos, nav: navSort(nav), placed, labels };
+}
+/** The case-file names. Each has its own place, set by placeLabels, and a leader line when it stands apart. The stone's own label says the name to screen readers. */
+function labelsSvg(model: ChartModel): string {
+  const out = model.stones
+    .filter((r) => model.labels.has(r.norad))
+    .map((r) => {
+      const l = model.labels.get(r.norad)!;
+      const leader = l.leader === null ? '' : `<line class="stone-leader" x1="${f(l.leader.x1)}" y1="${f(l.leader.y1)}" x2="${f(l.leader.x2)}" y2="${f(l.leader.y2)}"/>`;
+      return `<g class="stone-label">${leader}<text class="stone-name" x="${f(l.x)}" y="${f(l.y)}" text-anchor="${l.anchor}">${esc(r.name)}</text></g>`;
+    });
+  return out.length === 0 ? '' : `<g aria-hidden="true" pointer-events="none">${out.join('')}</g>`;
 }
 /** One label per edge: how many objects stand beyond the limit. Exact values are on the card and in the ledger. */
 function edgeLabelsSvg(model: ChartModel): string {
@@ -301,6 +317,7 @@ export function chartSvg(
     edgeLabelsSvg(model),
     model.bones.map((r) => boneSvg(r, config, model.pos.get(r.norad)!)).join(''),
     model.stones.map((r) => stoneSvg(r, config, model.pos.get(r.norad)!, selected, stop)).join(''),
+    labelsSvg(model),
     `</svg>`,
   ];
   return parts.join('');
@@ -463,6 +480,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   const status = root.querySelector<HTMLElement>('#chart-status')!;
   const host = root.querySelector<HTMLElement>('#chart-host');
   const card = root.querySelector<HTMLElement>('#stone-card');
+  const plot = root.querySelector<HTMLElement>('.plot');
   const skip = root.querySelector<HTMLAnchorElement>('#skip-table');
   const scrollLink = root.querySelector<HTMLAnchorElement>('#scroll-table');
   // The one stone in the Tab order (roving tabindex). It follows focus, and survives a redraw.
@@ -495,7 +513,16 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
         : `${FILTERS.count(shown.length, reg.records.length)} ${FILTERS.drawn(drawn.length)}`;
     if (host !== null) {
       host.innerHTML = chartSvg(reg, narrow, selected, drawn, tabStop ?? selected);
-      nav = chartModel(reg, narrow, shown).nav;
+      const model = chartModel(reg, narrow, shown);
+      nav = model.nav;
+      // The card floats inside the plot, clear of the axis column: tell the stylesheet where the plot starts and ends.
+      const vb = host.querySelector('svg')?.viewBox.baseVal;
+      if (plot !== null && vb !== undefined && vb.width > 0 && vb.height > 0) {
+        plot.style.setProperty('--axis', `${(model.cols.gutter / vb.width) * 100}%`);
+        plot.style.setProperty('--plot-right', `${(LAYOUT.right / vb.width) * 100}%`);
+        plot.style.setProperty('--plot-top', `${(LAYOUT.top / vb.height) * 100}%`);
+        plot.style.setProperty('--plot-bottom', `${(LAYOUT.bottom / vb.height) * 100}%`);
+      }
       const stop = host.querySelector<HTMLElement>('a.stone-link[tabindex="0"]');
       tabStop = stop === null ? null : Number(stop.dataset['norad']);
     }

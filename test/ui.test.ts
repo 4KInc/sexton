@@ -48,7 +48,8 @@ describe('router', () => {
     fc.assert(fc.property(fc.string(), (s) => typeof parseHash('#/' + s).name === 'string'));
   });
   it('a ledger belongs to the table in the nav', () => {
-    expect(navRouteOf(parseHash('#/sat/5'))).toBe('table');
+    // A ledger belongs to no tab; it links back to the list the visitor came from.
+    expect(navRouteOf(parseHash('#/sat/5'))).toBe('');
     expect(navRouteOf(parseHash('#/'))).toBe('churchyard');
   });
 });

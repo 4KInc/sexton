@@ -233,3 +233,17 @@ main {
   text-wrap: nowrap;
   border: 0;
 }
+/* On a ledger page: where you came from. */
+.back-link {
+  margin: var(--space-2) 0 0;
+}
+.back-link a {
+  display: inline-block;
+  padding: var(--space-1) 0;
+  color: var(--bone-muted);
+  text-decoration: none;
+}
+.back-link a:hover {
+  color: var(--bone);
+  text-decoration: underline;
+}

@@ -144,7 +144,8 @@ describe('stylesheets', () => {
   });
   it('every var(--x) is defined in tokens.css', () => {
     // The two sway variables are set per stone in a style attribute (svg/headstone.ts and views/churchyard.ts).
-    const defined = new Set([...tokensCss.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).concat(['--sway-angle', '--sway-delay']));
+    // The four plot variables are set on the chart's box from the drawn size (views/churchyard.ts), so the card stays inside the plot.
+    const defined = new Set([...tokensCss.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).concat(['--sway-angle', '--sway-delay', '--axis', '--plot-right', '--plot-top', '--plot-bottom']));
     for (const f of cssFiles) {
       for (const m of stripComments(css(f)).matchAll(/var\((--[\w-]+)/g)) expect(defined.has(m[1]!), `${f}: ${m[1]}`).toBe(true);
     }

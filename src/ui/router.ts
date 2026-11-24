@@ -32,8 +32,8 @@ export function parseHash(hash: string): Route {
   return { name: 'notfound', query };
 }
 
-/** The nav item a route belongs to. */
-export const navRouteOf = (route: Route): string => (route.name === 'sat' ? 'table' : route.name);
+/** The nav item a route belongs to. A ledger belongs to none: it has a link back to where you came from. */
+export const navRouteOf = (route: Route): string => (route.name === 'sat' ? '' : route.name);
 
 /** Calls `render` now and on every hash change. Returns a function that stops listening. */
 export function startRouter(render: (route: Route, isFirst: boolean) => void): () => void {
