@@ -248,7 +248,8 @@ describe('table view', () => {
     expect(html).toContain(TABLE.bones('debris'));
   });
   it('shows data age for every row: the GP epoch, or SATCAT with no element date', () => {
-    expect(html).toContain('GP mean elements, epoch 2026-11-20 12:07 UTC');
+    // The date and time are in a no-break span, so a date never splits across two lines.
+    expect(html).toContain('GP mean elements, epoch <span class="nw">2026-11-20 12:07 UTC</span>');
     expect(html.match(/<tr data-norad/g)!.length).toBe(all.length);
   });
   it('only objects with a verdict link to a ledger', () => {
