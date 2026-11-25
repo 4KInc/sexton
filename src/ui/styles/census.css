@@ -9,11 +9,6 @@
 .census-top p.kicker {
   margin-bottom: 0;
 }
-.census-top .terms {
-  margin: 4px 0 0;
-  color: var(--bone-muted);
-  font-size: var(--fs-12);
-}
 /* The six verdict words, with their meanings, once. Every row below shows the word only. */
 .legend-dl {
   display: grid;
@@ -153,6 +148,22 @@
   height: 100%;
   min-width: 2px;
   background: var(--bone-soft);
+}
+/* One mapping on every chart and in the legend: buried is moss, uncertain is hatched grey, everything else is bone. */
+.bar-fill--buried {
+  background: var(--moss);
+}
+.fill-swatch {
+  width: 28px;
+  height: 10px;
+  margin-left: auto;
+  background: var(--bone-soft);
+}
+.fill-swatch--buried {
+  background: var(--moss);
+}
+.fill-swatch--uncertain {
+  background: repeating-linear-gradient(135deg, var(--bone-muted) 0 2px, var(--surface-2) 2px 5px);
 }
 /* Uncertain is a distinct grey, hatched. The same hatch marks the part of a bar that is borderline. */
 .bar-fill--uncertain {
@@ -373,13 +384,13 @@
 .ibar {
   display: flex;
   height: 10px;
-  background: var(--bone-muted);
+  background: var(--bone-soft);
 }
 .ibar-b {
   background: var(--moss);
 }
 .ibar-u {
-  background: repeating-linear-gradient(135deg, var(--ground) 0 2px, var(--bone-muted) 2px 4px);
+  background: repeating-linear-gradient(135deg, var(--bone-muted) 0 2px, var(--surface-2) 2px 5px);
 }
 .owners-more {
   margin: var(--space-1) 0 0;

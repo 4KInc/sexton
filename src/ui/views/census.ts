@@ -38,6 +38,8 @@ interface Bar {
   hatched?: number;
   /** The whole bar is uncertain by definition. */
   uncertain?: boolean;
+  /** The one fill mapping on every chart: buried is moss, uncertain is hatched grey, everything else is bone. */
+  fill?: 'buried' | 'uncertain';
 }
 /** Horizontal bars, each with its number in mono at the end: "n of N (x%)". The bar is the share of N, from 0 to 100. */
 function barsHtml(rows: readonly Bar[], label: string, uncertaintyKm: number): string {
@@ -51,7 +53,7 @@ function barsHtml(rows: readonly Bar[], label: string, uncertaintyKm: number): s
       const sub = b.hatched !== undefined && b.hatched > 0 ? `<span class="bar-sub"> \u00B7 ${esc(formatCount(b.hatched))} borderline</span>` : '';
       return (
         `<li class="bar-row"><span class="bar-name">${esc(b.name)}</span><span class="bar-plot" style="--s:${(width / 100).toFixed(4)}">` +
-        `<span class="bar-track" aria-hidden="true"><span class="bar-fill${b.uncertain === true ? ' bar-fill--uncertain' : ''}" style="width:${width.toFixed(2)}%">${hatch}</span></span>` +
+        `<span class="bar-track" aria-hidden="true"><span class="bar-fill${b.uncertain === true ? ' bar-fill--uncertain' : ''}${b.fill === 'buried' ? ' bar-fill--buried' : ''}" style="width:${width.toFixed(2)}%">${hatch}</span></span>` +
         `<span class="bar-label"><span class="bar-n"${attr}>${esc(head)}</span>${esc(rest)}${sub}</span></span></li>`
       );
     })
@@ -68,7 +70,8 @@ function borderlineBy(records: readonly SatRecord[], inGroup: (r: SatRecord) => 
 export function verdictLegendHtml(config: Config): string {
   const items = VERDICT_ORDER.map((v) => {
     const c = verdictCopy(v, config);
-    return `<div class="legend-dl-row"><dt>${glyphSvg(v)}<span class="legend-word">${esc(c.word)}</span></dt><dd>${esc(c.meaning)}</dd></div>`;
+    const fill = v === 'buried' ? 'buried' : v === 'uncertain' ? 'uncertain' : 'rest';
+    return `<div class="legend-dl-row"><dt>${glyphSvg(v)}<span class="legend-word">${esc(c.word)}</span><span class="fill-swatch fill-swatch--${fill}" aria-hidden="true"></span></dt><dd>${esc(c.meaning)}</dd></div>`;
   }).join('');
   return `<dl class="legend-dl" aria-label="${esc(CENSUS.legendLabel)}">${items}</dl>`;
 }
@@ -134,6 +137,7 @@ function verdictsHtml(c: Census, config: Config, records: readonly SatRecord[], 
     census: ['retired', 'byVerdict', v],
     hatched: edge[v],
     uncertain: v === 'uncertain',
+    fill: v === 'buried' ? 'buried' : undefined,
   }));
   return (
     `<p class="bars-total"><span class="bar-n" data-census="${esc(JSON.stringify(['retired', 'total']))}">${esc(formatCount(total))}</span> ${esc(CENSUS.totalLine)}</p>` +
@@ -273,7 +277,7 @@ export function headlineHtml(records: readonly SatRecord[], config: Config, date
   const s = postRuleSummary(records);
   if (s.postRule === 0) return `<p>${esc(HEADLINE.none)}</p><p data-headline="predate">${esc(HEADLINE.predate(s.predate, s.retired))}</p>`;
   const edge = borderlineBy(records, (r) => r.verdict.kind === 'verdict' && r.verdict.era === null);
-  const rows: Bar[] = VERDICT_ORDER.map((v) => ({ name: verdictCopy(v, config).word, n: s.byVerdict[v], of: s.postRule, headline: v, hatched: edge[v], uncertain: v === 'uncertain' }));
+  const rows: Bar[] = VERDICT_ORDER.map((v) => ({ name: verdictCopy(v, config).word, n: s.byVerdict[v], of: s.postRule, headline: v, hatched: edge[v], uncertain: v === 'uncertain', fill: v === 'buried' ? 'buried' : undefined }));
   return (
     `<div class="headline"><div class="headline-text">` +
     `<p data-headline="lead">${esc(HEADLINE.lead(s.postRule, s.retired))}</p>` +
@@ -291,9 +295,7 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
   const c = reg.census;
   const config = reg.config;
   const near = config.nearGeo;
-  const intro =
-    `<p>${esc(CENSUS.intro(c.snapshotDate))}</p>` +
-    `<ul class="terms"><li>${esc(TERMS.geo)}</li><li>${esc(TERMS.perigee)}</li></ul>`;
+  const intro = `<p class="lead">${esc(CENSUS.lead(c.snapshotDate))}</p>`;
   const borderline = section(
     'borderline',
     H.borderline,

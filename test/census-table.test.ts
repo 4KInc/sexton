@@ -130,14 +130,18 @@ describe('the table on a phone (below 600 px)', () => {
     expect(cells[9]).toBe('GP');
     expect(cells[10]).toMatch(/^GP mean elements, epoch 2026-11-22/);
   });
-  it('lays a row out as a card: name and verdict, NORAD and owner and launch, p and q and e, data age', () => {
-    expect(phone).toMatch(/tbody tr\s*\{[^}]*display:\s*grid/);
-    expect(phone).toMatch(/tbody td:nth-child\(5\)\s*\{[^}]*grid-row:\s*1/);
+  it('lays a row out as a card: name and verdict, then "NORAD 634 · US · 1963-07-26", then "p −29.4 km · q +22.4 km · e 0.00061", then the data age', () => {
+    expect(phone).toMatch(/tbody tr\s*\{[^}]*position:\s*relative/);
+    expect(phone).toMatch(/tbody td\s*\{[^}]*display:\s*inline/);
+    expect(phone).toMatch(/tbody td:nth-child\(5\)\s*\{[^}]*position:\s*absolute[^}]*right:\s*0/);
     expect(phone).toMatch(/tbody td:nth-child\(2\)::before\s*\{\s*content:\s*'NORAD '/);
+    // One space either side of each middle dot (\\00b7).
+    expect(phone).toMatch(/td:nth-child\(3\)::before,\s*#table-host \.register-table tbody td:nth-child\(4\)::before\s*\{\s*content:\s*' \\00b7  '/);
     expect(phone).toMatch(/tbody td:nth-child\(7\)::before\s*\{\s*content:\s*'p '/);
-    expect(phone).toMatch(/tbody td:nth-child\(8\)::before\s*\{[^}]*q /);
-    expect(phone).toMatch(/tbody td:nth-child\(9\)::before\s*\{[^}]*e /);
-    expect(phone).toMatch(/tbody td:nth-child\(11\)\s*\{[^}]*grid-row:\s*4/);
+    expect(phone).toMatch(/tbody td:nth-child\(8\)::before\s*\{\s*content:\s*' \\00b7  q '/);
+    expect(phone).toMatch(/tbody td:nth-child\(9\)::before\s*\{\s*content:\s*' \\00b7  e '/);
+    expect(phone).toMatch(/tbody td:nth-child\(4\)::after\s*\{[^}]*display:\s*block/);
+    expect(phone).toMatch(/tbody td:nth-child\(11\)\s*\{[^}]*font-size/);
     expect(phone).toMatch(/td:nth-child\(6\),\s*#table-host \.register-table tbody td:nth-child\(10\)\s*\{\s*display:\s*none/);
   });
   it('hides the column headers on screen without removing them, and shows them if a sort button gets focus', () => {
@@ -155,7 +159,8 @@ describe('the table on a phone (below 600 px)', () => {
   });
   it('leaves a wide screen as it was: no phone rule is outside the 599 px query', () => {
     const before = css('table.css').slice(0, css('table.css').indexOf('@media (max-width: 599px)'));
-    expect(before).not.toMatch(/td:nth-child\(11\)/);
+    expect(before).not.toMatch(/td:nth-child\(4\)::before/);
+    expect(before).not.toMatch(/position:\s*absolute;[^}]*right:\s*0/);
     expect(before).toMatch(/\.register-table thead th\s*\{[^}]*position:\s*sticky/);
   });
 });

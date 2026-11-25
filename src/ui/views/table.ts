@@ -27,7 +27,10 @@ const edgesOf = (config: Config): number[] => [config.protectedZoneKm, config.th
 function headerHtml(sort: Sort): string {
   return SORT_KEYS.map((key) => {
     const aria = sort.key === key ? ` aria-sort="${sort.dir === 'asc' ? 'ascending' : 'descending'}"` : '';
-    return `<th scope="col" role="columnheader"${aria}><button type="button" class="sort" data-sort="${key}">${esc(TABLE.columns[key])}</button></th>`;
+    const short = (TABLE.heads as Partial<Record<SortKey, string>>)[key];
+    // A short head is drawn; the full name is read out.
+    const label = short === undefined ? esc(TABLE.columns[key]) : `<span aria-hidden="true">${esc(short)}</span><span class="visually-hidden">${esc(TABLE.columns[key])}</span>`;
+    return `<th scope="col" role="columnheader"${aria}><button type="button" class="sort" data-sort="${key}">${label}</button></th>`;
   }).join('');
 }
 
@@ -52,21 +55,23 @@ export function rowHtml(r: SatRecord, config: Config): string {
     td(esc(r.owner ?? TABLE.unknown)) +
     td(esc(r.launchDate ?? TABLE.unknown)) +
     td(verdictCell(r, config)) +
-    td(esc(borderline)) +
+    td(v.kind === 'verdict' && v.borderline ? `<span class="mark" aria-hidden="true">${esc(TABLE.heads.borderline)}</span><span class="visually-hidden">${esc(TABLE.yes)}</span>` : `<span class="visually-hidden">${esc(borderline)}</span>`) +
     td(esc(formatP(r.pKm, r.orbitSource.kind, edgesOf(config))), num) +
     td(esc(formatSigned(r.qKm, decimals)), num) +
     td(esc(r.e.toFixed(5)), num) +
     td(esc(r.orbitSource.kind)) +
-    td(esc(dataAge(r))) +
+    // The date inside the data age never breaks across lines.
+    td(esc(dataAge(r)).replace(/(epoch )(.+)$/, '$1<span class="nw">$2</span>')) +
     `</tr>`
   );
 }
 /** The table for an already filtered set. Sorting happens here. */
 export function tableHtml(shown: readonly SatRecord[], config: Config, sort: Sort): string {
+  const key = `<span class="col-key"> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</span>`;
   const rows = sortRecords(shown, sort).map((r) => rowHtml(r, config)).join('');
   return (
     `<div class="table-wrap" role="region" aria-label="${esc(TABLE.scrollLabel)}" tabindex="0">` +
-    `<table class="register-table" role="table"><caption>${esc(TABLE.caption)}</caption>` +
+    `<table class="register-table" role="table"><caption>${esc(TABLE.caption)}${key}</caption>` +
     `<thead role="rowgroup"><tr role="row">${headerHtml(sort)}</tr></thead><tbody role="rowgroup">${rows}</tbody></table></div>`
   );
 }
@@ -98,7 +103,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   // and the verdict key is a closed panel, so the table starts high on the screen.
   const config = reg.config;
   root.innerHTML =
-    `<p class="kicker">${esc(TABLE.kicker)}</p>` +
+    `<p class="kicker">${esc(TABLE.kicker)}</p><p class="lead">${esc(TABLE.lead)}</p>` +
     `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, state.filters.owner !== null || state.filters.era !== null || state.filters.verdicts.length > 0 || state.filters.bones, true)}<p class="status" id="table-status" role="status"></p></div>` +
     fineHtml(reg.snapshot.set, config, [
       TABLE.intro,

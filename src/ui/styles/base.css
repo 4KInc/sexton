@@ -78,6 +78,15 @@ a {
   line-height: 1.4;
   text-transform: uppercase;
 }
+/* The lead line under a kicker: serif, the visible title of a view whose heading is hidden. */
+.lead {
+  margin: 4px 0 var(--space-1);
+  max-width: 90ch;
+  color: var(--bone-soft);
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  line-height: 1.3;
+}
 /* Lantern amber is only for focus and selection. */
 :focus-visible {
   outline: 3px solid var(--lantern);

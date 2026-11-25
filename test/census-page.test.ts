@@ -138,7 +138,7 @@ describe('what the census must say', () => {
     const config = real.config;
     for (const v of VERDICT_ORDER) {
       const c = verdictCopy(v, config);
-      expect(html, v).toContain(`<span class="legend-word">${c.word}</span></dt><dd>${c.meaning}</dd>`);
+      expect(html, v).toMatch(new RegExp(`<span class="legend-word">${c.word}</span><span class="fill-swatch fill-swatch--(buried|uncertain|rest)" aria-hidden="true"></span></dt><dd>${c.meaning.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</dd>`));
       expect(html.split(c.meaning).length - 1, `${v}: the meaning appears once`).toBe(1);
       expect(text, v).not.toContain(`${c.word} (${c.meaning}`);
     }

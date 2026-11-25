@@ -356,11 +356,16 @@ export const LEDGER = {
 } as const;
 export const TABLE = {
   intro: 'Every object the register holds, with the same numbers as the churchyard.',
+  lead: 'Every object the register holds, one numbered line each, with the same numbers as the churchyard.',
   verdictKey: 'The verdict words',
   kicker: '\u00A7 02 \u00B7 The register',
   sortBy: 'Sort by',
   verdictKeySummary: 'The verdict words, and what each one means',
   caption: 'Objects near GEO in the register',
+  /** Shown in the table's caption: what the short column heads mean. */
+  colKey: (u: number): string => `p perigee, q apogee (above GEO, km) \u00B7 e eccentricity \u00B7 \u00B1 borderline, within \u00B1${u} km of a band edge`,
+  /** The short heads. The full name is read to screen readers. */
+  heads: { norad: 'NORAD', borderline: '\u00B1', p: 'p, km', q: 'q, km', e: 'e', source: 'Orbit' },
   sortedBy: (label: string, dir: 'asc' | 'desc'): string => `Sorted by ${label}, ${dir === 'asc' ? 'ascending' : 'descending'}.`,
   columns: {
     name: 'Name',
@@ -501,6 +506,7 @@ export const CENSUS = {
     `${snapshotLabel(date)}. Every number here comes from the register, and every share shows what it is a share of.`,
   restTitle: 'What these numbers are, and what is voluntary',
   kicker: '\u00A7 03 \u00B7 The census',
+  lead: (date: string): string => `${snapshotLabel(date)}. Every number comes from the register, and every share shows what it is a share of. Heights are perigee (lowest point) above GEO (the 35,786 km belt).`,
   legendLabel: 'The six verdict words, each with its meaning',
   ownersShow: (n: number): string => `Show all ${n} owner codes`,
   ownersHide: 'Show the top 12 only',

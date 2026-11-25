@@ -113,8 +113,19 @@
 .register-table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 70rem;
+  min-width: 0;
   font-size: var(--fs-14);
+}
+/* Below about 1100 px the ten columns scroll sideways inside their own box. Above it they fit. */
+@media (max-width: 1100px) {
+  .register-table {
+    min-width: 62rem;
+  }
+}
+.register-table .col-key {
+  color: var(--bone-muted);
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 .register-table caption {
   text-align: left;
@@ -127,7 +138,7 @@
 }
 .register-table th,
 .register-table td {
-  padding: 8px var(--space-2);
+  padding: 8px var(--space-1);
   border-bottom: 1px solid var(--rule);
   text-align: left;
   vertical-align: middle;
@@ -203,6 +214,25 @@
 }
 #table-host .register-table tbody td:nth-child(5) {
   font-family: var(--font-body);
+}
+/* Borderline is a small mark, and the data age may take two lines so the table fits. */
+#table-host .register-table tbody td:nth-child(6) {
+  text-align: center;
+}
+#table-host .register-table thead th:nth-child(6) {
+  text-align: center;
+}
+#table-host .register-table .mark {
+  font-weight: 500;
+}
+#table-host .register-table tbody td:nth-child(11) {
+  min-width: 14rem;
+  font-size: var(--fs-12);
+  line-height: 1.35;
+  text-wrap: wrap;
+}
+.nw {
+  text-wrap: nowrap;
 }
 .num-cell {
   text-align: right !important;
@@ -362,9 +392,9 @@ th[aria-sort='descending'] .sort::after {
     max-height: calc(100vh - 3rem);
   }
 }
-/* A phone has no room for ten columns, so each row becomes a card: name and verdict, then NORAD, owner and launch date,
-   then p, q and e, then the data age. The table's own elements stay (with their roles), so a screen reader still reads a table.
-   The column headers are visually hidden, and a select above the list does the sorting. */
+/* A phone has no room for ten columns, so each row becomes a card of three lines: the name and the verdict, then
+   "NORAD 634 · US · 1963-07-26", then "p −29.4 km · q +22.4 km · e 0.00061", then the data age. The table's own elements stay
+   (with their roles), so a screen reader still reads a table. The column headers are visually hidden, and a select above the list sorts. */
 .sortbar {
   display: none;
 }
@@ -372,41 +402,44 @@ th[aria-sort='descending'] .sort::after {
   .sortbar {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    margin: 0 0 var(--space-2);
+    gap: var(--space-1);
+    margin: 0 0 var(--space-1);
   }
   .sortbar label {
-    font-weight: 600;
+    color: var(--bone-muted);
+    font-family: var(--font-mono);
+    font-size: var(--fs-12);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
   .sortbar select {
     min-height: 2.5rem;
-    padding: var(--space-1) var(--space-3);
-    background: var(--stone);
+    padding: 4px var(--space-2);
+    background: var(--surface-2);
     color: var(--bone);
-    border: 1px solid var(--bone-muted);
-    border-radius: 999px;
+    border: 0;
+    border-bottom: 1px solid var(--bone-muted);
+    border-radius: 0;
     font: inherit;
   }
   #table-host .table-wrap {
     max-height: none;
     overflow: visible;
     border: 0;
-    border-radius: 0;
   }
   #table-host .register-table,
   #table-host .register-table caption,
   #table-host .register-table tbody,
   #table-host .register-table thead,
-  #table-host .register-table th,
-  #table-host .register-table td {
+  #table-host .register-table tr,
+  #table-host .register-table th {
     display: block;
   }
   #table-host .register-table {
     min-width: 0;
   }
   #table-host .register-table caption {
-    padding: 0 0 var(--space-2);
-    font-size: 0.85rem;
+    padding: 0 0 var(--space-1);
   }
   /* The header row stays for screen readers. If a sort button inside it gets keyboard focus, the row shows. */
   #table-host .register-table thead {
@@ -422,12 +455,12 @@ th[aria-sort='descending'] .sort::after {
     height: auto;
     overflow: visible;
     clip-path: none;
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-1);
   }
   #table-host .register-table thead tr {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-1) var(--space-3);
+    gap: 4px var(--space-2);
   }
   #table-host .register-table thead th {
     position: static;
@@ -435,15 +468,13 @@ th[aria-sort='descending'] .sort::after {
     background: none;
     border: 0;
   }
+  /* A card: the cells run on in lines, and the verdict stands at the top right. */
   #table-host .register-table tbody tr {
-    display: grid;
+    position: relative;
     height: auto;
-    grid-template-columns: minmax(0, 5.4rem) minmax(0, 5.4rem) minmax(0, 1fr) auto;
-    column-gap: var(--space-1);
-    row-gap: 0.1rem;
     padding: var(--space-1) 0;
-    border-bottom: 1px solid var(--panel-edge);
-    font-size: 0.85rem;
+    border-bottom: 1px solid var(--rule);
+    font-size: var(--fs-14);
   }
   #table-host .register-table tbody th,
   #table-host .register-table tbody td {
@@ -452,65 +483,48 @@ th[aria-sort='descending'] .sort::after {
     background: none;
     position: static;
     color: var(--bone-muted);
+    line-height: 1.5;
   }
   #table-host .register-table tbody th {
-    grid-column: 1 / 4;
-    align-self: center;
-    font-size: 1rem;
-    line-height: 1.3;
-  }
-  #table-host .register-table tbody th a {
+    padding-right: 8.5rem;
     color: var(--bone);
+    font-size: var(--fs-16);
+  }
+  #table-host .register-table tbody td {
+    display: inline;
+    text-wrap: wrap;
   }
   #table-host .register-table tbody td:nth-child(5) {
-    grid-column: 4;
-    grid-row: 1;
-    justify-self: end;
-    align-self: center;
+    position: absolute;
+    top: var(--space-1);
+    right: 0;
+    display: block;
     color: var(--bone);
   }
+  #table-host .register-table tbody td.num-cell,
   #table-host .register-table tbody td:nth-child(2) {
-    grid-row: 2;
-    text-align: left;
-  }
-  #table-host .register-table tbody td:nth-child(3) {
-    grid-row: 2;
-  }
-  #table-host .register-table tbody td:nth-child(4) {
-    grid-row: 2;
-    grid-column: 3 / 5;
-  }
-  #table-host .register-table tbody td:nth-child(7) {
-    grid-row: 3;
-    grid-column: 1;
-  }
-  #table-host .register-table tbody td:nth-child(8) {
-    grid-row: 3;
-    grid-column: 2;
-  }
-  #table-host .register-table tbody td:nth-child(9) {
-    grid-row: 3;
-    grid-column: 3 / 5;
-  }
-  #table-host .register-table tbody td:nth-child(11) {
-    grid-row: 4;
-    grid-column: 1 / -1;
-    font-size: 0.78rem;
+    text-align: left !important;
   }
   /* Borderline and orbit source are not on the card: the verdict chip and the data age say what matters. */
   #table-host .register-table tbody td:nth-child(6),
   #table-host .register-table tbody td:nth-child(10) {
     display: none;
   }
-  #table-host .register-table tbody td.num-cell {
-    text-align: left !important;
+  /* A single space either side of each separator. (In CSS the space after a hex escape ends it, so the second space is the real one.) */
+  .register-table .col-key {
+    display: none;
   }
   #table-host .register-table tbody td:nth-child(2)::before {
     content: 'NORAD ';
   }
   #table-host .register-table tbody td:nth-child(3)::before,
   #table-host .register-table tbody td:nth-child(4)::before {
-    content: '\00b7  ';
+    content: ' \00b7  ';
+  }
+  /* An empty block ends the line. */
+  #table-host .register-table tbody td:nth-child(4)::after {
+    content: '';
+    display: block;
   }
   #table-host .register-table tbody td:nth-child(7)::before {
     content: 'p ';
@@ -520,10 +534,17 @@ th[aria-sort='descending'] .sort::after {
     content: ' km';
   }
   #table-host .register-table tbody td:nth-child(8)::before {
-    content: '\00b7  q ';
+    content: ' \00b7  q ';
   }
   #table-host .register-table tbody td:nth-child(9)::before {
-    content: '\00b7  e ';
+    content: ' \00b7  e ';
+  }
+  #table-host .register-table tbody td:nth-child(9)::after {
+    content: '';
+    display: block;
+  }
+  #table-host .register-table tbody td:nth-child(11) {
+    font-size: var(--fs-12);
   }
   #table-host .register-table tbody th::before {
     min-width: 0;

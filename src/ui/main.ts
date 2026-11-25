@@ -81,9 +81,9 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   } else {
     view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
   }
-  // The churchyard and a ledger have a visible title of their own (the nav, or the header card), so their heading stays
+  // The churchyard, the table, the census and a ledger have a visible title of their own (a kicker and a lead line, or the header card), so their heading stays
   // for screen readers and as the focus target only.
-  el('page-title').classList.toggle('visually-hidden', route.name === 'churchyard' || view.querySelector('.ledger-head') !== null);
+  el('page-title').classList.toggle('visually-hidden', route.name === 'churchyard' || route.name === 'table' || route.name === 'census' || view.querySelector('.ledger-head') !== null);
   // After a navigation, move keyboard and screen-reader focus to the new page title.
   if (!isFirst) el('page-title').focus({ preventScroll: false });
 }

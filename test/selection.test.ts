@@ -40,7 +40,7 @@ describe('selecting a stone', () => {
 describe('the first screen', () => {
   it('the churchyard heading stays for screen readers and focus, but is hidden on screen', () => {
     const main = read('src/ui/main.ts');
-    expect(main).toMatch(/classList\.toggle\('visually-hidden', route\.name === 'churchyard' \|\| view\.querySelector\('\.ledger-head'\) !== null\)/);
+    expect(main).toMatch(/classList\.toggle\('visually-hidden', route\.name === 'churchyard' \|\| route\.name === 'table' \|\| route\.name === 'census' \|\| view\.querySelector\('\.ledger-head'\) !== null\)/);
     expect(read('src/ui/styles/base.css')).toMatch(/\.visually-hidden\s*\{[^}]*clip-path/);
   });
   it('the high ground is short, so the road (0 km) sits in the first 520 units of the chart', () => {
