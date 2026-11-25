@@ -68,7 +68,7 @@ export const TOUR = {
     story: (n: number, of: number): string => `${n} of ${of} launched since then sit in or near the zone.`,
     echostar: 'EchoStar 7: fined $150,000 by the FCC (DA 23-888). Perigee about 122 km against a planned 300 km.',
   },
-  zoneSub: 'GEO: the circular orbit about 35,786 km above the equator. Perigee: the lowest point of an orbit.',
+  zoneSub: 'The protected zone is the band the IADC guidelines ask retired satellites to leave.',
   ruleSub: 'The rule applies only to satellites the FCC authorizes. Stones launched before the line are dimmed.',
   echoSub: (p: string): string => `Sexton's own reading from the snapshot: ${p} km above GEO.`,
 } as const;
@@ -76,7 +76,7 @@ export const TOUR = {
 export const HERO = {
   kicker: '\u00A7 01 \u00B7 The churchyard',
   pitch: 'Which retired geostationary satellites were buried above the belt, and which still drift in it.',
-  caption: 'Each stone is a retired satellite, as tall as its perigee (lowest point) above GEO (the 35,786 km belt). The road is the protected zone.',
+  caption: 'Each stone is a retired satellite, as tall as its perigee above GEO. The road is the protected zone.',
   /** First appearance of GEO and perigee, in small type under the caption (language.md). */
   postRule: { label: 'retired payloads launched after the FCC rule', sub: 'On or after 18 March 2002.' },
   zone: {
@@ -91,7 +91,10 @@ export const HERO = {
    */
   headlineFigure: (zone: number, postRule: number): string => `${formatCount(zone)} of ${formatCount(postRule)}`,
   headlineLabel:
-    'retired payloads launched on or after the FCC rule date are still in or near the protected zone \u2014 below the IADC disposal threshold, under the stated assumptions',
+    'retired payloads launched on or after the FCC rule date are still in or near the protected zone.',
+  /** The headline's second line. It is the one place GEO and perigee are explained on the churchyard. */
+  headlineSub:
+    "Below the IADC disposal threshold, under the stated assumptions. GEO is the 35,786 km belt; perigee is an orbit's lowest point.",
   validation: {
     label: (range: readonly [number, number] | null): string => `Sexton${range === null ? ': buried share' : ` vs ESA ${range[0]}\u2013${range[1]}%`}`,
     sub: (year: number): string => `Launched after ${year}. Different groups: a plausibility check.`,

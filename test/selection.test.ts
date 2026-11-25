@@ -84,7 +84,7 @@ describe('the first screen', () => {
     expect(HERO.limits).toBe('Limits');
   });
   it('GEO and perigee are folded into the one-line caption', () => {
-    expect(HERO.caption).toBe('Each stone is a retired satellite, as tall as its perigee (lowest point) above GEO (the 35,786 km belt). The road is the protected zone.');
+    expect(HERO.caption).toBe('Each stone is a retired satellite, as tall as its perigee above GEO. The road is the protected zone.');
     expect(HERO.caption.length).toBeLessThanOrEqual(150);
     expect(source).not.toContain('stage-terms');
   });

@@ -439,7 +439,8 @@ export function heroHtml(reg: UiRegister): string {
     `<div class="hero"><p class="kicker">${esc(HERO.kicker)}</p>` +
     `<p class="headline"><a class="headline-link" href="#/census">` +
     `<span class="headline-figure">${esc(HERO.headlineFigure(s.inOrNearZone, s.postRule))}</span> ` +
-    `<span class="headline-label">${esc(HERO.headlineLabel)}</span></a></p>${fine}</div>`
+    `<span class="headline-label">${esc(HERO.headlineLabel)}</span></a></p>` +
+    `<p class="headline-sub">${esc(HERO.headlineSub)}</p>${fine}</div>`
   );
 }
 /**
@@ -467,7 +468,7 @@ export function introHtml(reg: UiRegister): string {
   const n = retiredPayloads(reg.records).length;
   return (
     `<div class="intro"><div class="intro-col"><p>${esc(CHURCHYARD_INTRO.lead)}</p>` +
-    `<ul class="terms"><li>${esc(TERMS.geo)}</li><li>${esc(TERMS.perigee)}</li><li>${esc(TERMS.eccentricity)}</li></ul></div>` +
+    `<ul class="terms"><li>${esc(TERMS.eccentricity)}</li></ul></div>` +
     `<div class="intro-col"><p>${esc(CHURCHYARD_INTRO.voluntary)} ${esc(CHURCHYARD_INTRO.noRetirementDate)}</p>` +
     `<p class="count">${esc(countLine(n, reg.snapshot.set))} ${esc(CHURCHYARD_INTRO.blindSpot)}</p></div></div>`
   );

@@ -258,7 +258,7 @@ describe('fixes after the first look', () => {
     for (let i = 1; i < ys.length; i++) expect(ys[i - 1]! - ys[i]!).toBeGreaterThanOrEqual(10);
   });
   it('folds GEO and perigee into the caption, and puts the glossary in the first tour step', () => {
-    expect(tourSteps(real)[0]!.sub).toBe('GEO: the circular orbit about 35,786 km above the equator. Perigee: the lowest point of an orbit.');
+    expect(tourSteps(real)[0]!.sub).toBe('The protected zone is the band the IADC guidelines ask retired satellites to leave.');
     expect(read('src/ui/views/churchyard.ts')).not.toContain('stage-terms');
   });
 });

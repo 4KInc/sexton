@@ -35,7 +35,9 @@ describe('the churchyard headline', () => {
     expect(html).toContain(`<a class="headline-link" href="#/census">`);
     expect(html).toContain(`<span class="headline-figure">${s.inOrNearZone} of ${s.postRule}</span>`);
     expect(html).toContain('in or near the protected zone');
-    expect(html).toContain('below the IADC disposal threshold, under the stated assumptions');
+    expect(html).toContain('Below the IADC disposal threshold, under the stated assumptions.');
+    expect(html).toContain('GEO is the 35,786 km belt; perigee is an orbit&#39;s lowest point.');
+    expect(html.split('35,786').length - 1, 'GEO is explained once on the churchyard').toBe(1);
   });
   it('the readings strip is the snapshot alone, with the data age, the assumptions, the blind spot and the voluntary note one click away in Limits', () => {
     const html = heroHtml(real);

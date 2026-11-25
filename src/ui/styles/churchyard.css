@@ -50,6 +50,14 @@
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
+.headline-sub {
+  margin: 2px 0 0;
+  max-width: none;
+  color: var(--bone-muted);
+  font-family: var(--font-body);
+  font-size: var(--fs-15);
+  line-height: 1.4;
+}
 .headline-label {
   display: inline;
   color: var(--bone-soft);
@@ -895,6 +903,13 @@
   }
 }
 @media (max-width: 600px) {
+  /* The strip is the snapshot and "Limits": no separator between the pair, so "Limits" never wraps under a dot. */
+  .fine-list--short li::after {
+    content: none;
+  }
+  .fine-list--short .fine-limits {
+    margin-left: var(--space-1);
+  }
   .toolbar-guide {
     margin-left: 0;
   }
