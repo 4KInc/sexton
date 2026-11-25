@@ -50,20 +50,37 @@ describe('the first screen', () => {
     expect(SCALE.pxPerKm).toBe(0.8);
     expect(LAYOUT.top + plotHeight() + LAYOUT.bottom).toBeLessThan(868);
   });
-  it('the fine print is one line of short items with a Limits panel that holds the full sentences', () => {
+  it('the chrome above the chart stays short (design 3, step 1): one headline line, not a three-tile grid, and a one-line tour bar', () => {
+    const css = read('src/ui/styles/churchyard.css');
+    // The headline replaces the old three-tile grid: no .tiles/.tile-figure rule is left to fight for height.
+    expect(css).not.toMatch(/\.tiles\s*\{/);
+    expect(css).not.toMatch(/\.tile-figure\s*\{/);
+    expect(css).toMatch(/\.headline-figure\s*\{/);
+    // The tour bar is a single flex row (count, text, Skip, Back, Next on one line at 1440), not the three-row
+    // grid (count / main+sub / actions) it used to be.
+    const tourRule = /\.tour\s*\{([^}]*)\}/.exec(css)![1]!;
+    expect(tourRule).toMatch(/display:\s*flex/);
+    expect(tourRule).not.toMatch(/grid-template-areas/);
+    expect(css).not.toMatch(/\.tour-sub\s*\{/);
+  });
+  it('the churchyard\'s readings strip is one line, the snapshot alone, with a Limits panel that holds the full sentences (design 3, step 1)', () => {
     const html = heroHtml(real);
-    const line = html.slice(html.indexOf('<ul class="fine-list">'), html.indexOf('</ul>', html.indexOf('<ul class="fine-list">')));
+    // The one visible line: the strip's first <li>, before the (closed) Limits panel's own markup, which
+    // physically sits inside the same <ul> but is not shown until opened.
+    const line = html.slice(html.indexOf('<ul class="fine-list'), html.indexOf('<li class="fine-limits"'));
     expect(line).toContain('CelesTrak snapshot, 22 Nov 2026');
-    expect(line).toContain('C_R·A/m 0.012–0.045 m²/kg');
-    expect(line).toContain('±25 km');
-    expect(line).toContain('The register only sees objects still near GEO');
-    expect(line).toContain('IADC guidelines are voluntary');
-    expect(line).toContain('FCC rule covers FCC-authorized launches from 18 Mar 2002');
+    // The assumptions, the blind spot and the two voluntary/FCC-scope rules moved into "Limits", one click
+    // away, so the churchyard still reaches every required disclosure without writing it out on screen.
+    expect(line).not.toContain('C_R·A/m');
+    expect(line).not.toContain('±25 km');
     const limits = html.slice(html.indexOf('<details class="limits">'));
-    expect(limits).toContain('Satellites sent much higher, or that left GEO, may be missing.');
+    expect(limits).toContain('C_R·A/m from 0.012 to 0.045');
+    expect(limits).toContain('±25 km');
+    expect(limits).toContain('The register only sees objects still near GEO');
+    expect(limits).toContain('The IADC guidelines are voluntary');
     expect(limits).toContain('applies only to satellites the FCC authorizes, launched on or after 18 March 2002');
+    expect(limits).toContain('Satellites sent much higher, or that left GEO, may be missing.');
     expect(limits).toContain('We do not know when a satellite retired.');
-    expect(limits).toContain('plausibility check');
     expect(HERO.limits).toBe('Limits');
   });
   it('GEO and perigee are folded into the one-line caption', () => {

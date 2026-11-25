@@ -570,7 +570,10 @@ describe('no hard-coded colours outside tokens.css', () => {
   };
   walk(join(ROOT, 'src/ui'));
   files.push(join(ROOT, 'index.html'));
-  const COLOUR = /#[0-9a-fA-F]{3,8}\b|\b(rgb|rgba|hsl|hsla|hwb|lab|lch|oklch|oklab)\(|\b(white|black|red|green|blue|yellow|orange|purple|gray|grey|silver|gold|brown|pink|cyan|magenta|navy|teal|olive|maroon|lime|aqua)\b/i;
+  // `(?!-)` after the word keeps CSS property names such as `white-space` from matching the colour word
+  // "white": a property name always continues past it with a hyphen, but `white` as a value never does
+  // (`color: white;`, `color: white }`).
+  const COLOUR = /#[0-9a-fA-F]{3,8}\b|\b(rgb|rgba|hsl|hsla|hwb|lab|lch|oklch|oklab)\(|\b(white|black|red|green|blue|yellow|orange|purple|gray|grey|silver|gold|brown|pink|cyan|magenta|navy|teal|olive|maroon|lime|aqua)\b(?!-)/i;
   it('scans some files', () => expect(files.length).toBeGreaterThan(8));
   for (const file of files) {
     if (file.endsWith('tokens.css')) continue;

@@ -104,11 +104,11 @@ describe('tokens and surfaces', () => {
     expect(base).toMatch(/\.nav-list a\[aria-current='page'\]\s*\{[^}]*border-bottom:\s*1px solid var\(--bone\)/);
     expect(read('index.html')).toContain('Register of retired geostationary satellites');
   });
-  it('sets the key reading at 72 px in mono, and the other two smaller', () => {
+  it('the headline sets its figure in mono, big, with its own sentence beside it (design 3, step 1: the three-tile grid moved to the census)', () => {
     const c = strip(read('src/ui/styles/churchyard.css'));
-    expect(/\.tile--zone \.tile-figure\s*\{([^}]*)\}/.exec(c)![1]).toContain('font-size: var(--fs-72)');
-    expect(/\.tile-figure\s*\{([^}]*)\}/.exec(c)![1]).toContain('font-family: var(--font-mono)');
-    expect(c).toMatch(/\.tile--zone\s*\{[^}]*grid-row:\s*1/);
+    expect(/\.headline-figure\s*\{([^}]*)\}/.exec(c)![1]).toMatch(/font-family: var\(--font-mono\)/);
+    expect(/\.headline-figure\s*\{([^}]*)\}/.exec(c)![1]).toMatch(/font-size: var\(--fs-44\)/);
+    expect(/(?<!hover )\.headline-label\s*\{([^}]*)\}/.exec(c)![1]).toMatch(/font-family: var\(--font-display\)/);
   });
 });
 describe('the chart: grey the mass, light the story', () => {
@@ -225,22 +225,26 @@ describe('fixes after the first look', () => {
     expect(css).toMatch(/\.plot \.stone-link\.selected \.stone-pos--quiet\s*\{\s*opacity:\s*1/);
     expect(css).toMatch(/\.stone-link\.selected \.stone-pos--quiet \.crack/);
   });
-  it('the toolbar has no truncated count; the count is in the fine print and still announced', () => {
+  it('the toolbar has no truncated count; the count is announced in the status region, and is a full sentence wherever it is written out', () => {
     const src = read('src/ui/views/churchyard.ts');
     expect(src).toContain('<p class="status visually-hidden" id="chart-status" role="status">');
     expect(FILTERS.drawnShort(696)).toBe('696 retired payloads drawn; others are in the table');
+    expect(FILTERS.drawnUnfiltered(696)).toMatch(/^696 retired payloads drawn\./);
+    // The churchyard's own readings strip is short (design 3, step 1: the snapshot alone, "Limits" behind
+    // it), so the drawn count is not written out there; it is still in the Limits panel in full.
     const html = heroHtml(real);
-    expect(html).toContain('<li id="fine-drawn">696 retired payloads drawn; others are in the table</li>');
-    expect(html.indexOf('fine-drawn')).toBeLessThan(html.indexOf('C_R·A/m 0.012'));
+    expect(html).not.toContain('id="fine-drawn"');
+    expect(html).toContain('696 retired payloads drawn.');
     expect(css).not.toMatch(/\.toolbar \.status\s*\{[^}]*text-overflow/);
   });
-  it('the tour bar has the skip as a small text link under the step, and on a phone one row of count, Back and Next', () => {
+  it('the tour bar is one slim line: the skip link sits beside the step, not under it', () => {
     const html = tourHtml(0, tourSteps(real));
     expect(html.indexOf('class="tour-text"')).toBeLessThan(html.indexOf('data-tour="skip"'));
     expect(html).toMatch(/<button type="button" class="link-button" data-tour="skip">Skip the tour<\/button>/);
     expect(html.indexOf('data-tour="skip"')).toBeLessThan(html.indexOf('class="tour-actions"'));
-    expect(css).toMatch(/grid-template-areas:\s*'count actions' 'main main'/);
-    expect(css).toMatch(/\.tour-actions\s*\{\s*justify-content:\s*flex-end/);
+    expect(css).toMatch(/\.tour\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;/);
+    expect(css).toMatch(/\.tour-line\s*\{[^}]*white-space:\s*nowrap/);
+    expect(css).toMatch(/justify-content:\s*flex-end/);
     expect(css).toMatch(/\.link-button\s*\{[^}]*text-decoration:\s*underline/);
   });
   it('keeps the 0 to +400 km range as it was and brings the 0 km line up, by shortening the high ground only', () => {

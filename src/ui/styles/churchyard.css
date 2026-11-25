@@ -1,9 +1,9 @@
 /* The churchyard view. Colours come from tokens.css.
    Ledger: hairline rules, serif headings, no boxes. Instrument: engraved scales and mono readings. */
 
-/* The hero: a kicker, one line of pitch, three readings, one line of fine print. */
+/* The hero: a kicker, one headline sentence with the two post-rule figures, one line of fine print. */
 .hero {
-  margin: var(--space-1) 0 var(--space-2);
+  margin: var(--space-1) 0 var(--space-1);
 }
 /* ?cover=1: a capture-only view for a screenshot (the Devpost cover). Only the bare chart and one compact
    title line are shown; the toolbar, caption, chart note, card and guide are hidden. The chart itself,
@@ -27,81 +27,42 @@
 .cover-capture .guide {
   display: none;
 }
-.hero-pitch {
-  margin: 4px 0 var(--space-1);
+/* The headline: the two post-rule figures, big, against one short sentence. It replaces the three-tile grid
+   (design 3, step 1): "131" is said once, here, and the ESA comparison moved to the census entirely, so the
+   churchyard opens on the story (the chart) instead of a row of numbers. */
+.headline {
+  margin: 4px 0 0;
   max-width: none;
+}
+.headline-link {
+  display: block;
+  text-decoration: none;
+}
+.headline-link:hover .headline-label {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.headline-figure {
+  color: var(--bone);
+  font-family: var(--font-mono);
+  font-size: var(--fs-44);
+  font-weight: 500;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.headline-label {
+  display: inline;
   color: var(--bone-soft);
   font-family: var(--font-display);
   font-size: var(--fs-20);
   line-height: 1.3;
 }
-.tiles {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0 var(--space-4);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-width: none;
+/* The churchyard's strip is the snapshot alone; the rest sit behind "Limits" (one click away). */
+.fine-list--short {
+  gap: 0;
 }
-.tile {
-  border-top: 1px solid var(--rule);
-}
-.tile--zone {
-  grid-column: 1;
-  grid-row: 1;
-}
-.tile--post-rule {
-  grid-column: 2;
-  grid-row: 1;
-}
-.tile--validation {
-  grid-column: 3;
-  grid-row: 1;
-}
-.tile-link {
-  display: grid;
-  align-content: start;
-  gap: 4px;
-  height: 100%;
-  padding: 6px 0 var(--space-1);
-  text-decoration: none;
-}
-.tile-link:hover .tile-label {
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-}
-.tile-figure {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-1);
-  font-family: var(--font-mono);
-  font-size: var(--fs-28);
-  font-weight: 500;
-  line-height: 1.1;
-  text-wrap: nowrap;
-}
-.tile--zone .tile-figure {
-  font-size: var(--fs-72);
-  line-height: 1;
-}
-.tile-of {
-  color: var(--bone-soft);
-  font-size: var(--fs-16);
-  font-weight: 400;
-}
-.tile--zone .tile-of {
-  font-size: var(--fs-28);
-}
-.tile-label {
-  font-size: var(--fs-14);
-  font-weight: 600;
-  line-height: 1.3;
-}
-.tile-sub {
-  color: var(--bone-muted);
-  font-size: var(--fs-12);
-  line-height: 1.35;
+.fine-list--short .fine-limits {
+  margin-left: var(--space-1);
 }
 /* One line of fine print. "Limits" opens the full text. */
 .hero-fine {
@@ -257,12 +218,12 @@
 
 /* The guided tour: one bar over the chart. Count, the step, and its three buttons. */
 .tour {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: 'count main actions';
+  /* One slim line (design 3, step 1): the count, the sentence and "Skip the tour" sharing the middle column,
+     Back and Next at the end. No second line, so the bar never pushes the chart down more than ~40 px. */
+  display: flex;
   align-items: center;
-  gap: var(--space-1) var(--space-3);
-  padding: var(--space-1) var(--space-2);
+  gap: var(--space-1) var(--space-2);
+  padding: 6px var(--space-2);
   background: var(--surface-1);
   border-left: 2px solid var(--bone);
 }
@@ -273,37 +234,39 @@
   border-left: 0;
 }
 .tour-count {
-  grid-area: count;
   margin: 0;
+  flex: 0 0 auto;
   color: var(--bone-soft);
   font-size: var(--fs-14);
   font-weight: 500;
 }
 .tour-main {
-  grid-area: main;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.tour-text {
+  overflow: hidden;
   min-width: 0;
 }
 .tour-line {
   margin: 0;
-  max-width: 80ch;
-  font-size: var(--fs-16);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-14);
   line-height: 1.35;
 }
-.tour-sub {
-  margin: 2px 0 0;
-  max-width: 90ch;
-  color: var(--bone-muted);
-  font-size: var(--fs-12);
-  line-height: 1.4;
-}
 .tour-actions {
-  grid-area: actions;
+  flex: 0 0 auto;
   display: flex;
   gap: var(--space-1);
 }
 /* A button that reads as a small text link. */
 .link-button {
-  margin: 4px 0 0;
+  margin: 0;
   padding: 0;
   background: none;
   border: 0;
@@ -313,7 +276,11 @@
   letter-spacing: 0.06em;
   text-decoration: underline;
   text-underline-offset: 0.25em;
+  white-space: nowrap;
   cursor: pointer;
+}
+.tour-main .link-button {
+  flex: 0 0 auto;
 }
 .link-button:hover {
   color: var(--bone);
@@ -878,36 +845,11 @@
   }
 }
 @media (max-width: 900px) {
-  .hero-pitch {
+  .headline-figure {
+    font-size: var(--fs-28);
+  }
+  .headline-label {
     font-size: var(--fs-16);
-  }
-  .tiles {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 0 var(--space-2);
-  }
-  .tile--zone {
-    grid-column: 1 / -1;
-    grid-row: 1;
-  }
-  .tile--post-rule {
-    grid-column: 1;
-    grid-row: 2;
-  }
-  .tile--validation {
-    grid-column: 2;
-    grid-row: 2;
-  }
-  .tile--zone .tile-figure {
-    font-size: var(--fs-44);
-  }
-  .tile--zone .tile-of {
-    font-size: var(--fs-20);
-  }
-  .tile-sub {
-    display: none;
-  }
-  .tile-link {
-    padding: 6px 0;
   }
   /* Phone order: the picture first, then the controls. */
   .stage-head {
@@ -922,10 +864,16 @@
   .tour--free {
     order: 0;
   }
-  /* One row: the count on the left, Back and Next on the right. The step and its skip link sit under it. */
+  /* The one slim line wraps here: the count and the sentence first, Back, Next and Skip below, right-aligned. */
   .tour {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: 'count actions' 'main main';
+    flex-wrap: wrap;
+  }
+  .tour-main {
+    flex-basis: 100%;
+    order: 1;
+  }
+  .tour-line {
+    white-space: normal;
   }
   .tour-actions {
     justify-content: flex-end;

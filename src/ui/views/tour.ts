@@ -59,7 +59,12 @@ function safeStorage(): Storage | null {
     return null;
   }
 }
-/** The tour's bar for step `i` of `count`, or the single button that starts it. */
+/**
+ * The tour's bar for step `i` of `count`, or the single button that starts it. One slim line (design 3, step
+ * 1): the count, the step's sentence, Back and Next. The step's second sentence (`sub`, a definition or an
+ * aside) stays in the DOM and is still read out by the live region, but is visually hidden, so the bar never
+ * pushes the chart down more than one row.
+ */
 export function tourHtml(i: number | null, steps: readonly TourStep[]): string {
   if (i === null) return `<div class="tour tour--free"><button type="button" class="button button--quiet" data-tour-start>${TOUR.start}</button></div>`;
   const step = steps[i]!;
@@ -67,7 +72,7 @@ export function tourHtml(i: number | null, steps: readonly TourStep[]): string {
   return (
     `<div class="tour" role="group" aria-label="${TOUR.label}">` +
     `<p class="tour-count mono" aria-hidden="true">${i + 1} / ${steps.length}</p>` +
-    `<div class="tour-main"><div class="tour-text" role="status" aria-live="polite"><p class="tour-line"><span class="visually-hidden">${TOUR.stepOf(i + 1, steps.length)} </span>${esc(step.text)}</p><p class="tour-sub">${esc(step.sub)}</p></div>` +
+    `<div class="tour-main"><div class="tour-text" role="status" aria-live="polite"><p class="tour-line"><span class="visually-hidden">${TOUR.stepOf(i + 1, steps.length)} </span>${esc(step.text)}<span class="visually-hidden"> ${esc(step.sub)}</span></p></div>` +
     `<button type="button" class="link-button" data-tour="skip">${TOUR.skip}</button></div>` +
     `<div class="tour-actions"><button type="button" class="button" data-tour="back"${i === 0 ? ' disabled' : ''}>${TOUR.back}</button>` +
     `<button type="button" class="button button--primary" data-tour="${last ? 'done' : 'next'}">${last ? TOUR.done : TOUR.next}</button></div></div>`

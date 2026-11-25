@@ -412,23 +412,35 @@ export function heroStats(reg: Pick<UiRegister, 'records' | 'config'>, compariso
     },
   ];
 }
+/**
+ * The churchyard's hero: a kicker, one headline sentence with the two post-rule figures (the only place the
+ * churchyard says "131"; the full tile grid, including the ESA comparison, moved to the census so the number
+ * is said once per figure, not duplicated across views), and a one-line reading with the rest of the
+ * disclosures one click away behind "Limits". The headline is a link to the census, where both figures are
+ * broken down further.
+ */
 export function heroHtml(reg: UiRegister): string {
   const config = reg.config;
-  const tiles = heroStats(reg)
-    .map(
-      (t) =>
-        `<li class="tile tile--${t.id}"><a class="tile-link" href="#/census"><span class="tile-figure">${esc(t.value)}${t.of === null ? '' : `<span class="tile-of">${esc(t.of)}</span>`}</span>` +
-        `<span class="tile-label">${esc(t.label)}</span><span class="tile-sub">${esc(t.sub)}</span></a></li>`,
-    )
-    .join('');
-  const d = disposalRate(reg.records, config);
+  const s = postRuleSummary(reg.records);
   const fine = fineHtml(
     reg.snapshot.set,
     config,
-    [assumptionsLine(config), CHURCHYARD_INTRO.blindSpot, CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.noRetirementDate, VALIDATION.intro(d.afterLaunchYear)],
-    FILTERS.drawnShort(retiredPayloads(reg.records).length),
+    [
+      assumptionsLine(config),
+      CHURCHYARD_INTRO.blindSpot,
+      CHURCHYARD_INTRO.voluntary,
+      CHURCHYARD_INTRO.noRetirementDate,
+      FILTERS.drawnUnfiltered(retiredPayloads(reg.records).length),
+    ],
+    undefined,
+    true,
   );
-  return `<div class="hero"><p class="kicker">${esc(HERO.kicker)}</p><p class="hero-pitch">${esc(HERO.pitch)}</p><ul class="tiles">${tiles}</ul>${fine}</div>`;
+  return (
+    `<div class="hero"><p class="kicker">${esc(HERO.kicker)}</p>` +
+    `<p class="headline"><a class="headline-link" href="#/census">` +
+    `<span class="headline-figure">${esc(HERO.headlineFigure(s.inOrNearZone, s.postRule))}</span> ` +
+    `<span class="headline-label">${esc(HERO.headlineLabel)}</span></a></p>${fine}</div>`
+  );
 }
 /**
  * True only when the hash query carries `cover=1`. Used solely to draw the cover capture (a compact title over

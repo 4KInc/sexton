@@ -84,6 +84,14 @@ export const HERO = {
     label: 'in or near the protected zone',
     sub: 'Below the IADC disposal threshold, under the stated assumptions.',
   },
+  /**
+   * The headline above the chart: the two post-rule figures, read as one sentence, big against their short
+   * label. "131" is said once here, so the tiles below the chart (census) do not repeat it. "Below the IADC
+   * disposal threshold" is the plain meaning of "in or near the protected zone", said once, here.
+   */
+  headlineFigure: (zone: number, postRule: number): string => `${formatCount(zone)} of ${formatCount(postRule)}`,
+  headlineLabel:
+    'retired payloads launched on or after the FCC rule date are still in or near the protected zone \u2014 below the IADC disposal threshold, under the stated assumptions',
   validation: {
     label: (range: readonly [number, number] | null): string => `Sexton${range === null ? ': buried share' : ` vs ESA ${range[0]}\u2013${range[1]}%`}`,
     sub: (year: number): string => `Launched after ${year}. Different groups: a plausibility check.`,
