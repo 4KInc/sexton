@@ -1,12 +1,12 @@
-/* Filters and the table view. Colours come from tokens.css. */
+/* Filters and the table view: a ledger. Hairline rules, mono numbers, numbered rows. Colours come from tokens.css. */
 .filters {
-  margin: var(--space-3) 0;
-  padding: var(--space-3);
-  border: 1px solid var(--stone);
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  background: var(--surface-1);
   max-width: 60rem;
 }
 .filters-details {
-  margin: var(--space-3) 0;
+  margin: var(--space-2) 0;
   max-width: 60rem;
 }
 .filters-details > summary {
@@ -15,7 +15,7 @@
   padding: var(--space-1) 0;
 }
 .filters-details > .filters {
-  margin-top: var(--space-2);
+  margin-top: var(--space-1);
 }
 .filters-note,
 .hint {
@@ -24,40 +24,53 @@
 .filters-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  margin: 0 0 var(--space-3);
+  gap: 4px;
+  margin: 0 0 var(--space-2);
   padding: 0;
   border: 0;
   min-width: 0;
 }
 .field label,
 .field legend {
-  font-weight: 600;
   padding: 0;
+  color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 .field .check-list label {
-  font-weight: 400;
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  letter-spacing: 0;
+  text-transform: none;
 }
 .field--check {
   flex-direction: row;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 .field--check label {
-  font-weight: 400;
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  letter-spacing: 0;
+  text-transform: none;
 }
 .filters input[type='search'],
 .filters select {
   min-height: 2.5rem;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--bone-muted);
-  border-radius: var(--radius);
-  background: var(--stone);
+  padding: 4px var(--space-1);
+  border: 0;
+  border-bottom: 1px solid var(--bone-muted);
+  border-radius: 0;
+  background: var(--surface-2);
   color: var(--bone);
   font: inherit;
   max-width: 100%;
@@ -73,17 +86,12 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 .check-list li {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-2);
-}
-.button:disabled {
-  cursor: default;
-  color: var(--bone-muted);
-  border-color: var(--stone);
+  gap: var(--space-1);
 }
 .status {
   color: var(--bone);
@@ -94,43 +102,66 @@
 }
 .table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--stone);
+  border: 0;
 }
 /* The register table scrolls inside its own box both ways, so its header stays in view while the rows move. */
 #table-host .table-wrap {
   max-height: calc(100vh - 5rem);
   overflow-y: auto;
-  border-color: var(--panel-edge);
-  border-radius: var(--radius);
+  border-top: 1px solid var(--rule-strong);
 }
 .register-table {
   border-collapse: collapse;
   width: 100%;
   min-width: 70rem;
-  font-size: 0.95rem;
+  font-size: var(--fs-14);
 }
 .register-table caption {
   text-align: left;
-  padding: var(--space-2);
+  padding: var(--space-1) 0;
   color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .register-table th,
 .register-table td {
-  padding: var(--space-1) var(--space-2);
-  border-bottom: 1px solid var(--stone);
+  padding: 8px var(--space-2);
+  border-bottom: 1px solid var(--rule);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
 }
+/* The header: mono labels, opaque so rows pass under it. */
 .register-table thead th {
-  background: var(--stone);
+  background: var(--ground);
   position: sticky;
   top: 0;
   z-index: 2;
-  border-bottom: 1px solid var(--bone-muted);
+  border-bottom: 1px solid var(--rule-strong);
+  color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  text-wrap: nowrap;
 }
-/* Rows: a faint stripe, and a lifted row under the pointer or the keyboard. The name stays in view when the table scrolls sideways. */
-#table-host .register-table tbody tr:nth-child(even) {
-  background: none;
+#table-host .register-table thead th:nth-child(2),
+#table-host .register-table thead th:nth-child(7),
+#table-host .register-table thead th:nth-child(8),
+#table-host .register-table thead th:nth-child(9) {
+  text-align: right;
+}
+/* Rows: numbered like a register, ruled with hairlines, 38 px tall, no stripes. A lifted row under the pointer or the keyboard.
+   Numbers, owner codes and dates are mono, and a date never breaks across lines. */
+#table-host .register-table tbody {
+  counter-reset: rowno;
+}
+#table-host .register-table tbody tr {
+  counter-increment: rowno;
+  height: 2.375rem;
 }
 #table-host .register-table tbody tr:hover {
   background: var(--stone);
@@ -140,18 +171,38 @@
   left: 0;
   z-index: 1;
   background: var(--ground);
-}
-#table-host .register-table tbody tr:nth-child(even) th {
-  background: none;
+  font-weight: 400;
+  text-wrap: nowrap;
 }
 #table-host .register-table tbody tr:hover th {
   background: var(--stone);
 }
-#table-host .register-table tbody td {
-  border-bottom-color: var(--panel-edge);
+#table-host .register-table tbody th::before {
+  content: counter(rowno);
+  display: inline-block;
+  min-width: 2.25rem;
+  margin-right: var(--space-1);
+  color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  text-align: right;
 }
-.register-table tbody th {
-  font-weight: 600;
+#table-host .register-table tbody td,
+#table-host .register-table tbody th {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  line-height: 1.3;
+}
+#table-host .register-table tbody td {
+  font-family: var(--font-mono);
+  font-size: var(--fs-14);
+  text-wrap: nowrap;
+}
+#table-host .register-table tbody td:nth-child(2) {
+  text-align: right;
+}
+#table-host .register-table tbody td:nth-child(5) {
+  font-family: var(--font-body);
 }
 .num-cell {
   text-align: right !important;
@@ -161,14 +212,18 @@
 .sort {
   background: none;
   border: 0;
-  padding: var(--space-1) 0;
-  color: var(--bone);
+  padding: 0;
+  color: var(--bone-soft);
   font: inherit;
-  font-weight: 600;
-  text-align: left;
+  letter-spacing: inherit;
+  text-align: inherit;
+  text-transform: inherit;
   cursor: pointer;
+}
+.sort:hover {
+  color: var(--bone);
   text-decoration: underline;
-  text-underline-offset: 0.2em;
+  text-underline-offset: 0.3em;
 }
 th[aria-sort='ascending'] .sort::after {
   content: ' \25B2';
@@ -181,14 +236,14 @@ th[aria-sort='descending'] .sort::after {
   stroke: var(--bone-muted);
   stroke-width: 1.2;
 }
-
-/* A verdict in a table cell: the stone shape and the churchyard word. */
+/* A verdict in a table cell: the stone shape and the churchyard word, short. The meanings are in the note above the table. */
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: 0.1rem var(--space-2) 0.1rem var(--space-1);
-  border: 1px solid var(--bone-muted);
+  gap: var(--space-1);
+  padding: 0 var(--space-1) 0 6px;
+  line-height: 1.25;
+  border: 1px solid var(--rule-strong);
   border-radius: 999px;
   text-wrap: nowrap;
 }
@@ -197,25 +252,27 @@ th[aria-sort='descending'] .sort::after {
   height: 1.2rem;
 }
 .chip-word {
-  font-weight: 600;
+  font-size: var(--fs-14);
 }
-/* The table toolbar: search, filters and the count in one panel. */
+/* The table toolbar: search and filters in a row, then the count. */
 .toolbar--table {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: 0;
 }
+.toolbar .filters--bar,
 .filters--bar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-1) var(--space-2);
   max-width: none;
   margin: 0;
-  padding: var(--space-3);
+  padding: var(--space-1) 0;
   background: none;
-  border-color: var(--panel-edge);
-  border-radius: var(--radius);
+}
+.toolbar .filters--bar {
+  background: none;
 }
 .filters--bar .filters-row,
 .filters--bar .more-filters {
@@ -229,11 +286,9 @@ th[aria-sort='descending'] .sort::after {
 }
 .filters--bar input[type='search'] {
   min-width: min(100%, 17rem);
-  border-radius: 999px;
 }
 .filters--bar select {
   max-width: 14rem;
-  border-radius: 999px;
 }
 .filters--bar input::placeholder {
   color: var(--bone-muted);
@@ -256,12 +311,12 @@ th[aria-sort='descending'] .sort::after {
 .filters--bar .check-list {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) var(--space-2);
+  gap: 4px var(--space-1);
 }
 .filters--bar .check-list li {
   align-items: center;
-  padding: 0.15rem var(--space-2);
-  border: 1px solid var(--bone-muted);
+  padding: 2px var(--space-1);
+  border: 1px solid var(--rule-strong);
   border-radius: 999px;
 }
 .filters--bar .filters-note {
@@ -269,7 +324,7 @@ th[aria-sort='descending'] .sort::after {
   flex-basis: 100%;
   margin: 0;
   max-width: none;
-  font-size: 0.78rem;
+  font-size: var(--fs-12);
 }
 .filters--bar .filters-clear {
   margin: 0;
@@ -278,13 +333,15 @@ th[aria-sort='descending'] .sort::after {
   margin: 0;
   max-width: none;
   color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
 }
 .guide--table {
-  margin: var(--space-2) 0 var(--space-3);
+  margin: var(--space-1) 0 var(--space-2);
 }
 .guide--table > summary {
-  font-size: 1.05rem;
-  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-16);
+  padding: var(--space-1) 0;
 }
 @media (max-width: 900px) {
   .filters--bar .more-toggle {
@@ -298,14 +355,13 @@ th[aria-sort='descending'] .sort::after {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: var(--space-2) var(--space-3);
+    gap: var(--space-1) var(--space-2);
     flex-basis: 100%;
   }
   #table-host .table-wrap {
     max-height: calc(100vh - 3rem);
   }
 }
-
 /* A phone has no room for ten columns, so each row becomes a card: name and verdict, then NORAD, owner and launch date,
    then p, q and e, then the data age. The table's own elements stay (with their roles), so a screen reader still reads a table.
    The column headers are visually hidden, and a select above the list does the sorting. */
@@ -381,6 +437,7 @@ th[aria-sort='descending'] .sort::after {
   }
   #table-host .register-table tbody tr {
     display: grid;
+    height: auto;
     grid-template-columns: minmax(0, 5.4rem) minmax(0, 5.4rem) minmax(0, 1fr) auto;
     column-gap: var(--space-1);
     row-gap: 0.1rem;
@@ -414,6 +471,7 @@ th[aria-sort='descending'] .sort::after {
   }
   #table-host .register-table tbody td:nth-child(2) {
     grid-row: 2;
+    text-align: left;
   }
   #table-host .register-table tbody td:nth-child(3) {
     grid-row: 2;
@@ -466,5 +524,8 @@ th[aria-sort='descending'] .sort::after {
   }
   #table-host .register-table tbody td:nth-child(9)::before {
     content: '\00b7  e ';
+  }
+  #table-host .register-table tbody th::before {
+    min-width: 0;
   }
 }

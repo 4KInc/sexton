@@ -4,13 +4,14 @@
 import { CONFIG } from '../../engine/config.ts';
 import type { Config } from '../../engine/config.ts';
 import type { Census, SatRecord, VerdictName } from '../../engine/types.ts';
-import { CENSUS, CENSUS_TILES, HERO, CHURCHYARD_INTRO, HEADLINE, VALIDATION, COMPARISONS, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
+import { CENSUS, CENSUS_TILES, HERO, CHURCHYARD_INTRO, HEADLINE, METHOD_SECTIONS, NOTES, snapshotLabel, VALIDATION, COMPARISONS, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
 import type { Comparison } from '../copy.ts';
 import { disposalRate, postRuleSummary } from '../../engine/headline.ts';
 import type { DisposalRate } from '../../engine/headline.ts';
 import { formatCount, formatShare } from '../format.ts';
 import { esc } from '../html.ts';
 import type { UiRegister } from '../register.ts';
+import { glyphSvg } from './badge.ts';
 
 const H = CENSUS.headings;
 /** A count that the test reads back and compares with register.census. The path is a JSON array of keys. */
@@ -19,8 +20,58 @@ const cell = (path: readonly string[], value: number): string =>
 const dd = (path: readonly string[], value: number): string =>
   `<dd data-census="${esc(JSON.stringify(path))}">${esc(formatCount(value))}</dd>`;
 const shareCell = (n: number, of: number): string => `<td class="num-cell">${esc(formatShare(n, of))}</td>`;
+/** A numbered entry, like a line in a register: "§ 03.2", then the heading. */
 const section = (id: string, heading: string, body: string, wide = false): string =>
-  `<section class="census-section${wide ? ' census-section--wide' : ''}" aria-labelledby="census-${id}"><h2 id="census-${id}">${esc(heading)}</h2>${body}</section>`;
+  `<section class="census-section${wide ? ' census-section--wide' : ''}" aria-labelledby="census-${id}"><p class="kicker">\u00A7 03.#</p><h2 id="census-${id}">${esc(heading)}</h2>${body}</section>`;
+/** A chart's one mono note: its caveats in a line, and a link to the method section where they are explained. */
+function noteHtml(parts: readonly string[], section: string): string {
+  return `<p class="chart-note-mono">${parts.map(esc).join(' \u00B7 ')} \u00B7 ${esc(NOTES.method)} <a href="#/method?s=${section}" aria-label="${esc(NOTES.link(section))}">\u00A7</a></p>`;
+}
+interface Bar {
+  name: string;
+  n: number;
+  of: number;
+  /** Where the number is read back from (the census test). */
+  census?: readonly string[];
+  headline?: string;
+  /** How many of `n` are within the uncertainty of a band edge. */
+  hatched?: number;
+  /** The whole bar is uncertain by definition. */
+  uncertain?: boolean;
+}
+/** Horizontal bars, each with its number in mono at the end: "n of N (x%)". The bar is the share of N, from 0 to 100. */
+function barsHtml(rows: readonly Bar[], label: string, uncertaintyKm: number): string {
+  const items = rows
+    .map((b) => {
+      const head = formatCount(b.n);
+      const rest = formatShare(b.n, b.of).slice(head.length);
+      const attr = b.census !== undefined ? ` data-census="${esc(JSON.stringify(b.census))}"` : b.headline !== undefined ? ` data-headline="${esc(b.headline)}"` : '';
+      const width = b.of > 0 ? (100 * b.n) / b.of : 0;
+      const hatch = b.hatched !== undefined && b.hatched > 0 && b.n > 0 ? `<span class="bar-hatch" style="width:${((100 * b.hatched) / b.n).toFixed(2)}%"></span>` : '';
+      const sub = b.hatched !== undefined && b.hatched > 0 ? `<span class="bar-sub"> \u00B7 ${esc(formatCount(b.hatched))} borderline</span>` : '';
+      return (
+        `<li class="bar-row"><span class="bar-name">${esc(b.name)}</span><span class="bar-plot" style="--s:${(width / 100).toFixed(4)}">` +
+        `<span class="bar-track" aria-hidden="true"><span class="bar-fill${b.uncertain === true ? ' bar-fill--uncertain' : ''}" style="width:${width.toFixed(2)}%">${hatch}</span></span>` +
+        `<span class="bar-label"><span class="bar-n"${attr}>${esc(head)}</span>${esc(rest)}${sub}</span></span></li>`
+      );
+    })
+    .join('');
+  return `<ul class="bars" aria-label="${esc(label)}">${items}</ul>`;
+}
+/** Borderline counts per verdict, for a set of retired records. */
+function borderlineBy(records: readonly SatRecord[], inGroup: (r: SatRecord) => boolean): Record<VerdictName, number> {
+  const out = { fallen: 0, unquiet: 0, 'shallow grave': 0, restless: 0, uncertain: 0, buried: 0 };
+  for (const r of records) if (r.verdict.kind === 'verdict' && inGroup(r) && r.verdict.borderline) out[r.verdict.verdict]++;
+  return out;
+}
+/** The six verdict words, each with its plain meaning, once, at the top of the page. Rows below show the word only. */
+export function verdictLegendHtml(config: Config): string {
+  const items = VERDICT_ORDER.map((v) => {
+    const c = verdictCopy(v, config);
+    return `<div class="legend-dl-row"><dt>${glyphSvg(v)}<span class="legend-word">${esc(c.word)}</span></dt><dd>${esc(c.meaning)}</dd></div>`;
+  }).join('');
+  return `<dl class="legend-dl" aria-label="${esc(CENSUS.legendLabel)}">${items}</dl>`;
+}
 /** The four big numbers at the top. Not census cells (they have no data-census), so the cell test still counts each census number once. */
 export function statsHtml(reg: Pick<UiRegister, 'census' | 'records'>): string {
   const s = postRuleSummary(reg.records);
@@ -73,32 +124,35 @@ function populationHtml(c: Census): string {
   return lines + table(P.caption, th(P.columns.type) + th(P.columns.count, true) + th(P.columns.share, true), rows);
 }
 
-function verdictsHtml(c: Census, config: Config): string {
-  const V = CENSUS.verdictTable;
+function verdictsHtml(c: Census, config: Config, records: readonly SatRecord[], date: string): string {
   const total = c.retired.total;
-  const rows = VERDICT_ORDER.map((v: VerdictName) => {
-    const n = c.retired.byVerdict[v];
-    return `<tr><th scope="row">${esc(verdictCopy(v, config).pair)}</th>${cell(['retired', 'byVerdict', v], n)}${shareCell(n, total)}</tr>`;
-  }).join('');
-  const foot = `<tr><th scope="row">${esc(V.total)}</th>${cell(['retired', 'total'], total)}${shareCell(total, total)}</tr>`;
-  return table(V.caption, th(V.columns.verdict) + th(V.columns.count, true) + th(V.columns.share, true), rows + foot);
+  const edge = borderlineBy(records, () => true);
+  const rows: Bar[] = VERDICT_ORDER.map((v: VerdictName) => ({
+    name: verdictCopy(v, config).word,
+    n: c.retired.byVerdict[v],
+    of: total,
+    census: ['retired', 'byVerdict', v],
+    hatched: edge[v],
+    uncertain: v === 'uncertain',
+  }));
+  return (
+    `<p class="bars-total"><span class="bar-n" data-census="${esc(JSON.stringify(['retired', 'total']))}">${esc(formatCount(total))}</span> ${esc(CENSUS.totalLine)}</p>` +
+    barsHtml(rows, CENSUS.verdictTable.caption, config.uncertaintyKm) +
+    noteHtml([NOTES.perigee(config.uncertaintyKm), NOTES.hatched(config.uncertaintyKm), NOTES.source(date)], METHOD_SECTIONS.verdicts)
+  );
 }
-
-function eraHtml(c: Census): string {
+function eraHtml(c: Census, date: string): string {
   const E = CENSUS.era;
   const total = c.retired.total;
-  const rows = (
+  const rows: Bar[] = (
     [
       ['beforeRule', E.beforeRule],
       ['onOrAfterRule', E.onOrAfterRule],
       ['unknown', E.unknown],
     ] as const
-  )
-    .map(([k, label]) => `<tr><th scope="row">${esc(label)}</th>${cell(['retired', 'era', k], c.retired.era[k])}${shareCell(c.retired.era[k], total)}</tr>`)
-    .join('');
-  return table(E.caption, th(E.columns.era) + th(E.columns.count, true) + th(E.columns.share, true), rows) + `<p>${esc(E.note)}</p>`;
+  ).map(([k, name]) => ({ name, n: c.retired.era[k], of: total, census: ['retired', 'era', k], uncertain: k === 'unknown' }));
+  return barsHtml(rows, E.caption, 0) + noteHtml([NOTES.era, NOTES.source(date)], METHOD_SECTIONS.era);
 }
-
 function orbitHtml(c: Census, config: Config): string {
   const O = CENSUS.orbit;
   const total = c.retired.total;
@@ -135,26 +189,33 @@ function statusHtml(c: Census, records: readonly SatRecord[]): string {
   return body;
 }
 
-function ownerHtml(c: Census, config: Config): string {
+const TOP_OWNERS = 12;
+function ownerHtml(c: Census, config: Config, date: string): string {
   const O = CENSUS.owner;
   const total = (o: Record<VerdictName, number>): number => VERDICT_ORDER.reduce((sum, v) => sum + o[v], 0);
   const owners = Object.entries(c.retired.byOwner).sort(([ka, a], [kb, b]) => total(b) - total(a) || (ka < kb ? -1 : ka > kb ? 1 : 0));
-  const head = th(O.ownerColumn) + VERDICT_ORDER.map((v) => th(verdictCopy(v, config).word, true)).join('') + th(O.totalColumn, true);
-  const rows = owners
-    .map(
-      ([code, counts]) =>
-        `<tr><th scope="row">${esc(code === 'unknown' ? O.unknown : code)}</th>` +
-        VERDICT_ORDER.map((v) => cell(['retired', 'byOwner', code, v], counts[v])).join('') +
-        `<td class="num-cell">${esc(formatCount(total(counts)))}</td></tr>`,
-    )
-    .join('');
+  const max = Math.max(1, ...owners.map(([, o]) => total(o)));
+  const head = th(O.ownerColumn) + th(CENSUS.ownerBar) + VERDICT_ORDER.map((v) => th(verdictCopy(v, config).word, true)).join('') + th(O.totalColumn, true);
+  const row = ([code, counts]: [string, Record<VerdictName, number>]): string => {
+    const n = total(counts);
+    const w = (k: number): string => ((100 * k) / Math.max(1, n)).toFixed(2);
+    return (
+      `<tr><th scope="row">${esc(code === 'unknown' ? O.unknown : code)}</th>` +
+      `<td class="ibar-cell"><span class="ibar" aria-hidden="true" style="width:${((100 * n) / max).toFixed(2)}%"><span class="ibar-b" style="width:${w(counts.buried)}%"></span><span class="ibar-u" style="width:${w(counts.uncertain)}%"></span></span></td>` +
+      VERDICT_ORDER.map((v) => cell(['retired', 'byOwner', code, v], counts[v])).join('') +
+      `<td class="num-cell">${esc(formatCount(n))}</td></tr>`
+    );
+  };
+  const more = owners.length - TOP_OWNERS;
   return (
-    `<p>${esc(O.note)}</p>` +
     `<div class="table-wrap census-wrap" role="region" aria-label="${esc(O.scrollLabel)}" tabindex="0">` +
-    `<table class="register-table census-table census-owner"><caption>${esc(O.caption)}</caption><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`
+    `<table class="register-table census-table census-owner"><caption>${esc(O.caption)}</caption><thead><tr>${head}</tr></thead>` +
+    `<tbody>${owners.slice(0, TOP_OWNERS).map(row).join('')}</tbody>` +
+    `<tbody id="owners-rest"${more > 0 ? ' hidden' : ''}>${owners.slice(TOP_OWNERS).map(row).join('')}</tbody></table></div>` +
+    (more > 0 ? `<p class="owners-more"><button type="button" class="button button--quiet" data-owners aria-expanded="false" aria-controls="owners-rest" data-show="${esc(CENSUS.ownersShow(owners.length))}" data-hide="${esc(CENSUS.ownersHide)}">${esc(CENSUS.ownersShow(owners.length))}</button></p>` : '') +
+    noteHtml([O.note, NOTES.owner, NOTES.source(date)], METHOD_SECTIONS.sources)
   );
 }
-
 const pctOf = (n: number, of: number): string => String(Math.round((10000 * n) / of) / 100);
 /**
  * Sexton's band and its central share on one axis from 0 to 100, with the published range above it.
@@ -205,16 +266,14 @@ export function validationHtml(records: readonly SatRecord[], comparisons: reado
     else if (centre > hi) verdict = VALIDATION.above;
     else verdict = pct(r.upper) >= lo ? VALIDATION.partly : VALIDATION.below;
   }
-  return `<div class="vgrid"><div class="vmain">${validationChartHtml(r, published)}<dl class="ledger-data census-data">${rows}</dl><p data-validation="verdict"><strong>${esc(verdict)}</strong></p></div>${head}</div>`;
+  return `<div class="vgrid"><div class="vmain">${validationChartHtml(r, published)}${noteHtml([NOTES.validation(config.uncertaintyKm)], METHOD_SECTIONS.validation)}<dl class="ledger-data census-data">${rows}</dl><p data-validation="verdict"><strong>${esc(verdict)}</strong></p></div>${head}</div>`;
 }
 /** The first thing on the census page: the group launched on or after the rule date, with the older group as context. */
-export function headlineHtml(records: readonly SatRecord[], config: Config): string {
+export function headlineHtml(records: readonly SatRecord[], config: Config, date = ''): string {
   const s = postRuleSummary(records);
   if (s.postRule === 0) return `<p>${esc(HEADLINE.none)}</p><p data-headline="predate">${esc(HEADLINE.predate(s.predate, s.retired))}</p>`;
-  const rows = VERDICT_ORDER.map((v) => {
-    const n = s.byVerdict[v];
-    return `<tr><th scope="row">${esc(verdictCopy(v, config).pair)}</th><td class="num-cell" data-headline="${esc(v)}">${esc(formatCount(n))}</td>${shareCell(n, s.postRule)}</tr>`;
-  }).join('');
+  const edge = borderlineBy(records, (r) => r.verdict.kind === 'verdict' && r.verdict.era === null);
+  const rows: Bar[] = VERDICT_ORDER.map((v) => ({ name: verdictCopy(v, config).word, n: s.byVerdict[v], of: s.postRule, headline: v, hatched: edge[v], uncertain: v === 'uncertain' }));
   return (
     `<div class="headline"><div class="headline-text">` +
     `<p data-headline="lead">${esc(HEADLINE.lead(s.postRule, s.retired))}</p>` +
@@ -222,10 +281,11 @@ export function headlineHtml(records: readonly SatRecord[], config: Config): str
     `<p data-headline="predate">${esc(HEADLINE.predate(s.predate, s.retired))}</p>` +
     (s.unknownLaunch > 0 ? `<p>${esc(HEADLINE.unknownLaunch(s.unknownLaunch))}</p>` : '') +
     `<p>${esc(assumptionsLine(config))}</p><p>${esc(CHURCHYARD_INTRO.blindSpot)}</p></div>` +
-    `<div class="headline-table">${table(HEADLINE.caption, th(HEADLINE.columns.verdict) + th(HEADLINE.columns.count, true) + th(HEADLINE.columns.share, true), rows)}</div></div>`
+    `<div class="headline-chart">${barsHtml(rows, HEADLINE.caption, config.uncertaintyKm)}` +
+    noteHtml([NOTES.perigee(config.uncertaintyKm), NOTES.hatched(config.uncertaintyKm), NOTES.source(date)], METHOD_SECTIONS.verdicts) +
+    `</div></div>`
   );
 }
-
 /** The whole census page body. */
 export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'>, comparisons: readonly Comparison[] = COMPARISONS): string {
   const c = reg.census;
@@ -253,14 +313,16 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
     paras([CENSUS.blind.filter(near.lowerKm, near.upperKm, near.orbitCenter), CENSUS.blind.consequence]),
   );
   const caveat = section('caveat', H.caveat, `<p>${esc(CENSUS.caveat.intro)}</p><ul>${CENSUS.caveat.points.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`);
+  let entry = 0;
+  const date = snapshotLabel(c.snapshotDate).replace('CelesTrak snapshot, ', '');
   const rest =
     `<details class="fold"><summary>${esc(CENSUS.restTitle)}</summary><div class="fold-body">` +
     `<p>${esc(CENSUS.fromRegister)}</p><p>${esc(CHURCHYARD_INTRO.voluntary)}</p><p>${esc(CHURCHYARD_INTRO.noRetirementDate)}</p></div></details>`;
   const cols =
+    section('verdicts', H.verdicts, verdictsHtml(c, config, reg.records, date)) +
+    section('era', H.era, eraHtml(c, date)) +
     section('population', H.population, populationHtml(c)) +
-    section('verdicts', H.verdicts, verdictsHtml(c, config)) +
     borderline +
-    section('era', H.era, eraHtml(c)) +
     section('orbit', H.orbit, orbitHtml(c, config)) +
     section('status', H.status, statusHtml(c, reg.records)) +
     gaps +
@@ -269,18 +331,28 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
     caveat;
   return (
     `<div class="census">` +
-    `<div class="census-top">${intro}</div>` +
+    `<div class="census-top"><p class="kicker">${esc(CENSUS.kicker)}</p>${intro}</div>` +
+    verdictLegendHtml(config) +
     statsHtml(reg) +
-    section('headline', HEADLINE.heading, headlineHtml(reg.records, config), true) +
+    section('headline', HEADLINE.heading, headlineHtml(reg.records, config, date), true) +
     section('validation', VALIDATION.heading, validationHtml(reg.records, comparisons), true) +
     `<div class="census-cols">${cols}</div>` +
-    section('owner', H.owner, ownerHtml(c, config), true) +
+    section('owner', H.owner, ownerHtml(c, config, date), true) +
     rest +
     `</div>`
-  );
+  ).replace(/\u00A7 03\.#/g, () => `\u00A7 03.${++entry}`);
 }
-/** Draws the census into `root`. Nothing to listen to, so the stop function does nothing. */
+/** Draws the census into `root`. The one control is the owner table's "Show all". */
 export function mountCensus(root: HTMLElement, reg: UiRegister): () => void {
   root.innerHTML = censusHtml(reg);
-  return () => undefined;
+  const onClick = (event: Event): void => {
+    const button = (event.target as Element).closest<HTMLButtonElement>('[data-owners]');
+    if (button === null) return;
+    const rest = root.querySelector<HTMLElement>('#owners-rest')!;
+    rest.hidden = !rest.hidden;
+    button.setAttribute('aria-expanded', String(!rest.hidden));
+    button.textContent = rest.hidden ? button.dataset['show']! : button.dataset['hide']!;
+  };
+  root.addEventListener('click', onClick);
+  return () => root.removeEventListener('click', onClick);
 }

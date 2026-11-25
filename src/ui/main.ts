@@ -77,7 +77,7 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   } else if (route.name === 'census') {
     stopView = mountCensus(view, reg);
   } else if (route.name === 'method') {
-    stopView = mountMethod(view);
+    stopView = mountMethod(view, route.query);
   } else {
     view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
   }

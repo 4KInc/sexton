@@ -357,8 +357,9 @@ export const LEDGER = {
 export const TABLE = {
   intro: 'Every object the register holds, with the same numbers as the churchyard.',
   verdictKey: 'The verdict words',
+  kicker: '\u00A7 02 \u00B7 The register',
   sortBy: 'Sort by',
-  verdictKeySummary: 'What the verdict words mean',
+  verdictKeySummary: 'The verdict words, and what each one means',
   caption: 'Objects near GEO in the register',
   sortedBy: (label: string, dir: 'asc' | 'desc'): string => `Sorted by ${label}, ${dir === 'asc' ? 'ascending' : 'descending'}.`,
   columns: {
@@ -427,6 +428,27 @@ export const COMPARISONS: readonly Comparison[] = [
     range: null,
   },
 ];
+/** Method sections that a chart's caveat links to. Each is the id of a heading on the method page (tested against docs/methodology.md). */
+export const METHOD_SECTIONS = {
+  verdicts: 'm-verdicts',
+  iadc: 'm-the-iadc-threshold',
+  era: 'm-the-group-launched-on-or-after-18-march-2002',
+  sources: 'm-sources-of-data',
+  validation: 'm-validation-against-published-figures',
+  status: 'm-the-status-mapping',
+  blind: 'm-what-the-register-cannot-see',
+} as const;
+/** The one short mono note under each chart: where the numbers come from, how sure they are, and a link to the method. */
+export const NOTES = {
+  perigee: (u: number): string => `Perigee from GP mean elements or SATCAT altitudes, \u00B1${u} km`,
+  hatched: (u: number): string => `Hatched: uncertain, or within \u00B1${u} km of a band edge`,
+  source: (date: string): string => `CelesTrak, ${date}`,
+  era: 'Launch date from SATCAT. The FCC rule covers only satellites the FCC authorizes',
+  owner: 'Owner codes as SATCAT gives them. One operator can hold several',
+  validation: (u: number): string => `Band: every perigee moved \u00B1${u} km. Different groups, so a plausibility check`,
+  method: 'Method',
+  link: (section: string): string => `Method, section ${section}`,
+} as const;
 /** The big numbers at the top of the census page. */
 export const CENSUS_TILES = {
   objects: 'objects near GEO in the register',
@@ -478,6 +500,12 @@ export const CENSUS = {
   intro: (date: string): string =>
     `${snapshotLabel(date)}. Every number here comes from the register, and every share shows what it is a share of.`,
   restTitle: 'What these numbers are, and what is voluntary',
+  kicker: '\u00A7 03 \u00B7 The census',
+  legendLabel: 'The six verdict words, each with its meaning',
+  ownersShow: (n: number): string => `Show all ${n} owner codes`,
+  ownersHide: 'Show the top 12 only',
+  ownerBar: 'Buried, uncertain, other',
+  totalLine: 'retired payloads, each with a verdict',
   fromRegister: 'Retired payloads are satellites that SATCAT or the GPZ table lists as not operational. A verdict is given only to them.',
   headings: {
     population: 'What the register holds',

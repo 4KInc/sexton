@@ -29,11 +29,20 @@ export function methodHtml(text: string = METHODOLOGY): string {
   const doc = renderDocument(text, METHOD.tableLabel);
   return `<div class="method-layout">${tocHtml(headingsOf(doc))}<article class="method">${doc}</article></div>`;
 }
-export function mountMethod(root: HTMLElement): () => void {
+/** Draws the page. `?s=<heading id>` in the address opens the page at that section (a chart's "Method §" link). */
+export function mountMethod(root: HTMLElement, query: URLSearchParams = new URLSearchParams()): () => void {
   root.innerHTML = methodHtml();
   const toc = root.querySelector<HTMLDetailsElement>('.toc')!;
   // Open on a wide screen, where it sits beside the text. Closed on a phone, where it would push the text down.
   toc.open = window.matchMedia('(min-width: 1000px)').matches;
+  // After the router has moved focus to the page heading, so the section keeps it.
+  const target = query.get('s');
+  if (target !== null && /^m-[a-z0-9-]+$/.test(target)) {
+    window.setTimeout(() => {
+      const heading = root.querySelector<HTMLElement>(`#${target}`);
+      heading?.focus();
+    }, 0);
+  }
   const onClick = (event: Event): void => {
     const link = (event.target as Element).closest<HTMLAnchorElement>('a[data-toc]');
     if (link === null) return;

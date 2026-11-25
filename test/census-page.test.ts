@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
 import { findHits } from '../scripts/check-language.ts';
-import { COMPARISONS } from '../src/ui/copy.ts';
+import { COMPARISONS, verdictCopy, VERDICT_ORDER } from '../src/ui/copy.ts';
 import type { Comparison } from '../src/ui/copy.ts';
 import { formatCount, formatShare } from '../src/ui/format.ts';
 import type { UiRegister } from '../src/ui/register.ts';
@@ -133,8 +133,16 @@ describe('what the census must say', () => {
     expect(text).toContain('18 March 2002');
     expect(text).toContain('±25 km');
   });
-  it('pairs every verdict word with its meaning', () => {
-    for (const w of ['Fallen (', 'Unquiet (', 'Shallow grave (', 'Restless (', 'Uncertain (', 'Buried (']) expect(text).toContain(w);
+  it('pairs every verdict word with its meaning once, in the legend at the top; the rows show the word only', () => {
+    const html = censusHtml(real);
+    const config = real.config;
+    for (const v of VERDICT_ORDER) {
+      const c = verdictCopy(v, config);
+      expect(html, v).toContain(`<span class="legend-word">${c.word}</span></dt><dd>${c.meaning}</dd>`);
+      expect(html.split(c.meaning).length - 1, `${v}: the meaning appears once`).toBe(1);
+      expect(text, v).not.toContain(`${c.word} (${c.meaning}`);
+    }
+    expect(html.indexOf('class="legend-dl"')).toBeLessThan(html.indexOf('class="stats"'));
   });
 });
 

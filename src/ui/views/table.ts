@@ -98,6 +98,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   // and the verdict key is a closed panel, so the table starts high on the screen.
   const config = reg.config;
   root.innerHTML =
+    `<p class="kicker">${esc(TABLE.kicker)}</p>` +
     `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, state.filters.owner !== null || state.filters.era !== null || state.filters.verdicts.length > 0 || state.filters.bones, true)}<p class="status" id="table-status" role="status"></p></div>` +
     fineHtml(reg.snapshot.set, config, [
       TABLE.intro,

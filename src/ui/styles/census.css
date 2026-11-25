@@ -1,84 +1,213 @@
-/* The census page. Colours come from tokens.css. */
+/* The census page: a register. Numbered entries, hairline rules, bars with their numbers written on them in mono. Colours come from tokens.css. */
 .census-top {
   max-width: 90ch;
-  margin: 0 0 var(--space-3);
+  margin: var(--space-1) 0 var(--space-2);
 }
 .census-top p {
-  margin: 0 0 var(--space-1);
+  margin: 0 0 4px;
+}
+.census-top p.kicker {
+  margin-bottom: 0;
 }
 .census-top .terms {
-  margin: var(--space-1) 0 0;
+  margin: 4px 0 0;
   color: var(--bone-muted);
-  font-size: 0.82rem;
+  font-size: var(--fs-12);
 }
-/* The big numbers: stones with arched tops, as on the churchyard. */
+/* The six verdict words, with their meanings, once. Every row below shows the word only. */
+.legend-dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 var(--space-4);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-1) 0 0;
+  border-top: 1px solid var(--rule);
+}
+.legend-dl-row {
+  padding: 6px 0;
+}
+.legend-dl dt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.legend-word {
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  line-height: 1.2;
+}
+.legend-dl dd {
+  margin: 2px 0 0;
+  color: var(--bone-muted);
+  font-size: var(--fs-12);
+  line-height: 1.4;
+}
+/* The big numbers: mono, with the label under them. */
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-3);
+  gap: 0 var(--space-4);
   list-style: none;
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-2);
   padding: 0;
   max-width: none;
 }
 .stat {
   display: grid;
   align-content: start;
-  gap: var(--space-1);
-  padding: var(--space-3) var(--space-4) var(--space-3);
-  background: none;
-  border: 0;
+  gap: 4px;
+  padding: var(--space-1) 0;
   border-top: 1px solid var(--rule);
-  border-radius: var(--radius);
 }
 .stat-figure {
   display: flex;
   align-items: baseline;
-  gap: var(--space-2);
-  font-family: var(--font-display);
-  font-size: 2.8rem;
-  line-height: 1;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-44);
+  font-weight: 500;
+  line-height: 1.05;
+}
+.stat-figure .num {
+  font-family: var(--font-mono);
+  font-size: 1em;
 }
 .stat-of {
-  font-size: 1.1rem;
-  color: var(--bone-muted);
+  color: var(--bone-soft);
+  font-size: var(--fs-16);
+  font-weight: 400;
 }
 .stat-label {
   color: var(--bone-muted);
+  font-size: var(--fs-14);
   line-height: 1.3;
 }
+/* An entry: a mono number, a serif heading, then the content, set off by a hairline. */
 .census-section {
-  margin: var(--space-4) 0;
-  padding: var(--space-3);
-  background: none;
-  border: 0;
+  margin: var(--space-3) 0;
+  padding: var(--space-1) 0 0;
   border-top: 1px solid var(--rule);
-  border-radius: var(--radius);
+}
+.census-section h2 {
+  margin: 0 0 var(--space-1);
+}
+.census-section .kicker {
+  margin-bottom: 4px;
 }
 .census-cols {
   columns: 2 26rem;
-  column-gap: var(--space-4);
+  column-gap: var(--space-5);
 }
 .census-cols > .census-section {
   break-inside: avoid;
-  margin-top: 0;
-}
-.census .table-wrap {
-  border-color: var(--panel-edge);
 }
 .headline {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--space-3) var(--space-5);
+  gap: var(--space-2) var(--space-5);
   align-items: start;
 }
 .headline p {
   max-width: 68ch;
 }
+/* Horizontal bars. The bar is the share of N from 0 to 100; the number is written at its end: n of N (x%). */
+.bars {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: var(--space-1) 0;
+  padding: 0;
+  max-width: none;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 9rem) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+.bar-name {
+  font-size: var(--fs-14);
+  line-height: 1.25;
+}
+/* The bar takes about two thirds of the row, and its number is written right after its end. */
+.bar-plot {
+  position: relative;
+  display: block;
+  height: 20px;
+}
+.bar-track {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 66%;
+  height: 14px;
+  border-left: 1px solid var(--rule-strong);
+  background-image: linear-gradient(var(--rule), var(--rule));
+  background-size: 100% 1px;
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+}
+.bar-fill {
+  position: relative;
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: var(--bone-soft);
+}
+/* Uncertain is a distinct grey, hatched. The same hatch marks the part of a bar that is borderline. */
+.bar-fill--uncertain {
+  background: repeating-linear-gradient(135deg, var(--bone-muted) 0 2px, var(--surface-2) 2px 5px);
+}
+.bar-hatch {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(135deg, var(--ground) 0 2px, transparent 2px 5px);
+}
+.bar-label {
+  position: absolute;
+  top: 50%;
+  left: calc(66% * var(--s) + var(--space-1));
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  line-height: 1.35;
+  text-wrap: nowrap;
+}
+.bar-n {
+  font-weight: 500;
+}
+.bar-sub {
+  color: var(--bone-muted);
+}
+.bars-total {
+  margin: 0;
+  max-width: none;
+  color: var(--bone-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+}
+/* The one short note under a chart: where the numbers come from, how sure they are, and the method link. */
+.chart-note-mono {
+  margin: var(--space-1) 0 var(--space-1);
+  max-width: none;
+  color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  line-height: 1.5;
+}
+.chart-note-mono a {
+  padding: 0 4px;
+  color: var(--bone);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+/* The validation picture: the published range above Sexton's band and its central share, on one axis from 0 to 100. */
 .vgrid {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(15rem, 1fr);
-  gap: var(--space-3) var(--space-5);
+  gap: var(--space-2) var(--space-5);
   align-items: start;
 }
 .vmain,
@@ -86,21 +215,18 @@
   min-width: 0;
 }
 .vnote {
-  padding: var(--space-3);
-  background: var(--stone);
-  border: 1px solid var(--bone-muted);
-  border-radius: var(--radius);
+  padding: 0 0 0 var(--space-2);
+  border-left: 1px solid var(--rule-strong);
 }
 .vnote h3 {
   margin-top: 0;
 }
 .vnote p {
   max-width: 60ch;
-  font-size: 0.92rem;
+  font-size: var(--fs-14);
 }
-/* The validation picture: the published range above Sexton's band and its central share, on one axis from 0 to 100. */
 .vplot {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-1);
 }
 .vplot-rows {
   position: relative;
@@ -109,18 +235,18 @@
   display: grid;
   grid-template-columns: 4.5rem minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 .vplot-name {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: var(--fs-20);
 }
 .vplot-track {
   position: relative;
   height: 4.1rem;
-  background-image: repeating-linear-gradient(90deg, var(--panel-edge) 0 1px, transparent 1px 25%);
+  background-image: repeating-linear-gradient(90deg, var(--rule) 0 1px, transparent 1px 25%);
   background-size: calc(100% + 1px) 100%;
-  border-right: 1px solid var(--panel-edge);
+  border-right: 1px solid var(--rule);
 }
 .vplot-esa {
   position: absolute;
@@ -130,19 +256,19 @@
   align-items: center;
   justify-content: center;
   background: var(--moss-deep);
-  border: 1px solid var(--moss);
-  border-radius: var(--radius);
-  font-size: 0.85rem;
-  font-weight: 600;
+  border-bottom: 2px solid var(--moss);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  font-weight: 500;
   text-wrap: nowrap;
 }
 .vplot-band {
   position: absolute;
   top: 1.45rem;
   height: 1.1rem;
-  background: var(--stone);
-  border: 1px solid var(--bone);
-  border-radius: var(--radius);
+  background: var(--surface-3);
+  border-top: 1px solid var(--bone);
+  border-bottom: 1px solid var(--bone);
 }
 .vplot-point {
   position: absolute;
@@ -155,13 +281,14 @@
 .vplot-label,
 .vplot-band-label {
   position: absolute;
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
   text-wrap: nowrap;
 }
 .vplot-label {
   top: 0;
   transform: translateX(-50%);
-  font-weight: 600;
+  font-weight: 500;
 }
 .vplot-band-label {
   bottom: 0;
@@ -170,9 +297,10 @@
 .vplot-axis {
   position: relative;
   height: 1.4rem;
-  margin-left: calc(4.5rem + var(--space-2));
+  margin-left: calc(4.5rem + var(--space-1));
   color: var(--bone-muted);
-  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
 }
 .vplot-axis span {
   position: absolute;
@@ -181,54 +309,30 @@
 }
 .vplot-caption {
   margin: 0;
-  padding-left: calc(4.5rem + var(--space-2));
+  padding-left: calc(4.5rem + var(--space-1));
   color: var(--bone-muted);
-  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
 }
 .fold {
-  margin: var(--space-4) 0 0;
-  background: none;
-  border: 0;
+  margin: var(--space-3) 0 0;
   border-top: 1px solid var(--rule);
-  border-radius: var(--radius);
 }
 .fold > summary {
-  padding: var(--space-3);
+  padding: var(--space-1) 0;
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: var(--fs-20);
   cursor: pointer;
 }
 .fold-body {
-  padding: 0 var(--space-3) var(--space-3);
+  padding: 0 0 var(--space-2);
 }
-@media (max-width: 900px) {
-  .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-2);
-  }
-  .stat {
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-  }
-  .stat-figure {
-    font-size: 2.2rem;
-  }
-  .headline,
-  .vgrid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .census-cols {
-    columns: 1;
-  }
-}
-.census-section h2 {
-  margin-bottom: var(--space-2);
-}
+/* Tables: hairlines, mono numbers. */
 .census .census-table {
   min-width: 0;
 }
-.census .census-owner {
-  min-width: 40rem;
+.census .table-wrap {
+  border: 0;
 }
 .census .num-head {
   text-align: right;
@@ -236,8 +340,91 @@
 .census .census-data > div {
   grid-template-columns: minmax(10rem, 24rem) 1fr;
 }
-.census .census-data dd {
+.census .census-data dd,
+.census .num-cell {
+  font-family: var(--font-mono);
+  font-size: var(--fs-14);
   font-variant-numeric: tabular-nums;
+}
+.census .register-table th,
+.census .register-table td {
+  border-bottom: 1px solid var(--rule);
+}
+.census .register-table thead th {
+  background: none;
+  color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.census .register-table tbody th {
+  font-weight: 400;
+}
+.census .census-owner {
+  min-width: 44rem;
+}
+/* Inline bars in the owner table: the owner's total, scaled to the largest. Moss is buried, hatched is uncertain, plain is the rest. */
+.ibar-cell {
+  width: 30%;
+  min-width: 8rem;
+}
+.ibar {
+  display: flex;
+  height: 10px;
+  background: var(--bone-muted);
+}
+.ibar-b {
+  background: var(--moss);
+}
+.ibar-u {
+  background: repeating-linear-gradient(135deg, var(--ground) 0 2px, var(--bone-muted) 2px 4px);
+}
+.owners-more {
+  margin: var(--space-1) 0 0;
+}
+@media (max-width: 900px) {
+  .legend-dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--space-2);
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--space-2);
+  }
+  .stat-figure {
+    font-size: var(--fs-28);
+  }
+  .headline,
+  .vgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vnote {
+    padding-left: var(--space-1);
+  }
+  .census-cols {
+    columns: 1;
+  }
+  .bar-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  /* On a phone the bar takes the whole row and its number sits under it. */
+  .bar-plot {
+    height: auto;
+  }
+  .bar-track {
+    position: relative;
+    top: 0;
+    width: 100%;
+  }
+  .bar-label {
+    position: static;
+    display: block;
+    margin-top: 2px;
+    transform: none;
+  }
 }
 @media (max-width: 600px) {
   .census .census-data > div {
