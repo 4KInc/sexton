@@ -60,6 +60,10 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   const main = el('main');
   document.title = `${heading(route)} · ${SITE.title}`;
   renderNav(route);
+  // `#/?cover=1` is a capture-only flag for a screenshot (the Devpost cover): the churchyard draws a compact
+  // title over the bare chart instead, so the site header is hidden here too. It never changes the page when
+  // the flag is absent, and nothing but this check reads it outside the churchyard view.
+  document.querySelector('.site-header')?.classList.toggle('visually-hidden', route.name === 'churchyard' && route.query.get('cover') === '1');
   if (route.name === 'churchyard' || route.name === 'table') lastList = { name: route.name, query: route.query };
   const back =
     route.name === 'sat'

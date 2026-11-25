@@ -430,6 +430,19 @@ export function heroHtml(reg: UiRegister): string {
   );
   return `<div class="hero"><p class="kicker">${esc(HERO.kicker)}</p><p class="hero-pitch">${esc(HERO.pitch)}</p><ul class="tiles">${tiles}</ul>${fine}</div>`;
 }
+/**
+ * True only when the hash query carries `cover=1`. Used solely to draw the cover capture (a compact title over
+ * the bare chart, with the header, readings strip and controls hidden), for screenshots such as the Devpost
+ * cover image. It never changes the page when the flag is absent.
+ */
+export function isCoverCapture(query: URLSearchParams): boolean {
+  return query.get('cover') === '1';
+}
+/** "Sexton — 36 of 131 retired GEO satellites still in or near the protected zone", for the cover capture only. */
+export function coverTitle(reg: Pick<UiRegister, 'records'>): string {
+  const s = postRuleSummary(reg.records);
+  return `${SITE.title} \u2014 ${formatCount(s.inOrNearZone)} of ${formatCount(s.postRule)} retired GEO satellites still in or near the protected zone`;
+}
 /** The verdict words with their stone shapes, in one row beside the chart. The meanings are in the guide below. */
 export function compactLegendHtml(config: Config): string {
   const items = VERDICT_ORDER.map(
@@ -460,13 +473,19 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   let state: ViewState = parseState(query);
   let selected: number | null = remembered !== null && byId.has(remembered) ? remembered : null;
   const hasStones = byId.size > 0;
+  // `?cover=1` draws the bare chart with a compact title in place of the header, the readings strip and the
+  // controls, for a screenshot (the Devpost cover). It changes nothing else: the chart, selection and filters
+  // still work as drawn, and the flag is read nowhere but here.
+  const cover = isCoverCapture(query);
+  root.classList.toggle('cover-capture', cover);
   root.innerHTML =
-    heroHtml(reg) +
+    (cover ? `<p class="cover-title">${esc(coverTitle(reg))}</p>` : heroHtml(reg)) +
     `<section class="stage" aria-label="${esc(PAGE_TITLES.churchyard)}">` +
     `<div class="toolbar">` +
     filtersHtml(reg.records, state.filters, config, hasFilters(state.filters)) +
     `<p class="status visually-hidden" id="chart-status" role="status"></p>` +
     (hasStones ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>${compactLegendHtml(config)}` : '') +
+    (hasStones ? `<div id="tour-start-host" class="toolbar-tour-start"></div>` : '') +
     `<button type="button" class="button button--quiet toolbar-guide" data-open-guide>${esc(HERO.guideHint)}</button>` +
     `</div>` +
     (hasStones
@@ -558,15 +577,19 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   // The guided tour: four steps, then free exploration. It can be skipped, and it remembers that.
   const steps = tourSteps(reg);
   const tourHost = root.querySelector<HTMLElement>('#tour-host');
+  const tourStartHost = root.querySelector<HTMLElement>('#tour-start-host');
   let tourStep: number | null = steps.length === 0 || tourSkipped() ? null : 0;
   const showTour = (focus: string | null): void => {
     if (tourHost === null) return;
-    tourHost.innerHTML = tourHtml(tourStep, steps);
+    // In free mode the single "Take the tour" button sits in the toolbar, beside the filters, so no row holds
+    // only that link. The step bar (count, text, actions) still stands above the caption, full width.
+    tourHost.innerHTML = tourStep === null ? '' : tourHtml(tourStep, steps);
+    if (tourStartHost !== null) tourStartHost.innerHTML = tourStep === null ? tourHtml(null, steps) : '';
     if (plot !== null) {
       if (tourStep === null) delete plot.dataset['tour'];
       else plot.dataset['tour'] = String(tourStep + 1);
     }
-    if (focus !== null) tourHost.querySelector<HTMLElement>(focus)?.focus();
+    if (focus !== null) (tourHost.querySelector<HTMLElement>(focus) ?? tourStartHost?.querySelector<HTMLElement>(focus))?.focus();
   };
   const goTour = (to: number | null, focus: string | null): void => {
     const before = tourStep === null ? null : steps[tourStep]!.select;
