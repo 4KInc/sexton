@@ -158,9 +158,10 @@ describe('stylesheets', () => {
   });
   it('every var(--x) is defined in tokens.css', () => {
     // The two sway variables are set per stone in a style attribute (svg/headstone.ts and views/churchyard.ts).
+    // `--minor` is the spacing of the ledger scale's minor marks (10 km as a share of the scale), set in its style attribute.
     // `--s` is each census bar's share, set in its style attribute, so the number can be written right after the bar's end.
     // The four plot variables are set on the chart's box from the drawn size (views/churchyard.ts), so the card stays inside the plot.
-    const defined = new Set([...tokensCss.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).concat(['--sway-angle', '--sway-delay', '--axis', '--plot-right', '--plot-top', '--plot-bottom', '--s']));
+    const defined = new Set([...tokensCss.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).concat(['--sway-angle', '--sway-delay', '--axis', '--plot-right', '--plot-top', '--plot-bottom', '--s', '--minor']));
     for (const f of cssFiles) {
       for (const m of stripComments(css(f)).matchAll(/var\((--[\w-]+)/g)) expect(defined.has(m[1]!), `${f}: ${m[1]}`).toBe(true);
     }

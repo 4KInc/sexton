@@ -2,7 +2,7 @@
 // functions, so tests can read it without a DOM. Sections follow design 5.6.
 // The sentences live in ../ledger-text.ts, which the MCP server shares.
 import type { SatRecord } from '../../engine/types.ts';
-import { CARD, dataAge, LEDGER, assumptionsLine, CHURCHYARD_INTRO, snapshotLabel, verdictCopy } from '../copy.ts';
+import { CARD, dataAge, LEDGER, assumptionsLine, CHURCHYARD_INTRO, METHOD_SECTIONS, NOTES, snapshotLabel, verdictCopy } from '../copy.ts';
 import { formatE, formatP, formatSigned } from '../format.ts';
 import type { CaseFile } from '../case-file.ts';
 import { CASES } from '../content.ts';
@@ -12,6 +12,7 @@ import type { Retired } from '../ledger-text.ts';
 import { renderMarkdown } from '../markdown.ts';
 import type { UiRegister } from '../register.ts';
 import { badgeHtml } from './badge.ts';
+import { noteHtml } from './note.ts';
 import { thresholdBarHtml } from './threshold.ts';
 export { eccentricityRoundingMatters, statusLines, verdictSentence };
 const row = (k: string, v: string): string => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`;
@@ -33,6 +34,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
   const pText = formatP(r.pKm, r.orbitSource.kind, edgesOf(config));
   const F = LEDGER.fields;
   const H = LEDGER.headings;
+  const date = snapshotLabel(reg.snapshot.set).replace('CelesTrak snapshot, ', '');
   const era = v.era === 'before FCC rule' ? `<p class="era-badge">${esc(CARD.beforeRule)}</p>` : '';
   const identity = section(
     'identity',
@@ -49,7 +51,8 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
         `${LEDGER.formula(config)} ${LEDGER.range(config)}`,
         marginsSentence(r, config),
         `Eccentricity e = ${formatE(r.e, config.iadc.eccentricityMax)}. The IADC limit is ${config.iadc.eccentricityMax}.`,
-      ]),
+      ]) +
+      noteHtml([LEDGER.formula(config).slice(0, -1), NOTES.perigee(config.uncertaintyKm), NOTES.source(date)], METHOD_SECTIONS.iadc),
   );
   const assumptions = section(
     'assumptions',
@@ -62,13 +65,14 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     `<p><strong>${esc(r.orbitSource.kind === 'GP' ? dataAge(r) : LEDGER.satcatSource)}</strong></p>` +
       `<dl class="ledger-data">${row(F.perigee, `${pText} km`)}${row(F.apogee, `${formatSigned(r.qKm, decimals)} km`)}${row(F.eccentricity, formatE(r.e, config.iadc.eccentricityMax))}` +
       `${row(F.perigeeAltitude, `${formatSigned(r.perigeeKm, decimals).replace('+', '')} km`)}${row(F.apogeeAltitude, `${formatSigned(r.apogeeKm, decimals).replace('+', '')} km`)}</dl>` +
-      paras(orbitNotes(r, config)),
+      paras(orbitNotes(r, config)) +
+      noteHtml([NOTES.perigee(config.uncertaintyKm), NOTES.source(date)], METHOD_SECTIONS.gp),
   );
   const sources = reg.snapshot.sources
     .map((s) => `<li><a href="${esc(s.url)}">${esc(s.file)}</a>, ${esc(LEDGER.fetched)} ${esc(s.fetchedAt)}</li>`)
     .join('');
   const snapshot = section('snapshot', H.snapshot, `${paras([LEDGER.snapshotLine(reg.snapshot.set), ...(reg.sample ? [LEDGER.sampleNote] : [])])}<ul>${sources}</ul>`);
-  const status = section('status', H.status, paras(statusLines(r, config)));
+  const status = section('status', H.status, paras(statusLines(r, config)) + noteHtml([`Status from ${r.statusSource ?? 'SATCAT'}`, NOTES.source(date)], METHOD_SECTIONS.status));
   const context = section('context', H.context, paras([CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.noRetirementDate]));
   const cite = section(
     'cite',
@@ -86,10 +90,19 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     reg.snapshot.sources.map((s) => `<li>${esc(s.file)}: <code>${esc(s.sha256)}</code></li>`).join('') +
     `</ul></footer>`;
   // The header card: who, the verdict as a badge, and the age and assumptions the verdict rests on.
+  // The register entry: a mono number, the name in IM Fell, the verdict, and a strip of readings with the age and the assumptions they rest on.
+  const readings: [string, string][] = [
+    [F.perigee, `${pText} km`],
+    [F.apogee, `${formatSigned(r.qKm, decimals)} km`],
+    [F.eccentricity, formatE(r.e, config.iadc.eccentricityMax)],
+    [H.orbit, r.orbitSource.kind === 'GP' ? dataAge(r) : LEDGER.satcatSource],
+    [H.snapshot, snapshotLabel(reg.snapshot.set)],
+    [H.assumptions, assumptionsLine(config)],
+  ];
   const head =
-    `<header class="ledger-head"><div class="ledger-head-id"><p class="ledger-name">${withSansDigits(r.name)}</p>` +
-    `<p class="ledger-norad">NORAD <span class="num">${r.norad}</span></p></div>${badgeHtml(v.verdict, config)}` +
-    `<p class="ledger-head-meta"><span>${esc(snapshotLabel(reg.snapshot.set))}</span> <span>${esc(r.orbitSource.kind === 'GP' ? dataAge(r) : LEDGER.satcatSource)}</span> <span>${esc(assumptionsLine(config))}</span></p></header>`;
+    `<header class="ledger-head"><p class="entry-no">No. ${r.norad}</p>` +
+    `<div class="ledger-head-main"><p class="ledger-name">${withSansDigits(r.name)}</p>${badgeHtml(v.verdict, config)}</div>` +
+    `<dl class="readings">${readings.map(([k, val]) => `<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join('')}</dl></header>`;
   // Two columns. Left: the verdict and the maths behind it. Right: the object, its elements, its sources and how to cite it.
   return (
     `<article class="ledger"><p class="print-title">${esc(LEDGER.printTitle)}: NORAD <span class="num">${r.norad}</span></p>` +

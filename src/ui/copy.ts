@@ -104,6 +104,8 @@ export const HERO = {
 /** The methodology page is docs/methodology.md. Only its chrome is here. */
 export const METHOD = {
   contents: 'On this page',
+  openAll: 'Open all sections',
+  closeAll: 'Close all sections',
   tableLabel: 'Table from the methodology. Scroll sideways to see every column.',
 } as const;
 export const CHART = {
@@ -441,6 +443,8 @@ export const METHOD_SECTIONS = {
   sources: 'm-sources-of-data',
   validation: 'm-validation-against-published-figures',
   status: 'm-the-status-mapping',
+  rules: 'm-two-rules-and-who-they-bind',
+  gp: 'm-perigee-and-apogee-from-gp-mean-elements',
   blind: 'm-what-the-register-cannot-see',
 } as const;
 /** The one short mono note under each chart: where the numbers come from, how sure they are, and a link to the method. */

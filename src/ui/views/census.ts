@@ -12,6 +12,7 @@ import { formatCount, formatShare } from '../format.ts';
 import { esc } from '../html.ts';
 import type { UiRegister } from '../register.ts';
 import { glyphSvg } from './badge.ts';
+import { noteHtml } from './note.ts';
 
 const H = CENSUS.headings;
 /** A count that the test reads back and compares with register.census. The path is a JSON array of keys. */
@@ -23,10 +24,6 @@ const shareCell = (n: number, of: number): string => `<td class="num-cell">${esc
 /** A numbered entry, like a line in a register: "§ 03.2", then the heading. */
 const section = (id: string, heading: string, body: string, wide = false): string =>
   `<section class="census-section${wide ? ' census-section--wide' : ''}" aria-labelledby="census-${id}"><p class="kicker">\u00A7 03.#</p><h2 id="census-${id}">${esc(heading)}</h2>${body}</section>`;
-/** A chart's one mono note: its caveats in a line, and a link to the method section where they are explained. */
-function noteHtml(parts: readonly string[], section: string): string {
-  return `<p class="chart-note-mono">${parts.map(esc).join(' \u00B7 ')} \u00B7 ${esc(NOTES.method)} <a href="#/method?s=${section}" aria-label="${esc(NOTES.link(section))}">\u00A7</a></p>`;
-}
 interface Bar {
   name: string;
   n: number;

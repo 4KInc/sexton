@@ -92,16 +92,40 @@
   .badge-word {
     color: var(--ink);
   }
-  .ledger-norad,
-  .ledger-head-meta,
+  .entry-no,
+  .readings dt,
   .badge-meaning,
   .pbar-key,
   .pbar-tick,
   .pbar-unit {
     color: var(--ink-muted);
   }
-  .ledger-head-meta {
-    border-top-color: var(--ink-muted);
+  .ledger-name {
+    font-size: 2.4rem;
+  }
+  .readings {
+    border-color: var(--ink-muted);
+  }
+  .readings dd {
+    color: var(--ink);
+  }
+  .cite {
+    background: none;
+    border-left-color: var(--ink);
+  }
+  .chart-note-mono,
+  .chart-note-mono a {
+    color: var(--ink-muted);
+  }
+  .pbar-label span {
+    border-bottom-color: var(--ink);
+  }
+  .pbar-track {
+    background-image: repeating-linear-gradient(90deg, var(--ink-muted) 0 1px, transparent 1px var(--minor));
+    border-bottom-color: var(--ink);
+  }
+  .pbar-band {
+    border-color: var(--ink);
   }
   .badge {
     background: none;

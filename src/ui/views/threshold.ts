@@ -78,7 +78,7 @@ export function thresholdBarHtml(r: Retired, config: Config): string {
     .map((t) => `<li>${esc(t)}</li>`)
     .join('');
   return (
-    `<figure class="pbar" role="img" aria-label="${esc(label)}">` +
+    `<figure class="pbar" role="img" aria-label="${esc(label)}" style="--minor:${r2((10 * 100) / (g.hiKm - g.loKm))}%">` +
     `<div class="pbar-label" aria-hidden="true" style="left:${r2(g.p)}%"><span>p = ${esc(pText)} km</span></div>` +
     `<div class="pbar-track" aria-hidden="true">${seg('zone', 0, g.zone)}${seg('shallow', g.zone, g.low)}${seg('wall', g.low, g.high)}${seg('above', g.high, 100)}${mark}</div>` +
     `<div class="pbar-ticks" aria-hidden="true">${ticks}</div>` +

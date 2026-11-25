@@ -2,11 +2,15 @@
 
 This page lists every formula, constant, assumption and source behind Sexton, and what Sexton cannot see. It is shown on the site at `#/method`.
 
-Three terms come up often:
+## At a glance
 
-- **GEO** (geostationary orbit): the circular orbit about 35,786 km above the equator, where a satellite stays over one spot.
-- **Perigee**: the lowest point of an orbit.
-- **Eccentricity**: how far an orbit is from a perfect circle. 0 is a circle.
+Three terms come up often: GEO (geostationary orbit, the circular orbit about 35,786 km above the equator where a satellite stays over one spot), perigee (the lowest point of an orbit), and eccentricity (how far an orbit is from a perfect circle, where 0 is a circle).
+
+**What we measured.** For each retired payload in the register, the perigee above GEO, taken from CelesTrak's current orbit data and set against the IADC disposal threshold T = 235 + 1000 × C_R·A/m. C_R·A/m is not known for any one satellite, so Sexton uses the range 0.012 to 0.045 m²/kg. The result is a verdict about an orbit, under those assumptions. It is never a verdict about an owner.
+
+**Known limits.** The IADC guidelines are voluntary. The FCC rule covers only satellites the FCC authorizes, launched on or after 18 March 2002. Orbit data are good to about ±25 km, and many verdicts rest on SATCAT whole-kilometre altitudes. Sexton has no retirement dates. The register only sees objects still near GEO, so every share is a share of what it sees.
+
+**What would change a verdict.** A perigee that moves more than 25 km across a band edge. A satellite whose true C_R·A/m lies in the range but on the other side of its threshold, which is the "uncertain" verdict. An eccentricity above 0.003. Newer orbit data. A different status in SATCAT or the GPZ table.
 
 ## What Sexton does
 

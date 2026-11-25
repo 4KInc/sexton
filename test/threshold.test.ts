@@ -102,14 +102,17 @@ describe('thresholdBarHtml', () => {
 });
 describe('the ledger page layout', () => {
   const page = ledgerHtml(echostar, real);
-  it('opens with a header card: name, NORAD id, verdict badge, snapshot date, data age and assumptions', () => {
+  it('opens with a register entry: a mono number, the name, the verdict badge, and a strip of readings with the age and assumptions', () => {
     const head = page.slice(page.indexOf('<header class="ledger-head">'), page.indexOf('</header>'));
-    expect(head).toContain('ECHOSTAR <span class="num">7</span>');
-    expect(head).toContain('NORAD <span class="num">27378</span>');
+    expect(head).toContain('<p class="entry-no">No. 27378</p>');
+    expect(head).toContain('<p class="ledger-name">ECHOSTAR <span class="num">7</span></p>');
     expect(head).toContain('<span class="badge-word">Unquiet</span>');
-    expect(head).toContain('CelesTrak snapshot, 22 Nov 2026');
-    expect(head).toContain('GP mean elements, epoch 2026-11-22');
-    expect(head).toContain('±25 km');
+    const labels = [...head.matchAll(/<dt>([^<]*)<\/dt><dd>([^<]*)<\/dd>/g)];
+    expect(labels.map((m) => m[1])).toEqual(['Perigee above GEO', 'Apogee above GEO', 'Eccentricity', 'Orbit source and data age', 'Snapshot and sources', 'Assumptions']);
+    expect(labels[0]![2]).toBe('+110.1 km');
+    expect(labels[3]![2]).toContain('GP mean elements, epoch 2026-11-22');
+    expect(labels[4]![2]).toBe('CelesTrak snapshot, 22 Nov 2026');
+    expect(labels[5]![2]).toContain('±25 km');
   });
   it('has two columns: the verdict and maths on the left, the object, elements and Cite this on the right', () => {
     const main = page.slice(page.indexOf('ledger-col--main'), page.indexOf('ledger-col--side'));

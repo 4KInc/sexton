@@ -24,10 +24,23 @@ export function tocHtml(entries: readonly Entry[]): string {
     .join('');
   return `<details class="toc"><summary>${esc(METHOD.contents)}</summary><nav aria-label="${esc(METHOD.contents)}"><ul>${items}</ul></nav></details>`;
 }
-/** The page body for a document text. The document is the only content, so the page cannot drift from the file. */
+/**
+ * The page body for a document text. Each section is an expander (a <details>) that holds its own heading, so a link to
+ * `#/method?s=<heading id>` can open it. "At a glance" starts open. The document is the only content, so the page cannot drift from the file.
+ */
 export function methodHtml(text: string = METHODOLOGY): string {
   const doc = renderDocument(text, METHOD.tableLabel);
-  return `<div class="method-layout">${tocHtml(headingsOf(doc))}<article class="method">${doc}</article></div>`;
+  const parts = doc.split(/(?=<h2 )/);
+  const intro = parts[0]!.startsWith('<h2 ') ? '' : parts.shift()!;
+  const body = parts
+    .map((chunk) => {
+      const end = chunk.indexOf('</h2>') + 5;
+      const glance = chunk.includes('id="m-at-a-glance"');
+      return `<details class="msec${glance ? ' msec--glance' : ''}"${glance ? ' open' : ''}><summary>${chunk.slice(0, end)}</summary><div class="msec-body">${chunk.slice(end)}</div></details>`;
+    })
+    .join('');
+  const controls = `<p class="method-controls"><button type="button" class="link-button" data-open-all>${esc(METHOD.openAll)}</button> <button type="button" class="link-button" data-close-all>${esc(METHOD.closeAll)}</button></p>`;
+  return `<div class="method-layout">${tocHtml(headingsOf(doc))}<article class="method">${intro}${controls}${body}</article></div>`;
 }
 /** Draws the page. `?s=<heading id>` in the address opens the page at that section (a chart's "Method §" link). */
 export function mountMethod(root: HTMLElement, query: URLSearchParams = new URLSearchParams()): () => void {
@@ -40,14 +53,22 @@ export function mountMethod(root: HTMLElement, query: URLSearchParams = new URLS
   if (target !== null && /^m-[a-z0-9-]+$/.test(target)) {
     window.setTimeout(() => {
       const heading = root.querySelector<HTMLElement>(`#${target}`);
+      heading?.closest('details')?.setAttribute('open', '');
       heading?.focus();
     }, 0);
   }
   const onClick = (event: Event): void => {
-    const link = (event.target as Element).closest<HTMLAnchorElement>('a[data-toc]');
+    const el = event.target as Element;
+    const all = el.closest('[data-open-all], [data-close-all]');
+    if (all !== null) {
+      for (const d of root.querySelectorAll<HTMLDetailsElement>('details.msec')) d.open = all.hasAttribute('data-open-all');
+      return;
+    }
+    const link = el.closest<HTMLAnchorElement>('a[data-toc]');
     if (link === null) return;
     event.preventDefault();
     const heading = root.querySelector<HTMLElement>(`#${CSS.escape(link.dataset['toc']!)}`);
+    heading?.closest('details')?.setAttribute('open', '');
     heading?.focus();
     toc.open = window.matchMedia('(min-width: 1000px)').matches;
   };
