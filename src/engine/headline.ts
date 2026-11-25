@@ -61,6 +61,10 @@ export interface DisposalRate {
   central: number;
   /** Buried or uncertain if every perigee is 25 km higher. The most the uncertainty allows. */
   upper: number;
+  /** Verdicts of the counted payloads. Adds up to `n`. */
+  byVerdict: VerdictCounts;
+  /** Counted payloads within the uncertainty of a band edge (the verdict is borderline). */
+  borderline: number;
 }
 
 /**
@@ -71,7 +75,7 @@ export interface DisposalRate {
 export function disposalRate(records: readonly SatRecord[], config: Config = CONFIG): DisposalRate {
   const year = config.validation.afterLaunchYear;
   const u = config.uncertaintyKm;
-  const out: DisposalRate = { afterLaunchYear: year, n: 0, noLaunchYear: 0, lower: 0, central: 0, upper: 0 };
+  const out: DisposalRate = { afterLaunchYear: year, n: 0, noLaunchYear: 0, lower: 0, central: 0, upper: 0, byVerdict: zero(), borderline: 0 };
   for (const r of records) {
     if (!isRetired(r)) continue;
     if (r.launchYear === null) {
@@ -80,6 +84,8 @@ export function disposalRate(records: readonly SatRecord[], config: Config = CON
     }
     if (r.launchYear <= year) continue;
     out.n++;
+    out.byVerdict[r.verdict.verdict]++;
+    if (r.verdict.borderline) out.borderline++;
     if (r.verdict.verdict === 'buried') out.central++;
     if (classifyOrbit({ p: r.pKm - u, q: r.qKm - u, e: r.e }, config) === 'buried') out.lower++;
     const high = classifyOrbit({ p: r.pKm + u, q: r.qKm + u, e: r.e }, config);

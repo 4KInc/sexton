@@ -20,7 +20,7 @@ export const SCALE = {
   edgePx: 44,
 } as const;
 /** Tick labels in the high ground, besides the break itself (+400) and the top limit. */
-export const HIGH_TICKS_KM: readonly number[] = [500, 600, 800, 1000];
+export const HIGH_TICKS_KM: readonly number[] = [600, 1000];
 export const LAYOUT = {
   top: 30,
   bottom: 40,

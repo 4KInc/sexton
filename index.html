@@ -17,6 +17,16 @@
         <pattern id="stone-hatch" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line class="stone-hatch-line" x1="0" y1="0" x2="0" y2="3.2" />
         </pattern>
+        <pattern id="wall-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect class="hatch-bg" width="7" height="7" />
+          <line class="hatch-line" x1="0" y1="0" x2="0" y2="7" />
+        </pattern>
+        <linearGradient id="sky-fade" x1="0" y1="0" x2="0" y2="1"><stop class="sky-stop-top" offset="0" /><stop class="sky-stop-bottom" offset="1" /></linearGradient>
+        <radialGradient id="moon-fade"><stop class="moon-stop-in" offset="0" /><stop class="moon-stop-out" offset="1" /></radialGradient>
+        <radialGradient id="halo-fade"><stop class="halo-stop-in" offset="0" /><stop class="halo-stop-out" offset="1" /></radialGradient>
+        <radialGradient id="fog-fade"><stop class="fog-stop-in" offset="0" /><stop class="fog-stop-out" offset="1" /></radialGradient>
+        <clipPath id="stone-clip"><path d="M -5 0 L -5 -9 A 5 5 0 0 1 5 -9 L 5 0 Z" /></clipPath>
+        <clipPath id="above-ground"><rect x="-20" y="-40" width="40" height="40" /></clipPath>
       </defs>
     </svg>
     <div id="sample-banner" class="sample-banner" role="status" hidden></div>

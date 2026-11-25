@@ -267,7 +267,7 @@ export function validationHtml(records: readonly SatRecord[], comparisons: reado
     else if (centre > hi) verdict = VALIDATION.above;
     else verdict = pct(r.upper) >= lo ? VALIDATION.partly : VALIDATION.below;
   }
-  return `<div class="vgrid"><div class="vmain">${validationChartHtml(r, published)}${noteHtml([NOTES.validation(config.uncertaintyKm)], METHOD_SECTIONS.validation)}<dl class="ledger-data census-data">${rows}</dl><p data-validation="verdict"><strong>${esc(verdict)}</strong></p></div>${head}</div>`;
+  return `<div class="vgrid"><div class="vmain">${validationChartHtml(r, published)}${noteHtml([NOTES.validation(config.uncertaintyKm)], METHOD_SECTIONS.validation)}<dl class="ledger-data census-data">${rows}</dl><p data-validation="verdict"><strong>${esc(verdict)}</strong></p><p data-validation="breakdown">${esc(VALIDATION.breakdown(r, config.uncertaintyKm))}</p></div>${head}</div>`;
 }
 /** The first thing on the census page: the group launched on or after the rule date, with the older group as context. */
 export function headlineHtml(records: readonly SatRecord[], config: Config, date = ''): string {

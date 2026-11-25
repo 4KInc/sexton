@@ -9,7 +9,6 @@ import { SCALE } from './svg/scale.ts';
 export const SITE = {
   title: 'Sexton',
   url: 'https://4kinc.github.io/sexton/',
-  tagline: 'Register of retired geostationary satellites',
   skipToMain: 'Skip to main content',
   skipToTable: 'Skip the churchyard drawing and go to the table view',
   sampleBanner: 'Sample data for layout only. This is not the register.',
@@ -75,7 +74,6 @@ export const TOUR = {
 /** The hero of the churchyard view: one caption sentence, three tiles that link to the census, and the fine print. */
 export const HERO = {
   kicker: '\u00A7 01 \u00B7 The churchyard',
-  pitch: 'Which retired geostationary satellites were buried above the belt, and which still drift in it.',
   caption: 'Each stone is a retired satellite, as tall as its perigee above GEO. The road is the protected zone.',
   /** First appearance of GEO and perigee, in small type under the caption (language.md). */
   postRule: { label: 'retired payloads launched after the FCC rule', sub: 'On or after 18 March 2002.' },
@@ -124,10 +122,7 @@ export const CHART = {
   axisTitle: 'Perigee above GEO, km',
   yearAxisTitle: 'Launch year',
   unknownYear: 'Unknown',
-  unknownYearTitle: 'Launch year unknown',
   geoLabel: 'GEO',
-  fccLine: 'FCC minimum-perigee rule (launches from 18 Mar 2002)',
-  fccLineShort: 'FCC rule line',
   /** Drawn in small mono capitals on the chart. */
   fccLabel: 'FCC rule \u00B7 18 Mar 2002',
   zoneLabel: (km: number): string => `Protected zone \u00B1${km} km`,
@@ -216,7 +211,6 @@ export const LEGEND = {
   bones: 'Small diamond: unmarked bones, a rocket body or a piece of debris. They carry no name or verdict and show only when switched on.',
   offScale: 'A count at the top or bottom edge: objects above the top limit or below the bottom limit of the scale. Their exact values are on the card and in the ledger.',
   unevenYears: 'Busy years get wider columns, so the spacing between years is not to scale.',
-  highGround: 'Above +400 km the scale is compressed, and a zigzag marks the break. The same height there means a larger distance than below the break.',
 } as const;
 
 export function assumptionsLine(config: Config): string {
@@ -495,9 +489,14 @@ export const VALIDATION = {
   sextonValue: (n: number, of: number): string => `${formatCount(n)} of ${formatCount(of)} (${((100 * n) / of).toFixed(1)}%)`,
   bandValue: (lo: number, hi: number, of: number): string => `${VALIDATION.sextonValue(lo, of)} to ${VALIDATION.sextonValue(hi, of)}`,
   rangeValue: (lo: number, hi: number): string => `${lo}% to ${hi}%`,
-  below: 'Sexton\u2019s share, and its whole band, are below the published range. Sexton has not adjusted its method to match. Possible reasons, none of them tested, are on the method page.',
+  below: 'Sexton\u2019s share, and its whole band, are below the published range. Sexton has not adjusted its method to match.',
+  /** What the 45 are, from the data alone. `ok` counts uncertain as a success. */
+  breakdown: (d: { n: number; byVerdict: Record<string, number>; borderline: number; upper: number }, u: number): string => {
+    const b = d.byVerdict;
+    return `Of ${d.n}: ${b['buried']} buried, ${b['uncertain']} uncertain, ${b['shallow grave']} shallow grave, ${b['unquiet']} unquiet. Counting uncertain as a success: ${b['buried']} to ${b['buried']! + b['uncertain']!}. ${d.borderline} are within ${u} km of a band edge; moving every perigee ${u} km gives at most ${d.upper}. The ${b['unquiet']} unquiet payloads are inside the protected zone, none near its edge.`;
+  },
   inside: 'Sexton\u2019s share is inside the published range. Sexton has not adjusted its method to match.',
-  partly: 'Sexton\u2019s band overlaps the published range, but its share is outside it. Sexton has not adjusted its method to match. Possible reasons, none of them tested, are on the method page.',
+  partly: 'Sexton\u2019s band overlaps the published range, but its share is outside it. Sexton has not adjusted its method to match.',
   above: 'Sexton\u2019s share is above the published range. Sexton has not adjusted its method to match.',
   noGroup: (year: number): string => `No retired payload in the register was launched after ${year}.`,
   noPublished: 'No published range has been checked against its source yet.',
@@ -510,7 +509,6 @@ export const HEADLINE = {
   zone: (share: string): string =>
     `${share} sit in or near the protected zone: unquiet or shallow grave. Their perigee is below the IADC disposal threshold under the stated assumptions.`,
   caption: 'Retired payloads launched on or after 18 March 2002, by verdict',
-  columns: { verdict: 'Verdict', count: 'Retired payloads', share: 'Share of this group' },
   predate: (n: number, retired: number): string =>
     `${formatCount(n)} of ${formatCount(retired)} retired payloads predate any guideline: they were launched before 18 March 2002. This is context, not a failure. Their verdicts are in the tables below.`,
   unknownLaunch: (n: number): string => `${formatCount(n)} retired payloads have no launch date, so they are in neither group.`,

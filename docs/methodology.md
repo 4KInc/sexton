@@ -202,7 +202,7 @@ A real SATCAT status is never overridden. No operational payload in SATCAT was l
 
 - **Height** is perigee above GEO. The scale is linear from −300 to +400 km. Above +400 km it is compressed up to +1,000 km, and a zigzag marks the break. The same height on the high ground means a larger distance than below the break. Objects beyond either end are counted at the edge. Their exact values are on the card and in the ledger.
 - **Columns** are launch years. Busy years get wider columns, so the spacing between years is not to scale.
-- **Moss** is years since launch, in four steps: under 10, 10 to 19, 20 to 29 and 30 or more.
+- **Moss** is years since launch, in four steps: under 10, 10 to 19, 20 to 29 and 30 or more. Lantern stones carry no moss, so they draw in lantern alone. Their years are on the card.
 - **Sway** marks eccentricity above 0.003.
 - **Dotted bar** marks a borderline verdict.
 
@@ -215,22 +215,24 @@ Sexton's shares are checked for plausibility against a published range. The chec
 **What Sexton counts.** Retired payloads launched after 2007 (`validation.afterLaunchYear`). Sexton has no retirement dates, so launch year stands in for "retired after 2007". A satellite launched in 2008 may have reached the end of its operation in any later year, and one launched earlier may have reached it after 2007 as well. The two groups are not the same.
 **Sexton's result, snapshot 2026-11-22.** 27 of 45 retired payloads launched after 2007 are buried (60.0%). The band for the ±25 km mean-element uncertainty moves every perigee and apogee down or up by 25 km and classifies again. It runs from 24 of 45 (53.3%) to 29 of 45 (64.4%). The upper end counts buried and uncertain, because an uncertain perigee is above the low end of the IADC threshold band. One satellite is 2.2 percentage points of 45.
 **ESA.** ESA's Annual Space Environment Report, Issue 9.1, 21 October 2025, Executive summary, page 7 of 146: "Between 85% and 100% of all payloads reaching end-of-life during the last decade in the GEO protected region attempt to comply with space debris mitigation measures. Between 70% and 95% do so successfully, with the compliance trend asymptotically increasing, but notable exceptions in 2015 and 2022." Section 6.2 (page 131) defines a successful attempt as one where the payload clears the GEO protected region in line with the IADC formulation, the same formula Sexton uses. So 70% to 95% is a range over the years of the last decade. It is not one rate. Issue 10 (8 September 2026, page 7 of 152) gives "between 70% and 90%" for the same sentence. Sexton shows the 2025 report's range because the project's brief names that report. Both are checked in the documents.
-**Roberts (2025).** The paper has not been opened by anyone on this project. The Georgia Tech page lists only title, date and author. A Roberts figure for satellites retired after 2007 was reported to Sexton's author. It has not been found in any source that was opened. It is not shown, and the site says the comparison is pending a checked source. Because the paper was not opened, Sexton cannot say that its method is the same as Roberts' method. Sexton's method is the IADC formula and the 0.003 eccentricity limit, in the texts listed under Sources.
-**Where Sexton falls.** 60.0%, and the whole band from 53.3% to 64.4%, is below ESA's range of 70% to 95%. Sexton did not change its method, its assumptions or its threshold to move the number. These are possible reasons. None of them has been tested:
-- The groups differ. ESA counts payloads reaching end of life in the last decade. Sexton counts payloads launched after 2007 that SATCAT or the GPZ table lists as not operational.
-- The register only sees objects still near GEO. A payload moved far above GEO may be missing, and a disposal that went well is more likely to be missing than one that did not. That would lower Sexton's share.
-- Sexton counts "buried" only when the perigee is above the top of the IADC threshold band for every assumed C_R·A/m (280 km above GEO). One payload in the group is "uncertain" instead. ESA's page 131 gives the same formula, and the sections read do not say which C_R·A/m ESA uses for each object.
-- The group is small (45 payloads). Counts of this size move by several percentage points with one satellite.
-- Some SATCAT "not operational" payloads may never have reached a disposal manoeuvre. Sexton cannot tell them from payloads that were disposed of low.
+**Roberts (2025).** The paper has not been opened by anyone on this project. The Georgia Tech page lists only title, date and author. A Roberts figure for satellites retired after 2007 was reported to Sexton's author, but it has not been found in any source that was opened. It is not shown, and the site says the comparison is pending a checked source. Sexton cannot say that its method is Roberts' method. Sexton's method is the IADC formula and the 0.003 eccentricity limit, in the texts listed under Sources.
+**Where Sexton falls.** 60.0%, and the whole band (53.3% to 64.4%), is below ESA's 70% to 95%. Sexton did not change its method to move the number. The 45 payloads, snapshot 2026-11-22:
+- **Verdicts.** 27 buried, 1 uncertain, 1 shallow grave, 16 unquiet. Counting uncertain as a success gives 27 to 28 of 45 (60.0% to 62.2%).
+- **Borderline.** 5 of 45 are within 25 km of a band edge: 3 buried (281, 294 and 304 km above GEO, against the 280 km top of the band), the uncertain one (276 km) and the shallow grave (241 km). Moving every perigee 25 km the favourable way gives at most 29 of 45 (64.4%) buried or uncertain. 70% of 45 is 31.5, so 32 would be needed.
+- **Unquiet.** The other 16 have perigees from −435 to +162 km above GEO. The highest (ANGOSAT 1) is 38 km below the 200 km zone edge, so none is borderline. 13 have GP mean elements, 3 have SATCAT altitudes only.
+
+How the groups differ:
+- **Objects.** ESA counts "payloads reaching end-of-life during the last decade in the GEO protected region" (page 7). Sexton counts retired payloads launched after 2007 and still near GEO.
+- **Threshold.** ESA's page 131 uses the IADC formulation, as Sexton does. Sexton calls a payload buried only above 280 km, the top of the band. The sections read do not say which C_R·A/m ESA uses. Here that moves at most 1 payload.
+- **Date.** ESA counts by end-of-life. Sexton has no retirement dates, so it uses launch year. It reads each orbit at the snapshot date.
+
+One satellite is 2.2 percentage points of 45. The data do not say why the 16 are unquiet.
 ## Font
-
-Three fonts are used, all under the SIL Open Font License 1.1 and all self-hosted, so the site loads no font from another server. The display serif is IM FELL English, designed by Igino Marini (copyright 2010). The body text is IBM Plex Sans and every reading (numbers, units, dates, NORAD ids) is IBM Plex Mono, both by IBM Corp. (copyright 2017). The licence text is in the repository at `src/ui/fonts/OFL.txt`, and `docs/credits.md` records where the files came from.
-
+IM FELL English (Igino Marini, 2010), IBM Plex Sans and IBM Plex Mono (IBM Corp., 2017), all under the SIL Open Font License 1.1 and self-hosted, so the site loads no font from another server. The licence is `src/ui/fonts/OFL.txt`. `docs/credits.md` records where the files came from.
 ## Credits
 
 - **Thomas González Roberts** (Georgia Tech) for the idea of auditing GEO disposal against the IADC guidelines. He published that work as "Assessing Compliance with Post-mission Disposal Guidelines in Geosynchronous Orbit" (IAA Space Traffic Management Conference, March 2025). Sexton is a public, per-satellite view of that kind of audit. The paper itself could not be opened, so Sexton's formulas come from the IADC and FCC texts listed under Sources, not from the paper. Any error in Sexton is Sexton's own, not Roberts'.
 - **CelesTrak** (T.S. Kelso) for SATCAT, the GP data and the GPZ table.
-- **IM FELL English**, Igino Marini, and **IBM Plex Sans** and **IBM Plex Mono**, IBM Corp., all under the SIL Open Font License 1.1.
 
 ## Sources
 
@@ -243,8 +245,8 @@ A link is listed only if it was opened on 2026-11-23. A link that could not be o
 | IADC Space Debris Mitigation Guidelines, IADC-02-01 Revision 2 (March 2020), as hosted by the NASA Orbital Debris Program Office | https://orbitaldebris.jsc.nasa.gov/library/IADC-Space-Debris-Guidelines-Revision-2.pdf | Opened. Section 2 (page 6) says organisations are "encouraged" to use the guidelines. The GEO formula and the 0.003 limit are on page 11 of the document. This is an older revision than the current one. |
 | IADC Space Debris Mitigation Guidelines, current revision, on the IADC site | LINK NEEDED | iadc-home.org returned 403 Forbidden. |
 | ESA Space Environment Report 2025, summary page | https://www.esa.int/Space_Safety/Space_Debris/ESA_Space_Environment_Report_2025 | Opened. |
-| ESA's Annual Space Environment Report, Issue 9.1, 21 October 2025 | https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I9R1_20251021.pdf | Opened 2026-11-24. Executive summary, page 7 of 146: the 70% to 95% range for payloads in the GEO protected region. Section 6.2 (page 131 of 146) gives the IADC formula for GEO and defines a successful attempt. |
-| ESA's Annual Space Environment Report, Issue 10, 8 September 2026 | https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I10R1_20260908.pdf | Opened 2026-11-24. Executive summary, page 7 of 152: the same sentence gives 70% to 90%. |
+| ESA's Annual Space Environment Report, Issue 9.1, 21 October 2025 | https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I9R1_20251021.pdf | Opened 2026-11-24. Page 7 of 146: the 70% to 95% range. Section 6.2 (page 131): the IADC formula for GEO, and what a successful attempt is. |
+| ESA's Annual Space Environment Report, Issue 10, 8 September 2026 | https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I10R1_20260908.pdf | Opened 2026-11-24. Page 7 of 152: the same sentence gives 70% to 90%. |
 | Roberts, "Assessing Compliance with Post-mission Disposal Guidelines in Geosynchronous Orbit", IAA Space Traffic Management Conference, March 2025 | https://iac.gatech.edu/publications/pub/8089 | Opened. It is a listing page (title, date, author), not the paper. A link to the paper is LINK NEEDED. |
 | CelesTrak SATCAT format | https://celestrak.org/satcat/satcat-format.php | Opened. Field list, with altitudes in kilometres. |
 | CelesTrak SATCAT operational status codes | https://celestrak.org/satcat/status.php | Opened. Gives the meaning of `+`, `-`, `P`, `B`, `S`, `X`, `D` and `?`. |

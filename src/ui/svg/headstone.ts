@@ -12,14 +12,10 @@ const ARCH = H - HALF; // where the rounded top starts
 /** Upright stone outline: straight sides, rounded top. */
 export const STONE_PATH = `M ${-HALF} 0 L ${-HALF} ${-ARCH} A ${HALF} ${HALF} 0 0 1 ${HALF} ${-ARCH} L ${HALF} 0 Z`;
 
+/** The clip paths and gradients live in index.html's zero-size SVG (`.shared-defs`), so each chart does not carry its own copy. */
 export const CLIP_ID = 'stone-clip';
 /** Clips everything below the base line, so a sunk stone shows only its top. */
 export const ABOVE_GROUND_ID = 'above-ground';
-/** Shared <defs>: the clip used for moss. */
-export const stoneDefs = (): string =>
-  `<clipPath id="${CLIP_ID}"><path d="${STONE_PATH}"/></clipPath>` +
-  `<clipPath id="${ABOVE_GROUND_ID}"><rect x="-20" y="-40" width="40" height="40"/></clipPath>`;
-
 /** A jagged moss patch along the base, covering `coverage` of the stone's height. */
 function mossPath(coverage: number): string {
   const h = H * coverage;
@@ -43,10 +39,11 @@ export interface GlyphOptions {
 
 /** The stone itself. Moss is clipped to the upright outline. */
 export function stoneBody({ verdict, moss }: GlyphOptions): string {
+  const mossG = moss > 0 ? `<g clip-path="url(#${CLIP_ID})"><path class="moss" d="${mossPath(MOSS_COVERAGE[moss])}"/></g>` : '';
   const upright = (extra: string, className: string): string =>
     `<g class="stone-shape ${className}">` +
     `<path class="stone-body" d="${STONE_PATH}"/>` +
-    (moss > 0 ? `<g clip-path="url(#${CLIP_ID})"><path class="moss" d="${mossPath(MOSS_COVERAGE[moss])}"/></g>` : '') +
+    mossG +
     extra +
     `</g>`;
   switch (verdict) {
@@ -60,7 +57,7 @@ export function stoneBody({ verdict, moss }: GlyphOptions): string {
       return (
         `<g class="stone-shape stone--shallow"><g clip-path="url(#${ABOVE_GROUND_ID})"><g transform="translate(0 ${sink})">` +
         `<path class="stone-body" d="${STONE_PATH}"/>` +
-        (moss > 0 ? `<g clip-path="url(#${CLIP_ID})"><path class="moss" d="${mossPath(MOSS_COVERAGE[moss])}"/></g>` : '') +
+        mossG +
         `</g></g><path class="mound" d="M ${-HALF - 4} 0 Q 0 -6 ${HALF + 4} 0 Z"/></g>`
       );
     }
@@ -75,9 +72,7 @@ export function stoneBody({ verdict, moss }: GlyphOptions): string {
       // Lying flat on its side, resting on the ground line.
       return `<g class="stone-shape stone--fallen"><g transform="translate(${-H / 2} ${-HALF}) rotate(90)">` +
         `<path class="stone-body" d="${STONE_PATH}"/>` +
-        (moss > 0
-          ? `<g clip-path="url(#${CLIP_ID})"><path class="moss" d="${mossPath(MOSS_COVERAGE[moss])}"/></g>`
-          : '') +
+        mossG +
         `</g></g>`;
   }
 }

@@ -416,9 +416,9 @@ describe('labels and landmarks', () => {
 
 describe('the churchyard drawing', () => {
   const svg = chartSvg(real, false, null);
-  it('is a named group with a title and a description', () => {
-    expect(svg).toMatch(/<svg[^>]*role="group"[^>]*aria-labelledby="chart-title chart-desc"/);
-    expect(svg).toMatch(/<title id="chart-title">[^<]+<\/title>/);
+  it('is a named group with an aria-label and a description, and no <title> (it would show as a native tooltip)', () => {
+    expect(svg).toMatch(/<svg[^>]*role="group"[^>]*aria-label="[^"]+"[^>]*aria-describedby="chart-desc"/);
+    expect(svg).not.toContain('<title');
     expect(svg).toMatch(/<desc id="chart-desc">[^<]+<\/desc>/);
   });
   it('every stone is a link with a spoken label that carries the name, the verdict word and the perigee', () => {

@@ -37,10 +37,12 @@ import { badgeHtml, glyphSvg } from './badge.ts';
 import { fineHtml } from './fine.ts';
 import { moveStep, rememberSkip, tourHtml, tourSkipped, tourSteps } from './tour.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
+import { axisText, zoneNames } from '../svg/axis.ts';
+import type { AxisText } from '../svg/axis.ts';
 import { bandsOf } from '../svg/bands.ts';
-import { stoneBody, stoneDefs } from '../svg/headstone.ts';
+import { stoneBody } from '../svg/headstone.ts';
 import { placeLabels } from '../svg/labels.ts';
-import type { LabelPlacement } from '../svg/labels.ts';
+import type { Box, LabelPlacement } from '../svg/labels.ts';
 import { layoutStones, nextInNav, NAV_KEYS, navSort } from '../svg/layout.ts';
 import type { NavItem, Placed } from '../svg/layout.ts';
 import {
@@ -96,7 +98,7 @@ function fogSvg(x: number, w: number, top: number, bottom: number): string {
   };
   return `<g class="fog" clip-path="url(#fog-clip)" aria-hidden="true"><clipPath id="fog-clip"><rect x="${f(x)}" y="${f(top)}" width="${f(w)}" height="${f(h)}"/></clipPath>${layer('fog-layer--a', 6, 0.2)}${layer('fog-layer--b', 4, 0.12)}</g>`;
 }
-function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
+function bandsSvg(config: Config, cols: Columns, narrow: boolean, stones: readonly Pos[], edges: readonly Box[]): string {
   const x = cols.gutter;
   const w = cols.width - cols.gutter - LAYOUT.right;
   const plotTop = LAYOUT.top;
@@ -106,38 +108,36 @@ function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
   const skyBottom = yOf(config.thresholdHighKm);
   out.push(`<rect class="sky" x="${f(x)}" y="${f(plotTop)}" width="${f(w)}" height="${f(skyBottom - plotTop)}"/>`);
   out.push(`<ellipse class="moon-glow" cx="${f(x + w * 0.86)}" cy="${f(plotTop + 70)}" rx="${f(w * 0.13)}" ry="110"/>`);
+  const zone = config.protectedZoneKm;
+  const ticks = [...HIGH_TICKS_KM, SCALE.linearMaxKm, config.thresholdHighKm, config.thresholdLowKm, zone, 0, -zone, SCALE.minKm];
+  const tickTexts = ticks.map((km) => axisText(formatSigned(km, 0), x - 6, yOf(km) + 4, 'end', 'tick'));
+  const geo = axisText(CHART.geoLabel, x + 4, yOf(0) - 4, 'start', 'tick');
+  const roadText = CHART.zoneLabel(zone);
+  const roadTop = yOf(zone);
+  const road = axisText(roadText, x + 8, roadTop + 14, 'start', 'name');
+  const names = narrow ? [] : zoneNames(config, x, [...tickTexts.map((t) => t.box), geo.box, road.box, ...edges], stones, CHART.highGround);
   for (const band of bandsOf(config)) {
     // The top band reaches up into the strip for off-scale stones, and the bottom band down into its strip.
     const y1 = band.toKm >= SCALE.maxKm ? plotTop : yOf(band.toKm);
     const y0 = band.fromKm <= SCALE.minKm ? plotBottom : yOf(band.fromKm);
-    const copy = bandCopy(band.id, config);
     out.push(`<rect class="band band--${band.id}" x="${f(x)}" y="${f(y1)}" width="${f(w)}" height="${f(y0 - y1)}"/>`);
     if (band.id === 'road') {
       out.push(fogSvg(x, w, y1, y0));
       // A crisp edge on both sides of the road, so the protected zone reads at a glance.
       out.push(`<line class="road-edge" x1="${f(x)}" x2="${f(x + w)}" y1="${f(y1)}" y2="${f(y1)}"/><line class="road-edge" x1="${f(x)}" x2="${f(x + w)}" y1="${f(y0)}" y2="${f(y0)}"/>`);
-      // The band names itself, in small mono capitals, at its upper left, where it is in view when the page opens.
-      out.push(`<text class="zone-label" x="${f(x + 10)}" y="${f(y1 + 16)}">${esc(CHART.zoneLabel(config.protectedZoneKm))}</text>`);
-    }
-    if (!narrow) {
-      // The name sits in the linear part of its band.
-      const ly1 = band.toKm > SCALE.linearMaxKm ? yBreak() : y1;
-      const ly0 = band.fromKm <= SCALE.minKm ? yOf(SCALE.minKm) : y0;
-      out.push(`<text class="band-name" x="8" y="${f((ly0 + ly1) / 2 + 4)}">${esc(copy.short)}</text>`);
+      out.push(`<text class="zone-label" x="${f(road.x)}" y="${f(road.y)}">${esc(roadText)}</text>`);
     }
   }
   // Edge lines and tick numbers. 0 is GEO. +400 is the break. Ticks above it are on the compressed scale.
-  const zone = config.protectedZoneKm;
-  const ticks = [...HIGH_TICKS_KM, SCALE.linearMaxKm, config.thresholdHighKm, config.thresholdLowKm, zone, 0, -zone, SCALE.minKm];
-  for (const km of ticks) {
+  for (const [i, km] of ticks.entries()) {
     const y = f(yOf(km));
     const high = km > SCALE.linearMaxKm;
     // Lines at the real edges and limits only. Interior high-ground ticks are just labels.
     if (km !== SCALE.linearMaxKm && !(high && km !== SCALE.maxKm)) {
       out.push(`<line class="${km === 0 ? 'edge edge--geo' : 'edge'}" x1="${f(x)}" x2="${f(x + w)}" y1="${y}" y2="${y}"/>`);
     }
-    out.push(`<text class="${high ? 'tick tick--high' : 'tick'}" x="${f(x - 6)}" y="${f(yOf(km) + 4)}" text-anchor="end">${esc(formatSigned(km, 0))}</text>`);
-    if (km === 0) out.push(`<text class="tick tick--geo" x="${f(x + 4)}" y="${f(yOf(km) - 4)}">${esc(CHART.geoLabel)}</text>`);
+    out.push(`<text class="${high ? 'tick tick--high' : 'tick'}" x="${f(x - 6)}" y="${f(yOf(km) + 4)}" text-anchor="end">${esc(tickTexts[i]!.text)}</text>`);
+    if (km === 0) out.push(`<text class="tick tick--geo" x="${f(geo.x)}" y="${f(geo.y)}">${esc(geo.text)}</text>`);
   }
   // The y axis as an instrument scale: a rule, a mark at every labelled tick, and a minor mark every 50 km in the linear part.
   out.push(`<line class="scale-line" x1="${f(x)}" x2="${f(x)}" y1="${f(plotTop)}" y2="${f(plotBottom)}"/>`);
@@ -146,7 +146,7 @@ function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
     out.push(`<line class="${major ? 'scale-mark' : 'scale-minor'}" x1="${f(x - (major ? 6 : 3))}" x2="${f(x)}" y1="${f(yOf(km))}" y2="${f(yOf(km))}"/>`);
   }
   out.push(breakMark(x, x + w, yBreak()));
-  if (!narrow) out.push(`<text class="break-label" x="8" y="${f(yBreak() - 8)}">${esc(CHART.highGround)}</text>`);
+  for (const [i, t] of names.entries()) out.push(`<text class="${i === 0 ? 'break-label' : 'band-name'}" x="${f(t.x)}" y="${f(t.y)}">${esc(t.text)}</text>`);
   return out.join('');
 }
 function yearAxisSvg(cols: Columns): string {
@@ -157,7 +157,7 @@ function yearAxisSvg(cols: Columns): string {
     out.push(`<line class="${c.from !== null && c.from % 5 === 0 ? 'scale-mark' : 'scale-minor'}" x1="${f(c.x + c.width / 2)}" x2="${f(c.x + c.width / 2)}" y1="${f(base)}" y2="${f(base + (c.from !== null && c.from % 5 === 0 ? 6 : 3))}"/>`);
     const cx = f(c.x + c.width / 2);
     if (c.from === null) {
-      out.push(`<text class="tick" x="${cx}" y="${f(y)}" text-anchor="middle"><title>${esc(CHART.unknownYearTitle)}</title>${esc(CHART.unknownYear)}</text>`);
+      out.push(`<text class="tick" x="${cx}" y="${f(y)}" text-anchor="middle">${esc(CHART.unknownYear)}</text>`);
     } else if (c.from % 5 === 0) {
       out.push(`<text class="tick" x="${cx}" y="${f(y)}" text-anchor="middle">${c.from}</text>`);
     }
@@ -177,7 +177,7 @@ function fccLineSvg(config: Config, cols: Columns, narrow: boolean): string {
   const label = narrow
     ? ''
     : `<text class="fcc-label" x="${f(flip ? x - 5 : x + 5)}" y="${f(y0 - 10)}" text-anchor="${flip ? 'end' : 'start'}">${esc(CHART.fccLabel)}</text>`;
-  return `<g class="fcc"><line class="fcc-line" x1="${f(x)}" x2="${f(x)}" y1="${f(y0)}" y2="${f(y1)}"/><title>${esc(CHART.fccLine)}</title>${label}</g>`;
+  return `<g class="fcc"><line class="fcc-line" x1="${f(x)}" x2="${f(x)}" y1="${f(y0)}" y2="${f(y1)}"/>${label}</g>`;
 }
 
 interface Pos {
@@ -208,7 +208,10 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
   const v = r.verdict;
   const text = pText(r, config);
   const label = stoneLabel(r.name, v.verdict, spokenKm(text), off, v.borderline);
-  const body = stoneBody({ verdict: v.verdict, moss: mossStep(v.yearsSinceLaunch) });
+  const story = isStory(r);
+  // A story stone draws only in lantern, so it carries no moss (green). Its years since launch are on its card.
+  const body = stoneBody({ verdict: v.verdict, moss: story ? 0 : mossStep(v.yearsSinceLaunch) });
+  
   const angle = swayAngle(r.e, config);
   const delay = -((r.norad % 80) / 10);
   const shape =
@@ -227,7 +230,6 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
   }
   const hw = LAYOUT.stoneWidth / 2 + 1;
   const early = v.era === 'before FCC rule';
-  const story = isStory(r);
   const cls = `stone-link${selected === r.norad ? ' selected' : ''}`;
   // The story stones (launched on or after the rule date, unquiet or in a shallow grave) are drawn in lantern, with a
   // halo and a slow flicker. Stones launched before the rule date are moss, faint. The rest are muted bone.
@@ -237,7 +239,6 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
   const ring = story ? `<circle class="story-halo" cx="0" cy="${-LAYOUT.stoneHeight / 2}" r="${LAYOUT.stoneHeight * 1.5}"/>` : '';
   return (
     `<a class="${cls}" href="#/sat/${r.norad}" data-norad="${r.norad}" tabindex="${tabStop === r.norad ? 0 : -1}" aria-label="${esc(label)}">` +
-    `<title>${esc(label)}</title>` +
     `<g class="${posCls}"${flick} transform="translate(${f(pos.x)} ${f(pos.y)})">` +
     `<rect class="hit" x="${-hw}" y="${-LAYOUT.stoneHeight - 2}" width="${2 * hw}" height="${LAYOUT.stoneHeight + 3}"/>` +
     ring +
@@ -253,7 +254,7 @@ function boneSvg(r: SatRecord, config: Config, pos: Pos): string {
   const label = `${r.name}, unmarked bones (${r.status}), perigee ${spokenKm(text)} kilometres${spokenKm(text).startsWith('minus') ? ', below GEO' : ' above GEO'}${off === null ? '' : ', off the drawn scale'}`;
   // The diamond is centred on the stone's base line, so it sits at the object's own height.
   return (
-    `<g class="bone" data-norad="${r.norad}" role="img" aria-label="${esc(label)}"><title>${esc(label)}</title>` +
+    `<g class="bone" data-norad="${r.norad}" role="img" aria-label="${esc(label)}">` +
     `<g transform="translate(${f(pos.x)} ${f(pos.y - 4)})"><path class="bone-mark" d="M 0 -4 L 4 0 L 0 4 L -4 0 Z"/></g></g>`
   );
 }
@@ -310,17 +311,13 @@ function labelsSvg(model: ChartModel): string {
   return out.length === 0 ? '' : `<g aria-hidden="true" pointer-events="none">${out.join('')}</g>`;
 }
 /** One label per edge: how many objects stand beyond the limit. Exact values are on the card and in the ledger. */
-function edgeLabelsSvg(model: ChartModel): string {
+function edgeLabels(model: ChartModel): AxisText[] {
   const counts = offScaleCounts([...model.stones, ...model.bones].map((r) => r.pKm));
   const x = model.cols.gutter + 6;
-  const out: string[] = [];
-  if (counts.above > 0) {
-    out.push(`<text class="edge-label" x="${f(x)}" y="${f(LAYOUT.top + 14)}">${esc(offScaleEdgeText('above', counts.above, SCALE.maxKm))}</text>`);
-  }
-  if (counts.below > 0) {
-    out.push(`<text class="edge-label" x="${f(x)}" y="${f(LAYOUT.top + plotHeight() - 8)}">${esc(offScaleEdgeText('below', counts.below, SCALE.minKm))}</text>`);
-  }
-  return out.join('');
+  const out: AxisText[] = [];
+  if (counts.above > 0) out.push(axisText(offScaleEdgeText('above', counts.above, SCALE.maxKm), x, LAYOUT.top + 14, 'start', 'tick'));
+  if (counts.below > 0) out.push(axisText(offScaleEdgeText('below', counts.below, SCALE.minKm), x, LAYOUT.top + plotHeight() - 8, 'start', 'tick'));
+  return out;
 }
 /**
  * The whole chart as an SVG string. `shown` is the filtered set (default: no filters, so no unmarked bones).
@@ -337,22 +334,21 @@ export function chartSvg(
   const config = reg.config;
   const model = chartModel(reg, narrow, shown);
   const { cols } = model;
+  const edges = edgeLabels(model);
   const width = Math.max(cols.width, cols.gutter + 120);
   const height = LAYOUT.top + plotHeight() + LAYOUT.bottom;
   const stop = tabStop !== null && model.nav.some((n) => n.id === tabStop) ? tabStop : (model.nav[0]?.id ?? null);
   const size = narrow ? ` width="${f(width)}" height="${f(height)}"` : '';
   const parts = [
-    `<svg class="chart${narrow ? ' chart--natural' : ''}" viewBox="0 0 ${f(width)} ${f(height)}"${size} role="group" aria-labelledby="chart-title chart-desc" focusable="false">`,
-    `<title id="chart-title">${esc(CHART.title)}</title>`,
+    `<svg class="chart${narrow ? ' chart--natural' : ''}" viewBox="0 0 ${f(width)} ${f(height)}"${size} role="group" aria-label="${esc(CHART.title)}" aria-describedby="chart-desc" focusable="false">`,
     `<desc id="chart-desc">${esc(chartDescription(config))}</desc>`,
-    `<defs>${stoneDefs()}<linearGradient id="sky-fade" x1="0" y1="0" x2="0" y2="1"><stop class="sky-stop-top" offset="0"/><stop class="sky-stop-bottom" offset="1"/></linearGradient><radialGradient id="moon-fade"><stop class="moon-stop-in" offset="0"/><stop class="moon-stop-out" offset="1"/></radialGradient><radialGradient id="halo-fade"><stop class="halo-stop-in" offset="0"/><stop class="halo-stop-out" offset="1"/></radialGradient><radialGradient id="fog-fade"><stop class="fog-stop-in" offset="0"/><stop class="fog-stop-out" offset="1"/></radialGradient><pattern id="wall-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="7" height="7"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="7"/></pattern></defs>`,
     `<g aria-hidden="true">`,
-    bandsSvg(config, cols, narrow),
+    bandsSvg(config, cols, narrow, [...model.pos.values()], edges.map((t) => t.box)),
     `<text class="axis-title" x="8" y="18">${esc(CHART.axisTitle)}</text>`,
     yearAxisSvg(cols),
     fccLineSvg(config, cols, narrow),
     `</g>`,
-    edgeLabelsSvg(model),
+    edges.map((t) => `<text class="edge-label" x="${f(t.x)}" y="${f(t.y)}">${esc(t.text)}</text>`).join(''),
     model.bones.map((r) => boneSvg(r, config, model.pos.get(r.norad)!)).join(''),
     model.stones.map((r) => stoneSvg(r, config, model.pos.get(r.norad)!, selected, stop)).join(''),
     labelsSvg(model),
@@ -542,18 +538,26 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   // The one stone in the Tab order (roving tabindex). It follows focus, and survives a redraw.
   let tabStop: number | null = null;
   let nav: NavItem[] = [];
-  /** The card floats over one corner of the chart. It takes the side away from the selected stone. */
+  /** The card floats over one corner of the chart. It takes the side away from the selected stone, and swaps if it would still cover the stone or the FCC line. */
   const placeCard = (): void => {
     if (card === null || host === null) return;
     const stone = host.querySelector<SVGAElement>('a.stone-link.selected');
-    if (stone === null) {
-      card.classList.remove('card--left');
-      return;
-    }
+    card.classList.remove('card--left');
+    if (stone === null) return;
     const box = host.getBoundingClientRect();
     const at = stone.getBoundingClientRect();
+    const fcc = host.querySelector('.fcc-line')?.getBoundingClientRect();
+    const hits = (): number => {
+      const c = card.getBoundingClientRect();
+      return [at, fcc].filter((r) => r !== undefined && c.left < r.right && r.left < c.right && c.top < r.bottom && r.top < c.bottom).length;
+    };
     card.classList.toggle('card--left', at.left + at.width / 2 > box.left + box.width / 2);
+    const first = hits();
+    if (first === 0) return;
+    card.classList.toggle('card--left');
+    if (hits() > first) card.classList.toggle('card--left');
   };
+  let scrolled = false;
   const draw = (): void => {
     const shown = applyFilters(reg.records, state.filters);
     const drawn = drawnInChurchyard(shown);
@@ -573,6 +577,10 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       host.innerHTML = chartSvg(reg, narrow, selected, drawn, tabStop ?? selected);
       const model = chartModel(reg, narrow, shown);
       nav = model.nav;
+      // On a phone the chart opens with the FCC line near the left edge, so the lantern stones are in view.
+      const line = host.querySelector('.fcc-line');
+      if (narrow && !scrolled && line !== null) host.scrollLeft = Number(line.getAttribute('x1')) - 24; // the FCC line starts 24 px from the left edge
+      scrolled = true;
       // The card floats inside the plot, clear of the axis column: tell the stylesheet where the plot starts and ends.
       const vb = host.querySelector('svg')?.viewBox.baseVal;
       if (plot !== null && vb !== undefined && vb.width > 0 && vb.height > 0) {

@@ -128,7 +128,7 @@ describe('the chart: grey the mass, light the story', () => {
   it('engraves the protected zone, hatches the threshold band, and labels the FCC line', () => {
     expect(svg).toContain('class="zone-label"');
     expect(svg).toContain('>Protected zone ±200 km</text>');
-    expect(svg).toContain('<pattern id="wall-hatch"');
+    expect(read('index.html')).toContain('<pattern id="wall-hatch"');
     expect(svg).toMatch(/class="band band--wall"/);
     expect(svg).toContain('>FCC rule · 18 Mar 2002</text>');
     const css = strip(read('src/ui/styles/churchyard.css'));

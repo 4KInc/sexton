@@ -127,7 +127,7 @@ describe('scale', () => {
     );
   });
   it('the high ground has its own ticks, all inside it', () => {
-    expect(HIGH_TICKS_KM).toEqual([500, 600, 800, 1000]);
+    expect(HIGH_TICKS_KM).toEqual([600, 1000]);
     for (const km of HIGH_TICKS_KM) {
       expect(km).toBeGreaterThan(SCALE.linearMaxKm);
       expect(km).toBeLessThanOrEqual(SCALE.maxKm);
@@ -274,7 +274,7 @@ describe('churchyard chart on the fixture register', () => {
   });
   it('draws the break mark and the high-ground ticks', () => {
     expect(svg.match(/class="break-mark"/g)).toHaveLength(1);
-    for (const km of ['+500', '+600', '+800', '+1,000', '+400']) expect(svg).toContain(`>${km}</text>`);
+    for (const km of ['+600', '+1,000', '+400']) expect(svg).toContain(`>${km}</text>`);
     expect(svg.match(/class="tick tick--high"/g)).toHaveLength(HIGH_TICKS_KM.length);
     expect(svg).toContain('High ground: compressed scale');
   });
@@ -282,7 +282,6 @@ describe('churchyard chart on the fixture register', () => {
     for (const id of ['below', 'road', 'shallow', 'wall', 'consecrated']) expect(svg).toContain(`band band--${id}`);
     expect(svg.match(/class="edge(?: edge--geo)?"/g)!.length).toBe(7); // +1,000, 280, 247, 200, 0, −200, −300
     expect(svg).toContain('class="fcc-line"');
-    expect(svg).toContain('FCC minimum-perigee rule (launches from 18 Mar 2002)');
     expect(svg).toContain('The wall');
   });
   it('sway only for e above 0.003, as an angle in a CSS variable', () => {
