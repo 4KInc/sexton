@@ -13,7 +13,7 @@ export const SCALE = {
   maxKm: 1000,
   pxPerKm: 0.8,
   /** Height of the whole high-ground section. */
-  highPx: 100,
+  highPx: 80,
   /** Log knee of the high-ground curve: y grows as ln(1 + d / highKneeKm), d km above linearMaxKm. */
   highKneeKm: 100,
   /** Height of the strip above maxKm and the strip below minKm, where off-scale stones stand. */
@@ -22,7 +22,7 @@ export const SCALE = {
 /** Tick labels in the high ground, besides the break itself (+400) and the top limit. */
 export const HIGH_TICKS_KM: readonly number[] = [500, 600, 800, 1000];
 export const LAYOUT = {
-  top: 40,
+  top: 30,
   bottom: 40,
   right: 16,
   gutterWide: 150,

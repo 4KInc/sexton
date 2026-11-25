@@ -67,10 +67,10 @@ export function tourHtml(i: number | null, steps: readonly TourStep[]): string {
   return (
     `<div class="tour" role="group" aria-label="${TOUR.label}">` +
     `<p class="tour-count mono" aria-hidden="true">${i + 1} / ${steps.length}</p>` +
-    `<div class="tour-text" role="status" aria-live="polite"><p class="tour-line"><span class="visually-hidden">${TOUR.stepOf(i + 1, steps.length)} </span>${esc(step.text)}</p><p class="tour-sub">${esc(step.sub)}</p></div>` +
+    `<div class="tour-main"><div class="tour-text" role="status" aria-live="polite"><p class="tour-line"><span class="visually-hidden">${TOUR.stepOf(i + 1, steps.length)} </span>${esc(step.text)}</p><p class="tour-sub">${esc(step.sub)}</p></div>` +
+    `<button type="button" class="link-button" data-tour="skip">${TOUR.skip}</button></div>` +
     `<div class="tour-actions"><button type="button" class="button" data-tour="back"${i === 0 ? ' disabled' : ''}>${TOUR.back}</button>` +
-    `<button type="button" class="button button--primary" data-tour="${last ? 'done' : 'next'}">${last ? TOUR.done : TOUR.next}</button>` +
-    `<button type="button" class="button button--quiet" data-tour="skip">${TOUR.skip}</button></div></div>`
+    `<button type="button" class="button button--primary" data-tour="${last ? 'done' : 'next'}">${last ? TOUR.done : TOUR.next}</button></div></div>`
   );
 }
 function esc(t: string): string {

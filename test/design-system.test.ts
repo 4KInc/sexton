@@ -5,9 +5,10 @@ import { fileURLToPath } from 'node:url';
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { findHits } from '../scripts/check-language.ts';
-import { TOUR } from '../src/ui/copy.ts';
+import { FILTERS, TOUR } from '../src/ui/copy.ts';
 import type { UiRegister } from '../src/ui/register.ts';
-import { chartSvg, compactLegendHtml, retiredPayloads } from '../src/ui/views/churchyard.ts';
+import { HIGH_TICKS_KM, LAYOUT, SCALE, yOf } from '../src/ui/svg/scale.ts';
+import { chartSvg, compactLegendHtml, heroHtml, retiredPayloads } from '../src/ui/views/churchyard.ts';
 import { moveStep, rememberSkip, TOUR_KEY, tourHtml, tourSkipped, tourSteps } from '../src/ui/views/tour.ts';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const read = (p: string): string => readFileSync(join(ROOT, p), 'utf8');
@@ -213,5 +214,47 @@ describe('the guided tour', () => {
     const css = strip(read('src/ui/styles/churchyard.css'));
     for (const n of [1, 2, 3, 4]) expect(css).toContain(`.plot[data-tour='${n}']`);
     expect(css.replace(/@media \(prefers-reduced-motion: no-preference\)\s*\{[\s\S]*?\n\}\n/g, '')).not.toMatch(/transition|animation/);
+  });
+});
+describe('fixes after the first look', () => {
+  const css = strip(read('src/ui/styles/churchyard.css'));
+  it('a selected stone is lit at full strength in bone with the amber selection ring, even when it is quiet', () => {
+    expect(css).toMatch(/\.stone-link\.selected \.stone-body\s*\{[^}]*stroke:\s*var\(--bone\)[^}]*stroke-width/);
+    expect(css).toMatch(/\.stone-link\.selected \.hit\s*\{[^}]*stroke:\s*var\(--lantern\)/);
+    // More specific than the tour's dimming of quiet stones, so step 4 cannot dim the selected one.
+    expect(css).toMatch(/\.plot \.stone-link\.selected \.stone-pos--quiet\s*\{\s*opacity:\s*1/);
+    expect(css).toMatch(/\.stone-link\.selected \.stone-pos--quiet \.crack/);
+  });
+  it('the toolbar has no truncated count; the count is in the fine print and still announced', () => {
+    const src = read('src/ui/views/churchyard.ts');
+    expect(src).toContain('<p class="status visually-hidden" id="chart-status" role="status">');
+    expect(FILTERS.drawnShort(696)).toBe('696 retired payloads drawn; others are in the table');
+    const html = heroHtml(real);
+    expect(html).toContain('<li id="fine-drawn">696 retired payloads drawn; others are in the table</li>');
+    expect(html.indexOf('fine-drawn')).toBeLessThan(html.indexOf('C_R·A/m 0.012'));
+    expect(css).not.toMatch(/\.toolbar \.status\s*\{[^}]*text-overflow/);
+  });
+  it('the tour bar has the skip as a small text link under the step, and on a phone one row of count, Back and Next', () => {
+    const html = tourHtml(0, tourSteps(real));
+    expect(html.indexOf('class="tour-text"')).toBeLessThan(html.indexOf('data-tour="skip"'));
+    expect(html).toMatch(/<button type="button" class="link-button" data-tour="skip">Skip the tour<\/button>/);
+    expect(html.indexOf('data-tour="skip"')).toBeLessThan(html.indexOf('class="tour-actions"'));
+    expect(css).toMatch(/grid-template-areas:\s*'count actions' 'main main'/);
+    expect(css).toMatch(/\.tour-actions\s*\{\s*justify-content:\s*flex-end/);
+    expect(css).toMatch(/\.link-button\s*\{[^}]*text-decoration:\s*underline/);
+  });
+  it('keeps the 0 to +400 km range as it was and brings the 0 km line up, by shortening the high ground only', () => {
+    expect(SCALE.pxPerKm).toBe(0.8);
+    expect(SCALE.linearMaxKm - 0).toBe(400);
+    expect(SCALE.highPx).toBeLessThanOrEqual(80);
+    expect(LAYOUT.top).toBeLessThanOrEqual(30);
+    expect(yOf(0)).toBeLessThanOrEqual(480);
+    // The high-ground tick labels still do not touch: at least 10 units between neighbours.
+    const ys = [SCALE.linearMaxKm, ...HIGH_TICKS_KM].map(yOf);
+    for (let i = 1; i < ys.length; i++) expect(ys[i - 1]! - ys[i]!).toBeGreaterThanOrEqual(10);
+  });
+  it('folds GEO and perigee into the caption, and puts the glossary in the first tour step', () => {
+    expect(tourSteps(real)[0]!.sub).toBe('GEO: the circular orbit about 35,786 km above the equator. Perigee: the lowest point of an orbit.');
+    expect(read('src/ui/views/churchyard.ts')).not.toContain('stage-terms');
   });
 });

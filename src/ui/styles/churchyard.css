@@ -3,10 +3,10 @@
 
 /* The hero: a kicker, one line of pitch, three readings, one line of fine print. */
 .hero {
-  margin: var(--space-3) 0 var(--space-3);
+  margin: var(--space-1) 0 var(--space-2);
 }
 .hero-pitch {
-  margin: var(--space-1) 0 var(--space-2);
+  margin: 4px 0 var(--space-1);
   max-width: none;
   color: var(--bone-soft);
   font-family: var(--font-display);
@@ -42,7 +42,7 @@
   align-content: start;
   gap: 4px;
   height: 100%;
-  padding: var(--space-1) 0 var(--space-2);
+  padding: 6px 0 var(--space-1);
   text-decoration: none;
 }
 .tile-link:hover .tile-label {
@@ -87,8 +87,8 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px var(--space-2);
-  margin: var(--space-1) 0 0;
-  padding-top: var(--space-1);
+  margin: 4px 0 0;
+  padding-top: 6px;
   border-top: 1px solid var(--rule);
   color: var(--bone-muted);
   font-size: var(--fs-12);
@@ -107,15 +107,24 @@
   padding-left: var(--space-1);
   border-left: 1px solid var(--rule-strong);
 }
+.fine-list li.fine-limits {
+  margin-left: var(--space-1);
+  padding-left: 0;
+  border-left: 0;
+}
+.fine-list li.fine-limits:only-child {
+  margin-left: 0;
+}
+.fine-list li:has(.limits[open]) {
+  flex-basis: 100%;
+  margin-left: 0;
+}
 .limits > summary {
   display: inline;
   cursor: pointer;
   color: var(--bone);
   text-decoration: underline;
   text-underline-offset: 0.2em;
-}
-.limits[open] {
-  flex-basis: 100%;
 }
 .limits-body {
   max-width: 80ch;
@@ -137,8 +146,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-1) var(--space-3);
-  padding: var(--space-1) 0;
+  gap: 4px var(--space-3);
+  padding: 6px 0;
 }
 .toolbar .filters-details {
   flex: 0 0 auto;
@@ -163,18 +172,6 @@
   max-width: none;
   background: var(--surface-1);
 }
-.toolbar .status {
-  flex: 1 1 8rem;
-  min-width: 0;
-  margin: 0;
-  max-width: none;
-  overflow: hidden;
-  color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  text-overflow: ellipsis;
-  text-wrap: nowrap;
-}
 .toolbar .skip-link--inline {
   margin: 0;
 }
@@ -196,13 +193,6 @@
   margin: 0;
   max-width: 110ch;
   font-size: var(--fs-16);
-  line-height: 1.4;
-}
-.stage-terms {
-  margin: 4px 0 0;
-  max-width: 120ch;
-  color: var(--bone-muted);
-  font-size: var(--fs-12);
   line-height: 1.4;
 }
 .legend-strip {
@@ -232,6 +222,7 @@
 .tour {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'count main actions';
   align-items: center;
   gap: var(--space-1) var(--space-3);
   padding: var(--space-1) var(--space-2);
@@ -245,10 +236,15 @@
   border-left: 0;
 }
 .tour-count {
+  grid-area: count;
   margin: 0;
   color: var(--bone-soft);
   font-size: var(--fs-14);
   font-weight: 500;
+}
+.tour-main {
+  grid-area: main;
+  min-width: 0;
 }
 .tour-line {
   margin: 0;
@@ -264,9 +260,26 @@
   line-height: 1.4;
 }
 .tour-actions {
+  grid-area: actions;
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-1);
+}
+/* A button that reads as a small text link. */
+.link-button {
+  margin: 4px 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--bone-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+.link-button:hover {
+  color: var(--bone);
 }
 
 /* The chart. */
@@ -497,9 +510,26 @@
   stroke-width: 2;
 }
 .stone-link.selected .stone-body {
-  stroke: var(--lantern);
+  stroke: var(--bone);
   stroke-width: 2.4;
   filter: drop-shadow(0 0 7px var(--lantern-glow));
+}
+/* A selected stone is lit at full strength, quiet or not: bone body, and the amber selection ring on its box. */
+.stone-link.selected .hit {
+  stroke: var(--lantern);
+  stroke-width: 2.4;
+  rx: 3px;
+}
+.plot .stone-link.selected .stone-pos--quiet {
+  opacity: 1;
+}
+.stone-link.selected .stone-pos--quiet .crack,
+.stone-link.selected .stone-pos--quiet .ground-line,
+.stone-link.selected .stone-pos--quiet .mound {
+  stroke: var(--bone);
+}
+.stone-link.selected .stone-pos--quiet .carving {
+  fill: var(--bone);
 }
 /* A ring: launched on or after the rule date and the perigee is below the IADC disposal threshold under the stated assumptions. */
 .flag-ring {
@@ -854,21 +884,14 @@
   .tour,
   .tour--free {
     order: 0;
+  }
+  /* One row: the count on the left, Back and Next on the right. The step and its skip link sit under it. */
+  .tour {
     grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: 'count actions' 'text text';
-  }
-  .tour--free {
-    display: block;
-  }
-  .tour-count {
-    grid-area: count;
+    grid-template-areas: 'count actions' 'main main';
   }
   .tour-actions {
-    grid-area: actions;
     justify-content: flex-end;
-  }
-  .tour-text {
-    grid-area: text;
   }
   .stage .chart-note {
     order: 1;

@@ -422,13 +422,12 @@ export function heroHtml(reg: UiRegister): string {
     )
     .join('');
   const d = disposalRate(reg.records, config);
-  const fine = fineHtml(reg.snapshot.set, config, [
-    assumptionsLine(config),
-    CHURCHYARD_INTRO.blindSpot,
-    CHURCHYARD_INTRO.voluntary,
-    CHURCHYARD_INTRO.noRetirementDate,
-    VALIDATION.intro(d.afterLaunchYear),
-  ]);
+  const fine = fineHtml(
+    reg.snapshot.set,
+    config,
+    [assumptionsLine(config), CHURCHYARD_INTRO.blindSpot, CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.noRetirementDate, VALIDATION.intro(d.afterLaunchYear)],
+    FILTERS.drawnShort(retiredPayloads(reg.records).length),
+  );
   return `<div class="hero"><p class="kicker">${esc(HERO.kicker)}</p><p class="hero-pitch">${esc(HERO.pitch)}</p><ul class="tiles">${tiles}</ul>${fine}</div>`;
 }
 /** The verdict words with their stone shapes, in one row beside the chart. The meanings are in the guide below. */
@@ -466,13 +465,12 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     `<section class="stage" aria-label="${esc(PAGE_TITLES.churchyard)}">` +
     `<div class="toolbar">` +
     filtersHtml(reg.records, state.filters, config, hasFilters(state.filters)) +
-    `<p class="status" id="chart-status" role="status"></p>` +
+    `<p class="status visually-hidden" id="chart-status" role="status"></p>` +
     (hasStones ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>${compactLegendHtml(config)}` : '') +
     `<button type="button" class="button button--quiet toolbar-guide" data-open-guide>${esc(HERO.guideHint)}</button>` +
     `</div>` +
     (hasStones
-      ? `<div class="stage-head"><div class="stage-lead"><div id="tour-host"></div><p class="stage-caption">${esc(HERO.caption)}</p>` +
-        `<p class="stage-terms">${HERO.terms.map(esc).join(' ')}</p></div></div>` +
+      ? `<div class="stage-head"><div class="stage-lead"><div id="tour-host"></div><p class="stage-caption">${esc(HERO.caption)}</p></div></div>` +
         (narrow ? `<p class="chart-note">${esc(CHART.scrollNote)} <a id="scroll-table" href="#/table">${esc(CHART.scrollLink)}</a>.</p>` : '') +
         `<div class="plot"><div class="chart-wrap${narrow ? ' chart-wrap--scroll' : ''}" id="chart-host"${narrow ? ` role="region" aria-label="${esc(CHART.scrollRegion)}"` : ''}></div>` +
         `<div class="tip" id="stone-tip" hidden aria-hidden="true"></div>` +
@@ -510,6 +508,8 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       selected = null;
       remembered = null;
     }
+    const fineDrawn = root.querySelector<HTMLElement>('#fine-drawn');
+    if (fineDrawn !== null) fineDrawn.textContent = FILTERS.drawnShort(drawn.length);
     status.textContent = !hasFilters(state.filters)
       ? FILTERS.drawnUnfiltered(drawn.length)
       : drawn.length === 0

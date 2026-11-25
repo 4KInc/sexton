@@ -68,7 +68,7 @@ export const TOUR = {
     story: (n: number, of: number): string => `${n} of ${of} launched since then sit in or near the zone.`,
     echostar: 'EchoStar 7: fined $150,000 by the FCC (DA 23-888). Perigee about 122 km against a planned 300 km.',
   },
-  zoneSub: 'The zone is shaded and edged. A stone standing on it has not been raised out of it.',
+  zoneSub: 'GEO: the circular orbit about 35,786 km above the equator. Perigee: the lowest point of an orbit.',
   ruleSub: 'The rule applies only to satellites the FCC authorizes. Stones launched before the line are dimmed.',
   echoSub: (p: string): string => `Sexton's own reading from the snapshot: ${p} km above GEO.`,
 } as const;
@@ -76,10 +76,8 @@ export const TOUR = {
 export const HERO = {
   kicker: '\u00A7 01 \u00B7 The churchyard',
   pitch: 'Which retired geostationary satellites were buried above the belt, and which still drift in it.',
-  /** The first sentence pair of the guide's lead, so the two cannot drift apart. */
-  caption: `${CHURCHYARD_INTRO.lead.split(':')[0]}.`,
+  caption: 'Each stone is a retired satellite, as tall as its perigee (lowest point) above GEO (the 35,786 km belt). The road is the protected zone.',
   /** First appearance of GEO and perigee, in small type under the caption (language.md). */
-  terms: [TERMS.geo, TERMS.perigee],
   postRule: { label: 'retired payloads launched after the FCC rule', sub: 'On or after 18 March 2002.' },
   zone: {
     of: (n: number): string => `of ${formatCount(n)}`,
@@ -271,6 +269,7 @@ export const FILTERS = {
   bones: 'Show unmarked bones (rocket bodies and debris)',
   clear: 'Clear filters',
   none: 'No objects match these filters.',
+  drawnShort: (n: number): string => `${formatCount(n)} retired ${n === 1 ? 'payload' : 'payloads'} drawn; others are in the table`,
   drawn: (n: number): string => `${n} drawn in the churchyard. Living and unknown-status payloads are in the table only.`,
   drawnUnfiltered: (n: number): string => `${n} retired ${n === 1 ? 'payload' : 'payloads'} drawn. Living and unknown-status payloads, rocket bodies and debris are in the table.`,
   count: (shown: number, total: number): string => `${shown} of ${total} ${total === 1 ? 'object' : 'objects'} match.`,
