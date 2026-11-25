@@ -904,7 +904,7 @@
 }
 @media (max-width: 600px) {
   /* The strip is the snapshot and "Limits": no separator between the pair, so "Limits" never wraps under a dot. */
-  .fine-list--short li::after {
+  .fine-list.fine-list--short li:not(:last-child):not(.fine-break):not(:has(+ .fine-break))::after {
     content: none;
   }
   .fine-list--short .fine-limits {
