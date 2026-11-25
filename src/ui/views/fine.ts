@@ -4,12 +4,24 @@ import type { Config } from '../../engine/config.ts';
 import { HERO, METHOD_SECTIONS, NOTES, snapshotLabel } from '../copy.ts';
 import { esc } from '../html.ts';
 
-/** `limits` are the full sentences, each one paragraph. */
+/**
+ * `limits` are the full sentences, each one paragraph. The strip is one `<ul>` (so a reader who copies it gets
+ * one list), but two row groups: the data (the snapshot, the count, the assumptions) and the scope (what the
+ * register cannot see, and the two rules), each row wrapping on its own, so a row that wraps never starts a
+ * line with its separator dot.
+ */
 export function fineHtml(snapshotSet: string, config: Config, limits: readonly string[], drawn?: string): string {
   const parts = HERO.fine(snapshotLabel(snapshotSet), config).map((t) => `<li>${esc(t)}</li>`);
   // The churchyard says how many stones it draws, in the same line. The count follows the filters.
   if (drawn !== undefined) parts.splice(1, 0, `<li id="fine-drawn">${esc(drawn)}</li>`);
-  const items = parts.join('');
+  // Row 1 is the data (the snapshot, the count if the churchyard passed one, C_R·A/m, ±km). Row 2 is the scope
+  // (the blind spot, the two voluntary/FCC rules, then "Limits"): the second half of `HERO.fine`'s own six
+  // items, after whatever the snapshot and the optional count took. A zero-size break item forces the new line
+  // (an item that claims the width itself would stretch to fill it).
+  const rowSplit = (drawn === undefined ? 2 : 3) + 1; // snapshot (+ drawn) + C_R·A/m + ±km
+  const row1 = parts.slice(0, rowSplit);
+  const row2 = parts.slice(rowSplit);
+  const items = [...row1, '<li class="fine-break" aria-hidden="true"></li>', ...row2].join('');
   return (
     `<div class="hero-fine"><ul class="fine-list">${items}` +
     `<li class="fine-limits"><details class="limits"><summary>${esc(HERO.limits)}</summary><div class="limits-body">${limits.map((t) => `<p>${esc(t)}</p>`).join('')}<p class="chart-note-mono">${esc(NOTES.method)} <a href="#/method?s=${METHOD_SECTIONS.rules}" aria-label="${esc(NOTES.link(METHOD_SECTIONS.rules))}">\u00A7</a> \u00B7 <a href="#/method?s=${METHOD_SECTIONS.blind}" aria-label="${esc(NOTES.link(METHOD_SECTIONS.blind))}">\u00A7</a></p></div></details></li></ul></div>`

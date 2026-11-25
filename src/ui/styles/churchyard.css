@@ -15,6 +15,10 @@
   font-size: var(--fs-28);
   line-height: 1.3;
 }
+/* An inner margin so the title and the chart's own left-hand labels never touch the captured frame's edge. */
+.cover-capture {
+  padding: 24px 0 0 24px;
+}
 .cover-capture .toolbar,
 .cover-capture .stage-head,
 .cover-capture .chart-note,
@@ -122,19 +126,25 @@
   padding: 0;
   max-width: none;
 }
-/* The separator is the item's own prefix, not a margin or a border, so a wrapped line starts flush with no
-   stray indent: every item but the first reads "· text", on whatever line it lands on. */
-.fine-list li::before {
+/* Two explicit rows, not a wrap: row 1 is the data (the snapshot, the count, the assumptions), row 2 is the
+   scope (the blind spot, the two rules, "Limits"). `.fine-break` is a zero-size item that claims the whole flex
+   line so the next item starts a fresh one, without stretching to fill it itself. The separator is a dot on the
+   item BEFORE the gap, not the one after: centred between the two with margin on both sides, same as a
+   `::before` would read, but it travels with the item that ends a line rather than the one that starts the
+   next, so even a row that wraps at a width narrower than any item's own text (not just 1024 px) cannot start a
+   new line with it, and the true last item of a row never gets one (no trailing dot there either). */
+.fine-list li.fine-break {
+  flex-basis: 100%;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.fine-list li:not(:last-child):not(.fine-break):not(:has(+ .fine-break))::after {
   content: '\00B7';
-  margin-right: var(--space-1);
+  margin-inline: var(--space-1);
   color: var(--bone-muted);
-}
-.fine-list li:first-child::before {
-  content: none;
-  margin-right: 0;
-}
-.fine-list li.fine-limits:only-child::before {
-  content: none;
 }
 .fine-list li:has(.limits[open]) {
   flex-basis: 100%;
@@ -949,6 +959,19 @@
   }
   .fine-list li {
     display: inline;
+  }
+  /* Not a flex row here, so the two-row break is off: every item but the very first carries its dot, running on
+     as one paragraph (the pre-existing narrow-screen style). The break marker has no width here either. */
+  .fine-list li.fine-break {
+    display: none;
+  }
+  .fine-list li.fine-row::before {
+    content: '\00B7';
+    margin-inline: var(--space-1);
+  }
+  .fine-list li:first-child::before {
+    content: none;
+    margin-inline: 0;
   }
   .stage-caption {
     font-size: var(--fs-14);

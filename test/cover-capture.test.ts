@@ -46,4 +46,12 @@ describe('the flag only applies when present', () => {
       expect(block, selector).toMatch(new RegExp(`\\.cover-capture ${selector.replace(/[.#]/, '\\$&')}`));
     }
   });
+  it('has its own inner margin, so the title and the chart cannot touch the captured frame edge', () => {
+    const css = read('src/ui/styles/churchyard.css');
+    const rule = css.slice(css.indexOf('.cover-capture {'), css.indexOf('}', css.indexOf('.cover-capture {')));
+    const padding = rule.match(/padding:\s*([^;]+);/)?.[1]?.trim().split(/\s+/) ?? [];
+    expect(padding, rule).toHaveLength(4); // top right bottom left
+    expect(Number.parseInt(padding[0]!, 10), 'top').toBeGreaterThanOrEqual(16);
+    expect(Number.parseInt(padding[3]!, 10), 'left').toBeGreaterThanOrEqual(16);
+  });
 });
