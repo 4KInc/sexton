@@ -9,7 +9,7 @@ import { CHURCHYARD_INTRO, LEDGER, LEGEND, SITE, TIP } from '../src/ui/copy.ts';
 import { parseHash } from '../src/ui/router.ts';
 import { ledgerHtml } from '../src/ui/views/ledger.ts';
 import type { UiRegister } from '../src/ui/register.ts';
-import { chartSvg, introHtml, isFlagged, legendHtml, retiredPayloads, tipHtml } from '../src/ui/views/churchyard.ts';
+import { chartSvg, introHtml, isStory, legendHtml, retiredPayloads, tipHtml } from '../src/ui/views/churchyard.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const real = JSON.parse(readFileSync(join(ROOT, 'data/register.json'), 'utf8')) as UiRegister;
@@ -59,11 +59,12 @@ describe('the tooltip text', () => {
 
 describe('ring, faint stones and names on the real register', () => {
   const svg = chartSvg(real, false);
-  it('a ring is drawn for exactly the stones launched on or after the rule date and below the threshold', () => {
-    const flagged = retired.filter(isFlagged);
-    expect(flagged.length).toBe(36);
-    for (const r of retired) expect(isFlagged(r)).toBe(r.verdict.era === null && ['fallen', 'unquiet', 'shallow grave'].includes(r.verdict.verdict));
-    expect(svg.match(/class="flag-ring"/g)?.length).toBe(flagged.length);
+  it('a halo is drawn for exactly the unquiet and shallow-grave stones launched on or after the rule date', () => {
+    const story = retired.filter(isStory);
+    expect(story.length).toBe(36);
+    for (const r of retired) expect(isStory(r)).toBe(r.verdict.era === null && ['unquiet', 'shallow grave'].includes(r.verdict.verdict));
+    expect(svg.match(/class="story-halo"/g)?.length).toBe(story.length);
+    expect(svg).not.toContain('flag-ring');
   });
   it('a faint mark is drawn for exactly the stones launched before the rule date', () => {
     const early = retired.filter((r) => r.verdict.era === 'before FCC rule').length;

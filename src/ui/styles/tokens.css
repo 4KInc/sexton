@@ -56,10 +56,10 @@
   --bone: oklch(0.935 0.014 85);
   --bone-soft: oklch(0.82 0.012 85);
   --bone-muted: oklch(0.74 0.012 85);
-  /* Moss is for data. Lantern amber is only for focus and selection. */
+  /* Moss is for data. Lantern amber lights the story stones (unquiet and shallow grave, launched on or after the rule date) and marks focus. */
   --moss: oklch(0.84 0.1 135);
   --moss-deep: oklch(0.3 0.05 140);
-  --lantern: oklch(0.8 0.15 75);
+  --lantern: oklch(0.8 0.13 70);
   /* Hairline rules and the lights behind the page. They are drawn behind text, never over it. */
   --rule: oklch(0.935 0.014 85 / 0.16);
   --rule-strong: oklch(0.935 0.014 85 / 0.34);
@@ -68,7 +68,14 @@
   --hero-light: oklch(0.88 0.07 85 / 0.1);
   --fog: oklch(0.85 0.03 250 / 0.07);
   --vignette: oklch(0.07 0.02 258 / 0.7);
-  --lantern-glow: oklch(0.8 0.15 75 / 0.35);
+  --lantern-glow: oklch(0.8 0.13 70 / 0.35);
+  /* Bone at three fills, for the verdict marks in the census key and its bars (the chart uses fill-opacity). */
+  --bone-fill-50: oklch(0.82 0.012 85 / 0.5);
+  --bone-fill-30: oklch(0.82 0.012 85 / 0.3);
+  --bone-fill-22: oklch(0.82 0.012 85 / 0.22);
+  /* The halo behind a story stone and the two fog layers on the road. Atmosphere behind the data, never over it. */
+  --lantern-halo: oklch(0.8 0.13 70 / 0.45);
+  --fog-light: oklch(0.88 0.02 250);
   --shadow: oklch(0.04 0.02 258 / 0.6);
   /* Print only. */
   --ink: oklch(0.2 0 0);

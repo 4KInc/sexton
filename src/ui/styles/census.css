@@ -149,25 +149,42 @@
   min-width: 2px;
   background: var(--bone-soft);
 }
-/* One mapping on every chart and in the legend: buried is moss, uncertain is hatched grey, everything else is bone. */
-.bar-fill--buried {
-  background: var(--moss);
-}
+/* One mapping on every chart and in the key, the same as the stones on the churchyard: buried is solid pale, shallow
+   grave half filled, restless lightly filled, uncertain hatched, unquiet an open outline, fallen dim and tipped. */
 .fill-swatch {
   width: 28px;
   height: 10px;
   margin-left: auto;
+  border: 1px solid var(--bone-soft);
+}
+.fill-swatch--buried,
+.bar-fill--v-buried {
   background: var(--bone-soft);
 }
-.fill-swatch--buried {
-  background: var(--moss);
+.fill-swatch--shallow-grave,
+.bar-fill--v-shallow-grave {
+  background: var(--bone-fill-50);
+}
+.fill-swatch--restless,
+.bar-fill--v-restless {
+  background: var(--bone-fill-22);
+}
+.fill-swatch--unquiet,
+.bar-fill--v-unquiet {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--bone-soft);
+}
+.fill-swatch--fallen,
+.bar-fill--v-fallen {
+  background: var(--bone-fill-30);
+  opacity: 0.7;
 }
 .fill-swatch--uncertain {
-  background: repeating-linear-gradient(135deg, var(--bone-muted) 0 2px, var(--surface-2) 2px 5px);
+  background: repeating-linear-gradient(135deg, var(--bone-soft) 0 2px, transparent 2px 5px);
 }
 /* Uncertain is a distinct grey, hatched. The same hatch marks the part of a bar that is borderline. */
 .bar-fill--uncertain {
-  background: repeating-linear-gradient(135deg, var(--bone-muted) 0 2px, var(--surface-2) 2px 5px);
+  background: repeating-linear-gradient(135deg, var(--bone-soft) 0 2px, var(--surface-2) 2px 5px);
 }
 .bar-hatch {
   position: absolute;

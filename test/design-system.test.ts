@@ -114,13 +114,16 @@ describe('tokens and surfaces', () => {
 describe('the chart: grey the mass, light the story', () => {
   const svg = chartSvg(real, false);
   const retired = retiredPayloads(real.records);
-  it('draws the 36 story stones with a ring and every other stone quietly', () => {
-    expect(svg.match(/stone-pos--ring/g)).toHaveLength(36);
+  it('draws the 36 story stones in lantern and every other stone quietly', () => {
+    expect(svg.match(/stone-pos--story/g)).toHaveLength(36);
     expect(svg.match(/stone-pos--quiet/g)).toHaveLength(retired.length - 36);
-    expect(svg).not.toMatch(/stone-pos--quiet stone-pos--ring|stone-pos--ring stone-pos--quiet/);
+    expect(svg).not.toMatch(/stone-pos--quiet stone-pos--story|stone-pos--story stone-pos--quiet/);
     const css = strip(read('src/ui/styles/churchyard.css'));
-    expect(css).toMatch(/\.stone-pos--quiet \.stone-body\s*\{[^}]*stroke:\s*var\(--moss\)/);
-    expect(css).toMatch(/\.stone-body\s*\{[^}]*stroke:\s*var\(--bone\)/);
+    // The colour of a mark is one variable: lantern for the story, muted bone after the rule date, moss before it.
+    expect(css).toMatch(/\.stone-pos--story\s*\{[^}]*--mark:\s*var\(--lantern\)/);
+    expect(css).toMatch(/\.stone-pos--quiet\s*\{[^}]*--mark:\s*var\(--bone-muted\)/);
+    expect(css).toMatch(/\.stone-pos--early\s*\{[^}]*--mark:\s*var\(--moss\)/);
+    expect(css).toMatch(/\.stone-body\s*\{[^}]*stroke:\s*var\(--mark\)/);
   });
   it('engraves the protected zone, hatches the threshold band, and labels the FCC line', () => {
     expect(svg).toContain('class="zone-label"');
@@ -213,13 +216,14 @@ describe('the guided tour', () => {
   it('lights each step with styles that need no motion: any transition sits inside no-preference', () => {
     const css = strip(read('src/ui/styles/churchyard.css'));
     for (const n of [1, 2, 3, 4]) expect(css).toContain(`.plot[data-tour='${n}']`);
-    expect(css.replace(/@media \(prefers-reduced-motion: no-preference\)\s*\{[\s\S]*?\n\}\n/g, '')).not.toMatch(/transition|animation/);
+    expect(css.replace(/@media (?:screen and )?\(prefers-reduced-motion: no-preference\)\s*\{[\s\S]*?\n\}\n/g, '')).not.toMatch(/transition|animation/);
   });
 });
 describe('fixes after the first look', () => {
   const css = strip(read('src/ui/styles/churchyard.css'));
   it('a selected stone is lit at full strength in bone with the amber selection ring, even when it is quiet', () => {
-    expect(css).toMatch(/\.stone-link\.selected \.stone-body\s*\{[^}]*stroke:\s*var\(--bone\)[^}]*stroke-width/);
+    expect(css).toMatch(/\.stone-link\.selected \.stone-pos\s*\{[^}]*--mark:\s*var\(--bone\)[^}]*opacity:\s*1/);
+    expect(css).toMatch(/\.stone-link\.selected \.stone-body\s*\{[^}]*stroke-width/);
     expect(css).toMatch(/\.stone-link\.selected \.hit\s*\{[^}]*stroke:\s*var\(--lantern\)/);
     // More specific than the tour's dimming of quiet stones, so step 4 cannot dim the selected one.
     expect(css).toMatch(/\.plot \.stone-link\.selected \.stone-pos--quiet\s*\{\s*opacity:\s*1/);

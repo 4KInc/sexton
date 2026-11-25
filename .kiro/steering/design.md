@@ -13,10 +13,12 @@ A Victorian churchyard at night, seen through a modern instrument. Cinematic and
 ## Palette
 
 - Near-black blue-grey ground, bone-white text, moss green, and one lantern amber.
-- Lantern amber is only for focus and selection.
+- Lantern amber (`--lantern`, oklch(0.80 0.13 70)) marks focus and selection, and lights the story stones: unquiet and shallow-grave verdicts launched on or after 18 March 2002. It is never used for text.
 - Define every colour as a CSS custom property, in OKLCH. No hard-coded colours elsewhere.
 - The ground is a near-black blue, never #000, with three surfaces that get lighter as they rise. Text is bone at three levels: primary 7:1 or better, secondary and muted 4.5:1 or better on every surface.
-- One story colour: pale bone-white with a ring, for post-rule stones in or near the zone. Every other stone is moss at low emphasis.
+- One story colour: lantern, with a soft halo and a slow flicker (opacity 0.85 to 1, 3 to 6 s, staggered), for the story stones only. Post-rule stones that are not the story are muted bone at 60%. Stones launched before the rule date are moss at 43% (the least that keeps 3:1 against the ground). A selected stone turns bone, thick, still, with the lantern box. Error bars on non-story stones are quiet (about 25% effective).
+- Verdict marks differ by shape and fill: buried solid pale, shallow grave half filled, restless lightly filled, uncertain hatched, unquiet an open outline, fallen tipped and dim. The legend, the badges and the census key draw the same marks.
+- Atmosphere tokens (OKLCH): `--lantern-halo` (halo behind a story stone), `--fog-light` (two fog layers on the road, 40 s and 90 s drifts, at most 0.12 opacity, static under reduced motion), `--bone-fill-50/30/22` (the census key's fills). The moon is one static glow near the top right of the high ground.
 - Every text and background pair meets WCAG AA. Check contrast when choosing or changing a colour.
 
 ## Type

@@ -301,3 +301,10 @@ main {
     gap: var(--space-1);
   }
 }
+/* Shared SVG definitions (the stone hatch): drawn nowhere, referenced by the glyphs on every page. */
+.shared-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

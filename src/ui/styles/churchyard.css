@@ -447,8 +447,17 @@
   paint-order: stroke;
 }
 
-/* Stones. The story, launched on or after the rule date and in or near the zone, is drawn in bone with a ring.
-   Every other stone is drawn in moss, quietly. */
+/* Stones. Every verdict differs by shape AND by fill, and the colour says the era and the story:
+     lantern  = story: launched on or after the rule date, unquiet or in a shallow grave (the 36);
+     bone     = launched on or after the rule date, any other verdict, muted at 60%;
+     moss     = launched before the rule date, faint at 38%.
+   Fill, from brightest to dimmest: buried is solid pale, shallow grave is half filled, restless is lightly filled,
+   uncertain is hatched, unquiet is an open outline, fallen lies tipped and dim. The legend, the badges and the
+   census key draw the same glyphs with the same rules. */
+.glyph,
+.stone-pos {
+  --mark: var(--bone-soft);
+}
 .stone-link {
   cursor: pointer;
   outline: none;
@@ -457,32 +466,52 @@
   fill: transparent;
 }
 .stone-body {
-  fill: var(--surface-2);
-  stroke: var(--bone);
-  stroke-width: 1.2;
+  fill: var(--mark);
+  fill-opacity: 0;
+  stroke: var(--mark);
+  stroke-width: 1.3;
   stroke-linejoin: round;
 }
-.stone-pos--quiet .stone-body {
-  fill: var(--ground);
-  stroke: var(--moss);
+.stone--buried .stone-body {
+  fill-opacity: 1;
 }
-.stone--unquiet .stone-body {
-  fill: none;
+.stone--shallow .stone-body {
+  fill-opacity: 0.5;
+}
+.stone--restless .stone-body {
+  fill-opacity: 0.22;
+}
+.stone--uncertain .stone-body {
+  fill: url(#stone-hatch);
+  fill-opacity: 1;
+}
+.stone--fallen {
+  opacity: 0.6;
+}
+.stone--fallen .stone-body {
+  fill-opacity: 0.3;
+}
+.stone-hatch-line {
+  stroke: var(--bone-soft);
+  stroke-width: 1.1;
 }
 .moss {
   fill: var(--moss);
 }
 .ground-line {
-  stroke: var(--bone-muted);
+  stroke: var(--mark);
   stroke-width: 1.2;
 }
 .mound {
   fill: var(--road);
-  stroke: var(--bone-muted);
+  stroke: var(--mark);
   stroke-width: 1;
 }
 .carving {
   fill: var(--bone);
+  stroke: var(--ground);
+  stroke-width: 2px;
+  paint-order: stroke;
   font: 9px var(--font-display);
 }
 .crack {
@@ -490,24 +519,45 @@
   stroke: var(--bone);
   stroke-width: 1;
 }
-.stone-pos--quiet .ground-line,
-.stone-pos--quiet .mound,
-.stone-pos--quiet .crack {
-  stroke: var(--moss);
-}
-.stone-pos--quiet .carving {
-  fill: var(--moss);
-}
+/* Muted bone for the post-rule stones that are not the story. */
 .stone-pos--quiet {
-  opacity: 0.45;
+  --mark: var(--bone-muted);
+  opacity: 0.6;
 }
+/* Moss for stones launched before the rule date: later in the file, so it wins over the rule above. */
+.stone-pos--early {
+  --mark: var(--moss);
+  opacity: 0.43;
+}
+.stone-pos--story {
+  --mark: var(--lantern);
+}
+/* The halo: a soft lantern gradient behind a story stone. A gradient, not a filter, so 36 of them cost nothing. */
+.story-halo {
+  fill: url(#halo-fade);
+  pointer-events: none;
+}
+.halo-stop-in {
+  stop-color: var(--lantern-halo);
+}
+.halo-stop-out {
+  stop-color: var(--lantern);
+  stop-opacity: 0;
+}
+/* Error bars: quiet on every stone but the story. The effective opacity (with the stone's own) is about 25%. */
 .whisker line {
-  stroke: var(--bone);
+  stroke: var(--mark);
   stroke-width: 1.2;
   stroke-dasharray: 1.5 2;
 }
 .whisker line:nth-child(n + 2) {
   stroke-dasharray: none;
+}
+.stone-pos--quiet .whisker {
+  opacity: 0.44;
+}
+.stone-pos--early .whisker {
+  opacity: 0.66;
 }
 .stone-link:hover .stone-body {
   stroke-width: 2;
@@ -521,10 +571,22 @@
   stroke: var(--lantern);
   stroke-width: 2;
 }
+/* Selected: the stone turns bone, thick, with a steady glow and the amber box. A story stone is lantern and
+   flickers, so a selected stone is told apart by its bone body, its box and its stillness. */
+.stone-link.selected .stone-pos {
+  --mark: var(--bone);
+  opacity: 1;
+}
 .stone-link.selected .stone-body {
-  stroke: var(--bone);
   stroke-width: 2.4;
   filter: drop-shadow(0 0 7px var(--lantern-glow));
+}
+.stone-link.selected .story-halo {
+  display: none;
+}
+.stone-link:hover .whisker,
+.stone-link.selected .whisker {
+  opacity: 1;
 }
 /* A selected stone is lit at full strength, quiet or not: bone body, and the amber selection ring on its box. */
 .stone-link.selected .hit {
@@ -542,13 +604,6 @@
 }
 .stone-link.selected .stone-pos--quiet .carving {
   fill: var(--bone);
-}
-/* A ring: launched on or after the rule date and the perigee is below the IADC disposal threshold under the stated assumptions. */
-.flag-ring {
-  fill: var(--ground);
-  fill-opacity: 0.75;
-  stroke: var(--bone);
-  stroke-width: 2.2;
 }
 .stone-leader {
   stroke: var(--bone);
@@ -573,6 +628,75 @@
   }
   .stone-pos {
     transition: opacity 0.4s;
+  }
+}
+/* Story stones flicker, slowly and unevenly: opacity 0.85 to 1, 3 to 6 s a cycle, staggered. Fog drifts sideways
+   on two loops (40 s and 90 s). Opacity and transform only, and only where motion is welcome. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .stone-pos--story {
+    animation: flicker var(--flicker, 4.5s) linear infinite;
+    animation-delay: var(--flicker-delay, 0s);
+  }
+  /* A selected stone holds still. */
+  .stone-link.selected .stone-pos--story {
+    animation: none;
+  }
+  .fog-layer--a {
+    animation: fog-drift 40s linear infinite;
+  }
+  .fog-layer--b {
+    animation: fog-drift 90s linear infinite reverse;
+  }
+}
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 0.88;
+  }
+  29% {
+    opacity: 0.97;
+  }
+  43% {
+    opacity: 0.85;
+  }
+  61% {
+    opacity: 0.95;
+  }
+  77% {
+    opacity: 0.87;
+  }
+}
+@keyframes fog-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(var(--fog-period) * -1));
+  }
+}
+/* The fog: soft puffs of pale light, low in the road. Together they never pass 0.12 opacity. */
+.fog-layer {
+  fill: url(#fog-fade);
+}
+.fog-layer--a {
+  opacity: 0.12;
+}
+.fog-layer--b {
+  opacity: 0.09;
+}
+.fog-stop-in {
+  stop-color: var(--fog-light);
+}
+.fog-stop-out {
+  stop-color: var(--fog-light);
+  stop-opacity: 0;
+}
+@media print {
+  .fog {
+    display: none;
   }
 }
 @keyframes sway {
@@ -608,8 +732,8 @@
 .plot[data-tour='3'] .stone-pos--quiet {
   opacity: 0.2;
 }
-.plot[data-tour='3'] .stone-pos--ring {
-  filter: drop-shadow(0 0 5px var(--story-glow));
+.plot[data-tour='3'] .stone-pos--story .story-halo {
+  r: 28px;
 }
 .plot[data-tour='4'] .stone-pos--quiet {
   opacity: 0.3;

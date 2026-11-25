@@ -161,7 +161,7 @@ describe('stylesheets', () => {
     // `--minor` is the spacing of the ledger scale's minor marks (10 km as a share of the scale), set in its style attribute.
     // `--s` is each census bar's share, set in its style attribute, so the number can be written right after the bar's end.
     // The four plot variables are set on the chart's box from the drawn size (views/churchyard.ts), so the card stays inside the plot.
-    const defined = new Set([...tokensCss.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).concat(['--sway-angle', '--sway-delay', '--axis', '--plot-right', '--plot-top', '--plot-bottom', '--s', '--minor']));
+    const defined = new Set([...tokensCss.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).concat(['--sway-angle', '--sway-delay', '--axis', '--plot-right', '--plot-top', '--plot-bottom', '--s', '--minor', '--mark', '--flicker', '--flicker-delay', '--fog-period']));
     for (const f of cssFiles) {
       for (const m of stripComments(css(f)).matchAll(/var\((--[\w-]+)/g)) expect(defined.has(m[1]!), `${f}: ${m[1]}`).toBe(true);
     }
@@ -175,10 +175,13 @@ describe('stylesheets', () => {
       for (const m of print.matchAll(/(?<![-\w])color:\s*var\(--([\w-]+)\)/g)) expect(['ink', 'ink-muted', 'bone', 'bone-muted'].includes(m[1]!), `${f} print color: ${m[1]}`).toBe(true);
     }
   });
-  it('lantern amber is used only for focus and selection: outline, stroke and border-color', () => {
+  it('lantern amber lights the story stones and marks focus and selection: outline, stroke, border-color, and the stone mark and halo', () => {
+    // Design 3, step 2: the story stones (unquiet and shallow grave, launched on or after the rule date) are drawn in
+    // lantern, through the --mark variable that their stroke and fill read, and through their halo's gradient stop.
+    // No text takes the lantern colour, so contrast for text is unchanged.
     for (const f of cssFiles) {
       for (const m of stripComments(css(f)).matchAll(/([\w-]+):\s*[^;{}]*var\(--lantern\)/g)) {
-        expect(['outline', 'stroke', 'border-color'], `${f}: ${m[1]}`).toContain(m[1]);
+        expect(['outline', 'stroke', 'border-color', '--mark', 'stop-color'], `${f}: ${m[1]}`).toContain(m[1]);
       }
     }
   });
@@ -455,7 +458,8 @@ describe('verdicts are never shown by colour alone', () => {
     for (const f of cssFiles) {
       for (const m of stripComments(css(f)).matchAll(/([^{}]*\.stone--[\w-]+[^{}]*)\{([^}]*)\}/g)) {
         const decls = m[2]!.split(';').map((d) => d.trim()).filter((d) => d !== '');
-        for (const d of decls) expect(d, `${f}: ${m[1]!.trim()}`).toMatch(/^fill:\s*none$/);
+        // A verdict's fill is a treatment (open, hatched, half, solid, dim), never a colour of its own: the colour is --mark.
+        for (const d of decls) expect(d, `${f}: ${m[1]!.trim()}`).toMatch(/^(fill:\s*(none|url\(#stone-hatch\))|fill-opacity:\s*[0-9.]+|opacity:\s*[0-9.]+)$/);
       }
     }
   });
@@ -483,14 +487,30 @@ describe('verdicts are never shown by colour alone', () => {
 });
 
 describe('polish step 3: faint stones and the tooltip', () => {
-  const alpha = Number(/\.stone-pos--quiet\s*\{\s*opacity:\s*([0-9.]+)/.exec(read('src/ui/styles/churchyard.css'))?.[1]);
-  it('a quiet stone (every stone outside the story, in moss) keeps 3:1 against the ground for its outline and its moss', () => {
-    expect(alpha).toBeGreaterThan(0);
-    expect(alpha).toBeLessThan(1);
+  const opacityOf = (cls: string): number => Number(new RegExp(`\\.${cls}\\s*\\{[^}]*?opacity:\\s*([0-9.]+)`).exec(read('src/ui/styles/churchyard.css'))?.[1]);
+  it('a faint stone (launched before the rule date, in moss at 43%, the least that keeps 3:1) keeps 3:1 against the ground and the road', () => {
+    const alpha = opacityOf('stone-pos--early');
     expect(alpha).toBeGreaterThanOrEqual(0.35);
     expect(alpha).toBeLessThanOrEqual(0.45);
     for (const bg of ['ground', 'road']) {
       expect(ratio(over(token('moss'), token(bg), alpha), token(bg)), `moss at ${alpha} on ${bg}`).toBeGreaterThanOrEqual(3);
+    }
+  });
+  it('a muted stone (launched on or after the rule date, not the story, in muted bone at about 60%) keeps 3:1', () => {
+    const alpha = opacityOf('stone-pos--quiet');
+    expect(alpha).toBeGreaterThanOrEqual(0.55);
+    expect(alpha).toBeLessThanOrEqual(0.65);
+    for (const bg of ['ground', 'road']) {
+      expect(ratio(over(token('bone-muted'), token(bg), alpha), token(bg)), `bone-muted at ${alpha} on ${bg}`).toBeGreaterThanOrEqual(3);
+    }
+  });
+  it('the lowest flicker opacity of a story stone keeps its lantern outline at 3:1 on every band it can stand on', () => {
+    const css = read('src/ui/styles/churchyard.css');
+    const lows = [...css.slice(css.indexOf('@keyframes flicker')).split('@keyframes fog-drift')[0]!.matchAll(/opacity:\s*([0-9.]+)/g)].map((m) => Number(m[1]));
+    const low = Math.min(...lows);
+    expect(low).toBeGreaterThanOrEqual(0.85);
+    for (const bg of ['ground', 'road', 'surface-1']) {
+      expect(ratio(over(token('lantern'), token(bg), low), token(bg)), `lantern at ${low} on ${bg}`).toBeGreaterThanOrEqual(3);
     }
   });
   it('the tooltip text has 4.5:1 on the tooltip background', () => {
@@ -498,7 +518,7 @@ describe('polish step 3: faint stones and the tooltip', () => {
   });
   it('the tooltip and the ring use tokens only, and nothing in the tooltip moves', () => {
     const rule = (sel: string): string => new RegExp(`${sel.replace('.', '\\.')}\\s*\\{[^}]*\\}`).exec(read('src/ui/styles/churchyard.css'))![0];
-    for (const sel of ['.tip', '.flag-ring', '.stone-name']) expect(rule(sel), sel).not.toMatch(/#[0-9a-fA-F]{3,6}|rgb\(/);
+    for (const sel of ['.tip', '.story-halo', '.stone-name']) expect(rule(sel), sel).not.toMatch(/#[0-9a-fA-F]{3,6}|rgb\(/);
     expect(rule('.tip')).not.toMatch(/transition|animation/);
   });
 });

@@ -78,6 +78,24 @@ function breakMark(x0: number, x1: number, y: number): string {
   }
   return `<path class="break-mark" d="${d}"/>`;
 }
+/**
+ * Fog on the road: two soft layers of puffs, clipped to the protected zone, low in the band. Each layer is two
+ * copies of one period side by side, so sliding it by one period (a CSS transform, 40 s and 90 s) loops without
+ * a seam. It only lives inside the zone's own band, so it reads as the zone, not as a mark. Atmosphere: no data.
+ */
+function fogSvg(x: number, w: number, top: number, bottom: number): string {
+  const h = bottom - top;
+  const period = Math.max(300, Math.round(w));
+  const layer = (cls: string, n: number, lift: number): string => {
+    let puffs = '';
+    for (let i = 0; i < 2 * n; i++) {
+      const k = i % n; // the same puffs in both copies, so a slide of one period loops without a seam
+      puffs += `<ellipse cx="${f(x + ((i + 0.5 + (k % 3) * 0.2) * period) / n)}" cy="${f(bottom - h * (lift + (k % 4) * 0.03))}" rx="${f(period / n)}" ry="${f(h * (0.2 + (k % 3) * 0.03))}"/>`;
+    }
+    return `<g class="fog-layer ${cls}" style="--fog-period:${period}px">${puffs}</g>`;
+  };
+  return `<g class="fog" clip-path="url(#fog-clip)" aria-hidden="true"><clipPath id="fog-clip"><rect x="${f(x)}" y="${f(top)}" width="${f(w)}" height="${f(h)}"/></clipPath>${layer('fog-layer--a', 6, 0.2)}${layer('fog-layer--b', 4, 0.12)}</g>`;
+}
 function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
   const x = cols.gutter;
   const w = cols.width - cols.gutter - LAYOUT.right;
@@ -87,7 +105,7 @@ function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
   // Night sky behind the ground above the wall, and a faint moon glow over the high ground. Atmosphere, not data.
   const skyBottom = yOf(config.thresholdHighKm);
   out.push(`<rect class="sky" x="${f(x)}" y="${f(plotTop)}" width="${f(w)}" height="${f(skyBottom - plotTop)}"/>`);
-  out.push(`<ellipse class="moon-glow" cx="${f(x + w * 0.16)}" cy="${f(yBreak() - 30)}" rx="${f(w * 0.2)}" ry="95"/>`);
+  out.push(`<ellipse class="moon-glow" cx="${f(x + w * 0.86)}" cy="${f(plotTop + 70)}" rx="${f(w * 0.13)}" ry="110"/>`);
   for (const band of bandsOf(config)) {
     // The top band reaches up into the strip for off-scale stones, and the bottom band down into its strip.
     const y1 = band.toKm >= SCALE.maxKm ? plotTop : yOf(band.toKm);
@@ -95,6 +113,7 @@ function bandsSvg(config: Config, cols: Columns, narrow: boolean): string {
     const copy = bandCopy(band.id, config);
     out.push(`<rect class="band band--${band.id}" x="${f(x)}" y="${f(y1)}" width="${f(w)}" height="${f(y0 - y1)}"/>`);
     if (band.id === 'road') {
+      out.push(fogSvg(x, w, y1, y0));
       // A crisp edge on both sides of the road, so the protected zone reads at a glance.
       out.push(`<line class="road-edge" x1="${f(x)}" x2="${f(x + w)}" y1="${f(y1)}" y2="${f(y1)}"/><line class="road-edge" x1="${f(x)}" x2="${f(x + w)}" y1="${f(y0)}" y2="${f(y0)}"/>`);
       // The band names itself, in small mono capitals, at its upper left, where it is in view when the page opens.
@@ -165,10 +184,13 @@ interface Pos {
   x: number;
   y: number;
 }
-/** Launched on or after the rule date, and below the IADC disposal threshold under the stated assumptions. */
-export function isFlagged(r: RetiredRecord): boolean {
+/**
+ * A story stone: launched on or after the rule date, and unquiet or in a shallow grave (below the IADC disposal
+ * threshold under the stated assumptions). These are the 36 in the headline, and the only stones drawn in lantern.
+ */
+export function isStory(r: RetiredRecord): boolean {
   const v = r.verdict;
-  return v.era === null && (v.verdict === 'fallen' || v.verdict === 'unquiet' || v.verdict === 'shallow grave');
+  return v.era === null && (v.verdict === 'unquiet' || v.verdict === 'shallow grave');
 }
 /** The text of the tooltip: name, NORAD id, perigee with the mean-element uncertainty, verdict word. */
 export function tipHtml(r: RetiredRecord, config: Config): string {
@@ -205,18 +227,18 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
   }
   const hw = LAYOUT.stoneWidth / 2 + 1;
   const early = v.era === 'before FCC rule';
-  const flagged = isFlagged(r);
+  const story = isStory(r);
   const cls = `stone-link${selected === r.norad ? ' selected' : ''}`;
-  // The story is the stones launched on or after the rule date that sit in or near the zone. They are drawn in bone with a ring.
-  // Every other stone is drawn quietly in moss.
-  const posCls = `stone-pos${early ? ' stone-pos--early' : ''}${flagged ? ' stone-pos--ring' : ' stone-pos--quiet'}`;
-  const ring = flagged
-    ? `<rect class="flag-ring" x="${-hw - 2}" y="${-LAYOUT.stoneHeight - 4}" width="${2 * hw + 4}" height="${LAYOUT.stoneHeight + 7}" rx="5"/>`
-    : '';
+  // The story stones (launched on or after the rule date, unquiet or in a shallow grave) are drawn in lantern, with a
+  // halo and a slow flicker. Stones launched before the rule date are moss, faint. The rest are muted bone.
+  const posCls = `stone-pos${early ? ' stone-pos--early' : ''}${story ? ' stone-pos--story' : ' stone-pos--quiet'}`;
+  // Flicker: 3 to 6 s, staggered by NORAD id, so no two neighbours light together.
+  const flick = story ? ` style="--flicker:${(3 + ((r.norad * 7) % 7) / 2).toFixed(1)}s;--flicker-delay:-${(((r.norad * 13) % 50) / 10).toFixed(1)}s"` : '';
+  const ring = story ? `<circle class="story-halo" cx="0" cy="${-LAYOUT.stoneHeight / 2}" r="${LAYOUT.stoneHeight * 1.5}"/>` : '';
   return (
     `<a class="${cls}" href="#/sat/${r.norad}" data-norad="${r.norad}" tabindex="${tabStop === r.norad ? 0 : -1}" aria-label="${esc(label)}">` +
     `<title>${esc(label)}</title>` +
-    `<g class="${posCls}" transform="translate(${f(pos.x)} ${f(pos.y)})">` +
+    `<g class="${posCls}"${flick} transform="translate(${f(pos.x)} ${f(pos.y)})">` +
     `<rect class="hit" x="${-hw}" y="${-LAYOUT.stoneHeight - 2}" width="${2 * hw}" height="${LAYOUT.stoneHeight + 3}"/>` +
     ring +
     shape +
@@ -323,7 +345,7 @@ export function chartSvg(
     `<svg class="chart${narrow ? ' chart--natural' : ''}" viewBox="0 0 ${f(width)} ${f(height)}"${size} role="group" aria-labelledby="chart-title chart-desc" focusable="false">`,
     `<title id="chart-title">${esc(CHART.title)}</title>`,
     `<desc id="chart-desc">${esc(chartDescription(config))}</desc>`,
-    `<defs>${stoneDefs()}<linearGradient id="sky-fade" x1="0" y1="0" x2="0" y2="1"><stop class="sky-stop-top" offset="0"/><stop class="sky-stop-bottom" offset="1"/></linearGradient><radialGradient id="moon-fade"><stop class="moon-stop-in" offset="0"/><stop class="moon-stop-out" offset="1"/></radialGradient><pattern id="wall-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="7" height="7"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="7"/></pattern></defs>`,
+    `<defs>${stoneDefs()}<linearGradient id="sky-fade" x1="0" y1="0" x2="0" y2="1"><stop class="sky-stop-top" offset="0"/><stop class="sky-stop-bottom" offset="1"/></linearGradient><radialGradient id="moon-fade"><stop class="moon-stop-in" offset="0"/><stop class="moon-stop-out" offset="1"/></radialGradient><radialGradient id="halo-fade"><stop class="halo-stop-in" offset="0"/><stop class="halo-stop-out" offset="1"/></radialGradient><radialGradient id="fog-fade"><stop class="fog-stop-in" offset="0"/><stop class="fog-stop-out" offset="1"/></radialGradient><pattern id="wall-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch-bg" width="7" height="7"/><line class="hatch-line" x1="0" y1="0" x2="0" y2="7"/></pattern></defs>`,
     `<g aria-hidden="true">`,
     bandsSvg(config, cols, narrow),
     `<text class="axis-title" x="8" y="18">${esc(CHART.axisTitle)}</text>`,

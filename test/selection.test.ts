@@ -100,11 +100,11 @@ describe('the chart atmosphere', () => {
   it('draws a crisp edge on both sides of the road at the band edges', () => {
     expect(svg.match(/class="road-edge"/g)).toHaveLength(2);
   });
-  it('every ringed stone has the ring, and the ring is a bone outline, not amber', () => {
+  it('there is no white ring on any stone: the story is the lantern colour and a halo, and a selected stone is bone', () => {
     const css = read('src/ui/styles/churchyard.css');
-    const rule = /\.flag-ring\s*\{([^}]*)\}/.exec(css)![1]!;
-    expect(rule).toMatch(/stroke:\s*var\(--bone\)/);
-    expect(rule).not.toMatch(/lantern/);
+    expect(css).not.toContain('flag-ring');
+    expect(/\.story-halo\s*\{([^}]*)\}/.exec(css)![1]).toMatch(/fill:\s*url\(#halo-fade\)/);
+    expect(/\.stone-link\.selected \.stone-pos\s*\{([^}]*)\}/.exec(css)![1]).toMatch(/--mark:\s*var\(--bone\)/);
   });
 });
 describe('case-file labels', () => {
