@@ -39,10 +39,11 @@ describe('barGeometry', () => {
     fc.assert(
       fc.property(fc.double({ min: -500, max: 900, noNaN: true }), fc.double({ min: 0.5, max: 50, noNaN: true }), (p, d) => {
         const a = barGeometry(p, config);
-        // The bar can grow with p, so compare on the same bar: p inside the base range.
-        const base = barGeometry(config.protectedZoneKm, config);
-        const inside = (x: number): boolean => x >= base.loKm && x <= base.hiKm;
-        if (inside(p) && inside(p + d)) expect(barGeometry(p + d, config).p).toBeGreaterThanOrEqual(a.p);
+        // The bar can grow with p, so compare on the same bar: both bars must have the same ends.
+        // (Fixed 2026-11-26: "p inside the base range" was not enough, because the bar also widens near its ends;
+        // CI found [153.84, 1.157] with seed -1447588230.)
+        const b = barGeometry(p + d, config);
+        if (a.loKm === b.loKm && a.hiKm === b.hiKm) expect(b.p).toBeGreaterThanOrEqual(a.p);
         expect(a.off === null).toBe(p >= a.loKm && p <= a.hiKm);
       }),
     );
