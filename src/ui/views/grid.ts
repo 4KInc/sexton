@@ -84,8 +84,8 @@ function columns(): ColDef<GridRow>[] {
   const num = { type: 'rightAligned', cellClass: 'grid-num ag-right-aligned-cell' } as const;
   return [
     { colId: 'n', headerName: '#', valueGetter: (p) => p.data?.n, width: 56, pinned: 'left', sortable: false, resizable: false, cellClass: 'grid-num grid-n ag-right-aligned-cell', type: 'rightAligned' },
-    data('name', { field: 'name', pinned: 'left', width: 190, cellRenderer: nameCell }),
-    data('norad', { field: 'norad', width: 84, ...num }),
+    data('name', { field: 'name', pinned: 'left', width: 180, cellRenderer: nameCell }),
+    data('norad', { field: 'norad', width: 100, ...num }),
     data('owner', { field: 'owner', width: 76 }),
     data('launch', { field: 'launch', width: 110, cellClass: 'grid-num' }),
     data('verdict', { field: 'verdictHtml', width: 144, cellRenderer: (p: ICellRendererParams<GridRow>) => p.data?.verdictHtml ?? '' }),
