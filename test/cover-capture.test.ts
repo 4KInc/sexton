@@ -23,8 +23,8 @@ describe('isCoverCapture', () => {
 });
 
 describe('coverTitle', () => {
-  it('reads "Sexton — N of M retired GEO payloads launched since the 2002 FCC rule are still in or near the protected zone", from the same figures as the hero tiles', () => {
-    expect(coverTitle(real)).toMatch(/^Sexton — \d[\d,]* of \d[\d,]* retired GEO payloads launched since the 2002 FCC rule are still in or near the protected zone$/);
+  it('reads "Sexton: N of M retired GEO payloads launched since the 2002 FCC rule sit in or near the protected zone", from the same figures as the hero tiles', () => {
+    expect(coverTitle(real)).toMatch(/^Sexton: \d[\d,]* of \d[\d,]* retired GEO payloads launched since the 2002 FCC rule sit in or near the protected zone$/);
   });
   it('names the FCC rule year, because the figures count only payloads launched since it', () => {
     expect(coverTitle(real)).toMatch(/2002 FCC rule/);
