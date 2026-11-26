@@ -145,7 +145,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     showAll.hidden = !byDefault;
     status.textContent = byDefault
       ? [TABLE.defaultNote(shown.length), sortNote].filter((s) => s !== '').join(' ')
-      : [shown.length === 0 ? FILTERS.none : FILTERS.count(shown.length, reg.records.length), sortNote].filter((s) => s !== '').join(' ');
+      : [shown.length === 0 ? FILTERS.none : '', sortNote].filter((s) => s !== '').join(' ');
     host.innerHTML = tableHtml(shown, reg.config, state.sort, byDefault && !sorted);
   };
   const onShowAll = (): void => {

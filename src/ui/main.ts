@@ -17,6 +17,7 @@ import type { Route } from './router.ts';
 import { hashFor, parseState } from './state.ts';
 import { mountCensus } from './views/census.ts';
 import { mountChurchyard } from './views/churchyard.ts';
+import { runLazy } from './lazy.ts';
 import { mountTable } from './views/table.ts';
 
 // The wide chart is 1,650 units across and scales to its box, so below this width its 12-unit text
@@ -63,18 +64,25 @@ function markTitle(route: Route, view: HTMLElement): void {
     route.name === 'churchyard' || route.name === 'table' || route.name === 'census' || route.name === 'method' || view.querySelector('.ledger-head') !== null,
   );
 }
-/** Loads a view's module, then mounts it, unless the reader has already gone elsewhere. */
+/** Loads a view's module, then mounts it, unless the reader has already gone elsewhere. A failed load shows a message with a link that reloads the page. */
 function lazyView(view: HTMLElement, id: number, load: () => Promise<() => () => void>): void {
   view.innerHTML = `<p>${esc(SITE.loading)}</p>`;
-  load()
-    .then((mount) => {
-      if (id !== renderId) return;
-      stopView = mount();
+  void runLazy(
+    load,
+    () => id === renderId,
+    (stop) => {
+      stopView = stop;
       markTitle(parseHash(window.location.hash), view);
-    })
-    .catch(() => {
-      if (id === renderId) view.innerHTML = `<p role="alert">${esc(SITE.loadError)}</p>`;
-    });
+    },
+    (html) => {
+      view.innerHTML = html;
+      view.querySelector<HTMLAnchorElement>('[data-retry]')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.location.reload();
+      });
+    },
+    window.location.hash,
+  );
 }
 function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   stopView?.();

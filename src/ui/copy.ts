@@ -14,6 +14,8 @@ export const SITE = {
   sampleBanner: 'Sample data for layout only. This is not the register.',
   loadError: 'The register could not be loaded. Try again later.',
   loading: 'Loading the register.',
+  viewLoadError: 'This page could not be loaded. Check the connection, then try again.',
+  retry: 'Try again',
   notFound: 'There is no page at this address.',
   backToChurchyard: 'Back to the churchyard',
   /** On a ledger page, the link back to the list the visitor came from. */
@@ -289,7 +291,7 @@ export const FILTERS = {
   drawnShort: (n: number): string => `${formatCount(n)} retired ${n === 1 ? 'payload' : 'payloads'} drawn; others are in the table`,
   drawn: (n: number): string => `${n} drawn in the churchyard. Living and unknown-status payloads are in the table only.`,
   drawnUnfiltered: (n: number): string => `${n} retired ${n === 1 ? 'payload' : 'payloads'} drawn. Living and unknown-status payloads, rocket bodies and debris are in the table.`,
-  count: (shown: number, total: number): string => `${shown} of ${total} ${total === 1 ? 'object' : 'objects'} match.`,
+  count: (shown: number, total: number): string => `${formatCount(shown)} of ${formatCount(total)} ${total === 1 ? 'object' : 'objects'} match.`,
 } as const;
 export const LEDGER = {
   printTitle: 'Exhumation report',

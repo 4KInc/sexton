@@ -23,24 +23,23 @@ const CROSS = '<path d="M4 4l8 8M12 4l-8 8"/>';
 const SLIDERS = icon('toggle-icon', '<path d="M2 4.5h12M2 11.5h12"/><circle cx="10" cy="4.5" r="1.8"/><circle cx="6" cy="11.5" r="1.8"/>');
 /** The story verdicts: their chip is lantern when pressed (design.md, Palette). */
 const STORY_VERDICTS: readonly VerdictName[] = ['unquiet', 'shallow grave'];
-/** Count of the filter groups other than search, for the badge on the Filters button. */
-const groupsOn = (f: Filters): number => Number(f.owner !== null) + Number(f.verdicts.length > 0) + Number(f.era !== null) + Number(f.bones);
 /** What a verdict chip would show if pressed: the other filters stay as they are, the verdict filter is this one word. */
 const chipCount = (records: readonly SatRecord[], f: Filters, v: VerdictName): number => applyFilters(records, { ...f, verdicts: [v] }).length;
-/** The pills, "Clear all" and the result count. */
-function activeInner(records: readonly SatRecord[], filters: Filters, config: Config): string {
+/** One removable pill for each active filter: search, owner, each verdict, era, bones. The Filters badge counts these. */
+function pillsOf(filters: Filters, config: Config): [string, string][] {
   const pills: [string, string][] = [];
   if (filters.q !== '') pills.push(['q', FILTERS.searchPill(filters.q)]);
   if (filters.owner !== null) pills.push(['owner', FILTERS.ownerPill(filters.owner === OWNER_NONE ? FILTERS.noOwner : filters.owner)]);
   for (const v of filters.verdicts) pills.push([`verdict:${v}`, verdictCopy(v, config).word]);
   if (filters.era !== null) pills.push(['era', ERA_LABEL[filters.era]]);
   if (filters.bones) pills.push(['bones', FILTERS.bonesPill]);
-  return (
-    `<ul class="pills">${pills.map(([key, label]) => `<li><button type="button" class="pill" data-remove="${esc(key)}" aria-label="${esc(FILTERS.remove(label))}"><span>${esc(label)}</span>${icon('', CROSS)}</button></li>`).join('')}</ul>` +
-    `<button type="button" class="link-button" data-clear-filters>${esc(FILTERS.clearAll)}</button>` +
-    `<span class="filter-count mono">${esc(FILTERS.showing(applyFilters(records, filters).length, records.length))}</span>`
-  );
+  return pills;
 }
+const pillsInner = (filters: Filters, config: Config): string =>
+  pillsOf(filters, config)
+    .map(([key, label]) => `<li><button type="button" class="pill" data-remove="${esc(key)}" aria-label="${esc(FILTERS.remove(label))}"><span>${esc(label)}</span>${icon('', CROSS)}</button></li>`)
+    .join('');
+const countText = (records: readonly SatRecord[], filters: Filters): string => FILTERS.showing(applyFilters(records, filters).length, records.length);
 /**
  * The toolbar as a string. `open` is whether the options panel starts open. `bar` draws it for the table: on a wide
  * screen the options are always in the row. `records` is the whole register, so the owner list does not shrink while filtering.
@@ -67,20 +66,24 @@ export function filtersHtml(records: readonly SatRecord[], filters: Filters, con
     `<input type="search" id="f-q" name="q" value="${esc(filters.q)}" autocomplete="off" placeholder="${esc(FILTERS.placeholder)}" aria-describedby="f-q-hint">` +
     `<button type="button" class="search-clear" data-clear-search${filters.q === '' ? ' hidden' : ''}>${icon('', CROSS)}<span class="visually-hidden">${esc(FILTERS.clearSearch)}</span></button>` +
     `<span id="f-q-hint" class="visually-hidden">${esc(FILTERS.searchHint)}</span></div>`;
-  const badge = groupsOn(filters);
+  const badge = pillsOf(filters, config).length;
   return (
     `<form class="filters${bar ? ' filters--bar' : ''}" id="filters" aria-label="${esc(FILTERS.legend)}"${open ? ' data-open' : ''} novalidate>` +
     `<div class="filter-row">${search}` +
     `<button type="button" class="filter-toggle" aria-expanded="${open}" aria-controls="filter-panel" data-filter-toggle>${SLIDERS}<span>${esc(FILTERS.toggle)}</span><span class="filter-badge mono" data-filter-badge${badge === 0 ? ' hidden' : ''}>${badge}</span></button>` +
     `<div class="filter-panel" id="filter-panel" role="group" aria-label="${esc(FILTERS.panel)}">` +
-    `<div class="filter-sheet-head"><span class="filter-sheet-title">${esc(FILTERS.toggle)}</span><button type="button" class="button button--primary" data-filter-done>${esc(FILTERS.done)}</button></div>` +
+    `<div class="filter-sheet-head"><h2 class="filter-sheet-title" id="filter-sheet-title">${esc(FILTERS.toggle)}</h2><button type="button" class="button button--primary" data-filter-done>${esc(FILTERS.done)}</button></div>` +
     `<div class="select"><label for="f-owner">${esc(FILTERS.owner)}</label><select id="f-owner" name="owner">${owners}</select></div>` +
     `<div class="select"><label for="f-era">${esc(FILTERS.era)}</label><select id="f-era" name="era">${eras}</select></div>` +
     `<fieldset class="vchips"><legend class="visually-hidden">${esc(FILTERS.verdict)}</legend>${chips}</fieldset>` +
     `<button type="button" class="switch" role="switch" id="f-bones" data-bones aria-checked="${filters.bones}"><span class="switch-track"><span class="switch-thumb"></span></span><span>${esc(FILTERS.bones)}</span></button>` +
     `<p class="filters-note">${esc(FILTERS.note)}</p>` +
     `</div>` +
-    `<div class="filter-active" role="group" aria-label="${esc(FILTERS.active)}"${hasFilters(filters) ? '' : ' hidden'}>${activeInner(records, filters, config)}</div>` +
+    `<div class="filter-active" role="group" aria-label="${esc(FILTERS.active)}"${hasFilters(filters) ? '' : ' hidden'}>` +
+    `<ul class="pills">${pillsInner(filters, config)}</ul>` +
+    `<button type="button" class="link-button" data-clear-filters>${esc(FILTERS.clearAll)}</button>` +
+    // The table announces its count here; the churchyard announces it, with the drawn count, in its own status line.
+    `<span class="filter-count mono"${bar ? ' role="status"' : ''}>${esc(countText(records, filters))}</span></div>` +
     `</div>` +
     `<div class="filter-scrim" data-filter-done aria-hidden="true"></div>` +
     `</form>`
@@ -113,10 +116,48 @@ export function wireFilters(
 ): () => void {
   const q = form.querySelector<HTMLInputElement>('#f-q')!;
   const toggle = form.querySelector<HTMLButtonElement>('[data-filter-toggle]')!;
+  const panel = form.querySelector<HTMLElement>('#filter-panel')!;
+  const phone = window.matchMedia('(max-width: 600px)');
+  /** Elements made inert while the sheet is open: everything outside the panel, except the scrim that closes it. */
+  let inerted: HTMLElement[] = [];
+  const release = (): void => {
+    for (const el of inerted) el.inert = false;
+    inerted = [];
+  };
+  const trap = (): void => {
+    release();
+    for (let node: HTMLElement = panel; node !== document.body && node.parentElement !== null; node = node.parentElement) {
+      for (const sibling of node.parentElement.children) {
+        if (sibling !== node && sibling instanceof HTMLElement && !sibling.classList.contains('filter-scrim') && !sibling.inert) {
+          sibling.inert = true;
+          inerted.push(sibling);
+        }
+      }
+    }
+  };
+  /** On a phone the open panel is a modal dialog; otherwise it is a plain group. */
+  const setMode = (): void => {
+    const modal = form.hasAttribute('data-open') && phone.matches;
+    if (modal) {
+      panel.setAttribute('role', 'dialog');
+      panel.setAttribute('aria-modal', 'true');
+      panel.setAttribute('aria-labelledby', 'filter-sheet-title');
+      panel.removeAttribute('aria-label');
+      trap();
+    } else {
+      panel.setAttribute('role', 'group');
+      panel.removeAttribute('aria-modal');
+      panel.removeAttribute('aria-labelledby');
+      panel.setAttribute('aria-label', FILTERS.panel);
+      release();
+    }
+  };
   const setOpen = (open: boolean): void => {
     form.toggleAttribute('data-open', open);
     toggle.setAttribute('aria-expanded', String(open));
+    setMode();
   };
+  phone.addEventListener('change', setMode);
   /** The toggle is hidden where the options are always shown (the table on a wide screen). */
   const collapsible = (): boolean => toggle.getClientRects().length > 0;
   const refresh = (filters: Filters): void => {
@@ -127,12 +168,13 @@ export function wireFilters(
     }
     form.querySelector('[data-bones]')!.setAttribute('aria-checked', String(filters.bones));
     form.querySelector<HTMLElement>('[data-clear-search]')!.hidden = q.value === '';
+    const pills = pillsOf(filters, ctx.config).length;
     const badge = form.querySelector<HTMLElement>('[data-filter-badge]')!;
-    badge.textContent = String(groupsOn(filters));
-    badge.hidden = groupsOn(filters) === 0;
-    const active = form.querySelector<HTMLElement>('.filter-active')!;
-    active.hidden = !hasFilters(filters);
-    active.innerHTML = activeInner(ctx.records, filters, ctx.config);
+    badge.textContent = String(pills);
+    badge.hidden = pills === 0;
+    form.querySelector<HTMLElement>('.filter-active')!.hidden = !hasFilters(filters);
+    form.querySelector('.pills')!.innerHTML = pillsInner(filters, ctx.config);
+    form.querySelector('.filter-count')!.textContent = countText(ctx.records, filters);
   };
   const sync = (filters: Filters): void => {
     const next = { ...getState(), filters };
@@ -183,9 +225,25 @@ export function wireFilters(
   };
   // Escape closes the options where they can be closed (the churchyard, and the table below the wide layout).
   const onKey = (event: KeyboardEvent): void => {
-    if (event.key !== 'Escape' || !form.hasAttribute('data-open') || !collapsible()) return;
-    setOpen(false);
-    toggle.focus();
+    if (!form.hasAttribute('data-open') || !collapsible()) return;
+    if (event.key === 'Escape') {
+      setOpen(false);
+      toggle.focus();
+    } else if (event.key === 'Tab' && panel.getAttribute('role') === 'dialog') {
+      // Tab stays inside the sheet: from the last control to the first, and back.
+      const items = [...panel.querySelectorAll<HTMLElement>('select, button, input')].filter((el) => el.getClientRects().length > 0);
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (first === undefined || last === undefined) return;
+      const here = document.activeElement;
+      if (event.shiftKey && (here === first || !panel.contains(here))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (here === last || !panel.contains(here))) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
   };
   // Enter in the search box must not submit the form.
   const onSubmit = (event: Event): void => event.preventDefault();
@@ -195,6 +253,8 @@ export function wireFilters(
   form.addEventListener('keydown', onKey);
   form.addEventListener('submit', onSubmit);
   return () => {
+    release();
+    phone.removeEventListener('change', setMode);
     form.removeEventListener('input', onInput);
     form.removeEventListener('change', onInput);
     form.removeEventListener('click', onClick);

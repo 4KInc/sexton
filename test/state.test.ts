@@ -116,6 +116,35 @@ describe('filters and search round-trip through the hash query', () => {
       expect(html).toMatch(new RegExp(`data-verdict="${v}"[^]*?fchip-count mono">${n}</span>`));
     }
   });
+  it('the Filters badge equals the number of removable pills, for any filters', () => {
+    fc.assert(
+      fc.property(arbFilters, (f) => {
+        const html = filtersHtml(all, f, reg.config, false);
+        const pills = (html.match(/data-remove=/g) ?? []).length;
+        const badge = /data-filter-badge( hidden)?>(\d+)</.exec(html)!;
+        expect(Number(badge[2])).toBe(pills);
+        expect(badge[1] !== undefined).toBe(pills === 0);
+      }),
+    );
+    // Two verdict chips are two pills.
+    expect(filtersHtml(all, withFilters({ verdicts: ['unquiet', 'shallow grave'] }), reg.config, false)).toContain('data-filter-badge>2<');
+  });
+  it('the table announces its count once, in the toolbar, with thousands separators', () => {
+    expect(filtersHtml(all, withFilters({ owner: 'US' }), reg.config, false, true)).toMatch(/class="filter-count mono" role="status">Showing \d+ of [\d,]+</);
+    expect(filtersHtml(all, withFilters({ owner: 'US' }), reg.config, false)).not.toMatch(/class="filter-count mono" role="status"/);
+    expect(readFileSync(join(ROOT, 'src/ui/views/table.ts'), 'utf8')).not.toContain('FILTERS.count');
+    expect(FILTERS.count(36, 1764)).toBe('36 of 1,764 objects match.');
+    expect(FILTERS.showing(36, 1764)).toBe('Showing 36 of 1,764');
+  });
+  it('on a phone the open panel is a modal dialog labelled by its heading, with the page behind inert and Tab trapped', () => {
+    const src = readFileSync(join(ROOT, 'src/ui/views/filters.ts'), 'utf8');
+    expect(src).toContain("panel.setAttribute('role', 'dialog')");
+    expect(src).toContain("panel.setAttribute('aria-modal', 'true')");
+    expect(src).toContain("panel.setAttribute('aria-labelledby', 'filter-sheet-title')");
+    expect(src).toContain('.inert = true');
+    expect(src).toContain("event.key === 'Tab'");
+    expect(filtersHtml(all, NO_FILTERS, reg.config, false)).toContain('<h2 class="filter-sheet-title" id="filter-sheet-title">Filters</h2>');
+  });
   it('only the Unquiet and Shallow grave chips are story chips (lantern when pressed)', () => {
     const html = filtersHtml(all, NO_FILTERS, reg.config, false);
     const story = [...html.matchAll(/class="fchip( chip--story)?" data-verdict="([^"]+)"/g)].filter((m) => m[1] !== undefined).map((m) => m[2]);
