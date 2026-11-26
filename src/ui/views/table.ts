@@ -13,8 +13,8 @@ import {
 import { formatP, formatSigned } from '../format.ts';
 import { esc } from '../html.ts';
 import { replaceQuery } from '../router.ts';
-import { applyFilters, hasFilters, NO_FILTERS, parseState, sortRecords, SORT_KEYS, toQuery } from '../state.ts';
-import type { Filters, Sort, SortKey, ViewState } from '../state.ts';
+import { applyFilters, DEFAULT_PAGING, firstPage, hasFilters, NO_FILTERS, PAGE_SIZES, pageSlice, parsePaging, parseState, sortRecords, SORT_KEYS, toQuery } from '../state.ts';
+import type { Filters, PageSize, PageSlice, Paging, Sort, SortKey, ViewState } from '../state.ts';
 import { chipHtml } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { fineHtml } from './fine.ts';
@@ -85,14 +85,35 @@ export function rowHtml(r: SatRecord, config: Config): string {
 }
 /** The order of the rows: the default order, or the reader's sort. The HTML table and the grid both use it. */
 export const orderRows = (shown: readonly SatRecord[], sort: Sort, byDefault: boolean): SatRecord[] => (byDefault ? defaultOrder(shown) : sortRecords(shown, sort));
-/** The table for an already filtered set. Sorting happens here. */
-export function tableHtml(shown: readonly SatRecord[], config: Config, sort: Sort, byDefault = false): string {
+/** The page of rows both renderers show: the set in its order, then pageSlice. Without `paging`, every row (print). */
+export const tablePage = (shown: readonly SatRecord[], sort: Sort, byDefault: boolean, paging: Paging | null): PageSlice<SatRecord> =>
+  pageSlice(orderRows(shown, sort, byDefault), paging?.page ?? 1, paging?.size ?? 'all');
+/**
+ * The table for an already filtered set. Sorting happens here, then the page is cut (all rows when `paging` is null).
+ * The row numbers carry on from the page before: the counter starts at the page's first row.
+ */
+export function tableHtml(shown: readonly SatRecord[], config: Config, sort: Sort, byDefault = false, paging: Paging | null = null): string {
   const key = `<span class="col-key"> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</span>`;
-  const rows = orderRows(shown, sort, byDefault).map((r) => rowHtml(r, config)).join('');
+  const slice = tablePage(shown, sort, byDefault, paging);
+  const rows = slice.rows.map((r) => rowHtml(r, config)).join('');
+  const start = slice.from > 1 ? ` style="counter-reset: rowno ${slice.from - 1}"` : '';
   return (
     `<div class="table-wrap" role="region" aria-label="${esc(TABLE.scrollLabel)}" tabindex="0">` +
     `<table class="register-table" role="table"><caption>${esc(TABLE.caption)}${key}</caption>` +
-    `<thead role="rowgroup"><tr role="row">${headerHtml(byDefault ? null : sort)}</tr></thead><tbody role="rowgroup">${rows}</tbody></table></div>`
+    `<thead role="rowgroup"><tr role="row">${headerHtml(byDefault ? null : sort)}</tr></thead><tbody role="rowgroup"${start}>${rows}</tbody></table></div>`
+  );
+}
+/** The pager under the table: Previous, the range on this page (announced politely), Next, and the page size. Hidden when there are no rows. */
+export function pagerHtml(slice: PageSlice<unknown>, size: PageSize): string {
+  const P = TABLE.pager;
+  const options = PAGE_SIZES.map((s) => `<option value="${s}"${s === size ? ' selected' : ''}>${s === 'all' ? P.all : s}</option>`).join('');
+  return (
+    `<nav class="pager" id="pager" aria-label="${esc(P.label)}"${slice.total === 0 ? ' hidden' : ''}>` +
+    `<button type="button" class="button" data-page="prev"${slice.page <= 1 ? ' disabled' : ''}>${esc(P.prev)}</button>` +
+    `<p class="pager-range mono" id="pager-range" role="status" aria-live="polite">${esc(P.range(slice.from, slice.to, slice.total))}</p>` +
+    `<button type="button" class="button" data-page="next"${slice.page >= slice.pages ? ' disabled' : ''}>${esc(P.next)}</button>` +
+    `<label class="pager-size" for="page-size">${esc(P.size)}</label><select id="page-size" data-page-size>${options}</select>` +
+    `</nav>`
   );
 }
 
@@ -118,7 +139,7 @@ export function introHtml(config: Config): string {
 
 /** Draws the table view into `root`. Returns a function that removes the listeners. */
 export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; config: Config; snapshot: { set: string } }, query: URLSearchParams): () => void {
-  let state: ViewState = parseState(query);
+  let state: ViewState = { ...parseState(query), paging: parsePaging(query) };
   // The toolbar (search, filters, count) comes first, then one line of fine print. The long text is behind "Limits"
   // and the verdict key is a closed panel, so the table starts high on the screen.
   const config = reg.config;
@@ -142,15 +163,34 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     `<p class="grid-caption" id="grid-caption" tabindex="-1" hidden>${esc(TABLE.caption)}<span class="grid-key"> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</span></p>` +
     `<div class="grid-host" id="grid-host" hidden></div>` +
     `<p class="grid-foot" id="grid-foot" hidden><span class="mono" id="grid-count"></span></p>` +
-    `<div id="table-host"></div>`;
+    `<div id="table-host"></div>` +
+    pagerHtml(pageSlice([], 1, DEFAULT_PAGING.size), DEFAULT_PAGING.size);
   const form = root.querySelector<HTMLFormElement>('#filters')!;
   const status = root.querySelector<HTMLElement>('#table-status')!;
   const host = root.querySelector<HTMLElement>('#table-host')!;
   const showAll = root.querySelector<HTMLButtonElement>('#show-all')!;
   const gridHost = root.querySelector<HTMLElement>('#grid-host')!;
   const gridCount = root.querySelector<HTMLElement>('#grid-count')!;
+  const pager = root.querySelector<HTMLElement>('#pager')!;
   let grid: GridHandle | null = null;
   let stopped = false;
+  /** While the page prints, the HTML table holds every matching row and the pager is hidden (print.css). */
+  let printing = false;
+  const paging = (): Paging => state.paging ?? DEFAULT_PAGING;
+  /** Brings the pager in line with a slice, in place, so the focused button keeps focus. */
+  const showPager = (slice: PageSlice<unknown>): void => {
+    pager.hidden = slice.total === 0;
+    const prev = pager.querySelector<HTMLButtonElement>('[data-page="prev"]')!;
+    const next = pager.querySelector<HTMLButtonElement>('[data-page="next"]')!;
+    const hadFocus = document.activeElement;
+    prev.disabled = slice.page <= 1;
+    next.disabled = slice.page >= slice.pages;
+    // A button that just turned disabled would drop focus to the page; hand it to the other one.
+    if (hadFocus === next && next.disabled && !prev.disabled) prev.focus();
+    if (hadFocus === prev && prev.disabled && !next.disabled) next.focus();
+    pager.querySelector('#pager-range')!.textContent = TABLE.pager.range(slice.from, slice.to, slice.total);
+    pager.querySelector<HTMLSelectElement>('#page-size')!.value = String(paging().size);
+  };
   // With no filter at all the table opens on the default view. Any filter, including "Show unmarked bones", leaves it,
   // and a link with a filter in it shows exactly what it showed before. A column the reader picks overrides the default order.
   let sorted = query.has('sort');
@@ -162,13 +202,53 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
       : sortNote;
     // No rows: the empty state says so and offers "Clear all". The toolbar's count ("Showing 0 of 1,764") is the live announcement.
     root.querySelector<HTMLElement>('#table-empty')!.hidden = shown.length > 0;
-    host.innerHTML = tableHtml(shown, reg.config, state.sort, byDefault && !sorted);
+    const plain = byDefault && !sorted;
+    // One page for both renderers. A page past the end falls back to page 1, and the address says so.
+    const slice = tablePage(shown, state.sort, plain, paging());
+    if (slice.page !== paging().page) {
+      state = { ...state, paging: { ...paging(), page: slice.page } };
+      replaceQuery(toQuery(state));
+    }
+    host.innerHTML = tableHtml(shown, reg.config, state.sort, plain, printing ? null : paging());
+    showPager(slice);
     gridCount.textContent = TABLE.gridRows(shown.length);
-    grid?.update(gridRows(shown, config, state.sort, byDefault && !sorted), byDefault && !sorted ? null : state.sort);
+    grid?.update(gridRows(shown, config, state.sort, plain), plain ? null : state.sort, { ...paging(), page: slice.page });
   };
+  const onPager = (event: Event): void => {
+    const button = (event.target as Element).closest<HTMLButtonElement>('button[data-page]');
+    if (button === null || button.disabled) return;
+    const p = paging();
+    state = { ...state, paging: { ...p, page: p.page + (button.dataset['page'] === 'next' ? 1 : -1) } };
+    replaceQuery(toQuery(state));
+    draw('');
+    host.querySelector<HTMLElement>('.table-wrap')?.scrollTo({ top: 0 });
+  };
+  const onPageSize = (event: Event): void => {
+    const value = (event.target as HTMLSelectElement).value;
+    const size = PAGE_SIZES.find((s) => String(s) === value) ?? DEFAULT_PAGING.size;
+    state = { ...state, paging: { page: 1, size } };
+    replaceQuery(toQuery(state));
+    draw('');
+  };
+  pager.addEventListener('click', onPager);
+  pager.addEventListener('change', onPageSize);
+  // Print every matching row: the browser says when it is about to print, and when it is done.
+  const onBeforePrint = (): void => {
+    printing = true;
+    draw('');
+  };
+  const onAfterPrint = (): void => {
+    printing = false;
+    draw('');
+  };
+  const printMedia = window.matchMedia('print');
+  const onPrintMedia = (e: MediaQueryListEvent): void => (e.matches ? onBeforePrint() : onAfterPrint());
+  window.addEventListener('beforeprint', onBeforePrint);
+  window.addEventListener('afterprint', onAfterPrint);
+  printMedia.addEventListener('change', onPrintMedia);
   /** The sort a reader picked from a grid header: the same path as the HTML header buttons. */
   const onGridSort = (sort: Sort): void => {
-    state = { ...state, sort };
+    state = firstPage({ ...state, sort });
     sorted = true;
     replaceQuery(toQuery(state));
     sortBy.value = PHONE_SORTS.includes(sort.key) ? sort.key : 'default';
@@ -188,6 +268,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
         grid = m.mountGrid(gridHost, {
           rows: gridRows(shown, config, state.sort, plain),
           sort: plain ? null : state.sort,
+          paging: { ...paging(), page: tablePage(shown, state.sort, plain, paging()).page },
           onSort: onGridSort,
           onOpen: (norad) => {
             window.location.hash = `#/sat/${norad}`;
@@ -227,13 +308,13 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   const onSortBy = (): void => {
     if (sortBy.value === 'default') {
       sorted = false;
-      state = { ...state, sort: parseState(new URLSearchParams()).sort };
+      state = firstPage({ ...state, sort: parseState(new URLSearchParams()).sort });
       replaceQuery(toQuery(state));
       draw('');
       return;
     }
     const key = sortBy.value as SortKey;
-    state = { ...state, sort: { key, dir: 'asc' } };
+    state = firstPage({ ...state, sort: { key, dir: 'asc' } });
     sorted = true;
     replaceQuery(toQuery(state));
     draw(TABLE.sortedBy(TABLE.columns[key], 'asc'));
@@ -244,7 +325,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     if (button === null) return;
     const key = button.dataset['sort'] as SortKey;
     const dir = state.sort.key === key && state.sort.dir === 'asc' ? 'desc' : 'asc';
-    state = { ...state, sort: { key, dir } };
+    state = firstPage({ ...state, sort: { key, dir } });
     sorted = true;
     replaceQuery(toQuery(state));
     sortBy.value = key;
@@ -266,5 +347,10 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     sortBy.removeEventListener('change', onSortBy);
     host.removeEventListener('click', onClick);
     root.removeEventListener('click', onEmptyClear);
+    pager.removeEventListener('click', onPager);
+    pager.removeEventListener('change', onPageSize);
+    window.removeEventListener('beforeprint', onBeforePrint);
+    window.removeEventListener('afterprint', onAfterPrint);
+    printMedia.removeEventListener('change', onPrintMedia);
   };
 }

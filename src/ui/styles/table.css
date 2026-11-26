@@ -399,6 +399,65 @@ th[aria-sort='descending'] .sort::after {
     min-width: 0;
   }
 }
+/* The pager, shared by the grid and the HTML table: Previous, the range on this page, Next, and the page size.
+   Sans for the buttons and the label, mono for the range, the toolbar's select look for the size. */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin: var(--space-1) 0 0;
+  padding: var(--space-1) 0;
+  border-top: 1px solid var(--rule);
+}
+.pager[hidden] {
+  display: none;
+}
+.pager .button {
+  min-height: 2.5rem;
+  min-width: 6rem;
+}
+.pager .button:disabled {
+  background: transparent;
+  color: var(--bone-muted);
+}
+.pager-range {
+  margin: 0;
+  min-width: 12rem;
+  color: var(--bone-soft);
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.pager-size {
+  margin-left: auto;
+  color: var(--bone-muted);
+  font-size: var(--fs-13);
+}
+.pager select {
+  min-height: 2.5rem;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--bone);
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+}
+@media (max-width: 600px) {
+  .pager {
+    justify-content: space-between;
+  }
+  .pager-range {
+    order: -1;
+    flex-basis: 100%;
+    text-align: left;
+  }
+  .pager-size {
+    margin-left: 0;
+  }
+}
 /* The desktop grid (AG Grid Community, themed from the tokens in grid.ts). It scrolls inside its own box, about the
    viewport tall, with its header and the Name column held in place. At 600 px and below, in print, and if the grid
    does not load, the HTML table above is shown instead. */

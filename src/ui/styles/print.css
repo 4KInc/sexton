@@ -180,9 +180,11 @@
   .pbar-tick::before {
     background: var(--ink-muted);
   }
-  /* The table on paper (redesign 4): the HTML table, never the grid. The controls are left off, the header and the
-     name column print as ink on paper, and the table is not a scroll box, so every row prints. */
+  /* The table on paper (redesign 4): the HTML table, never the grid. The controls and the pager are left off, the
+     header and the name column print as ink on paper, and the table is not a scroll box. Before printing, table.ts
+     fills it with every matching row, not only the page on screen. */
   .toolbar--table,
+  .pager,
   .sortbar,
   .guide--table,
   .filter-scrim {

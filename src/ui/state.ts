@@ -29,9 +29,20 @@ export interface Sort {
 }
 export const DEFAULT_SORT: Sort = { key: 'norad', dir: 'asc' };
 
+/** Rows per table page. "all" shows every matching row on one page. */
+export type PageSize = 25 | 50 | 100 | 'all';
+export const PAGE_SIZES: readonly PageSize[] = [25, 50, 100, 'all'];
+/** The table's page: 1-based, and the rows per page. Only the table carries it. */
+export interface Paging {
+  page: number;
+  size: PageSize;
+}
+export const DEFAULT_PAGING: Paging = { page: 1, size: 50 };
 export interface ViewState {
   filters: Filters;
   sort: Sort;
+  /** The table's page. Absent on the churchyard, so its addresses never carry page= or size=. */
+  paging?: Paging;
 }
 
 export const NO_FILTERS: Filters = { owner: null, verdicts: [], era: null, bones: false, q: '' };
@@ -60,6 +71,37 @@ export function parseSort(query: URLSearchParams): Sort {
 }
 
 export const parseState = (query: URLSearchParams): ViewState => ({ filters: parseFilters(query), sort: parseSort(query) });
+/**
+ * Reads page= (1-based) and size= (25, 50, 100 or all) from a hash query. A bad size gives 50 and a bad page gives 1.
+ * A page past the end of the rows is caught later, by pageSlice, which also falls back to page 1.
+ */
+export function parsePaging(query: URLSearchParams): Paging {
+  const s = query.get('size');
+  const size = PAGE_SIZES.find((p) => String(p) === s) ?? DEFAULT_PAGING.size;
+  const p = query.get('page');
+  const page = p !== null && /^[1-9]\d{0,5}$/.test(p) ? Number(p) : DEFAULT_PAGING.page;
+  return { page, size };
+}
+/** The state with its page back to 1, as after any change of filter, search or sort. The size is kept. */
+export const firstPage = (state: ViewState): ViewState => (state.paging === undefined ? state : { ...state, paging: { ...state.paging, page: 1 } });
+/** One page of already ordered rows. A page past the end, or below 1, falls back to page 1. `from` and `to` are 1-based and inclusive; both are 0 when there are no rows. */
+export interface PageSlice<T> {
+  rows: T[];
+  page: number;
+  pages: number;
+  from: number;
+  to: number;
+  total: number;
+}
+export function pageSlice<T>(rows: readonly T[], page: number, size: PageSize): PageSlice<T> {
+  const total = rows.length;
+  const per = size === 'all' ? Math.max(total, 1) : size;
+  const pages = Math.max(1, Math.ceil(total / per));
+  const at = Number.isInteger(page) && page >= 1 && page <= pages ? page : 1;
+  const start = (at - 1) * per;
+  const out = rows.slice(start, start + per);
+  return { rows: out, page: at, pages, from: total === 0 ? 0 : start + 1, to: start + out.length, total };
+}
 
 /** The canonical query: only non-default values, keys in a fixed order. */
 export function toQuery(state: ViewState): URLSearchParams {
@@ -74,6 +116,11 @@ export function toQuery(state: ViewState): URLSearchParams {
   if (sort.key !== DEFAULT_SORT.key || sort.dir !== DEFAULT_SORT.dir) {
     out.set('sort', sort.key);
     if (sort.dir === 'desc') out.set('dir', 'desc');
+  }
+  // The table's page, only when it is not the default (page 1, 50 rows).
+  if (state.paging !== undefined) {
+    if (state.paging.page !== DEFAULT_PAGING.page) out.set('page', String(state.paging.page));
+    if (state.paging.size !== DEFAULT_PAGING.size) out.set('size', String(state.paging.size));
   }
   return out;
 }

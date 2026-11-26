@@ -6,7 +6,7 @@ import { FILTERS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
 import type { Config } from '../../engine/config.ts';
 import { esc } from '../html.ts';
 import { replaceQuery } from '../router.ts';
-import { applyFilters, ERA_FILTERS, hasFilters, OWNER_NONE, ownersOf, parseFilters, toQuery } from '../state.ts';
+import { applyFilters, ERA_FILTERS, firstPage, hasFilters, OWNER_NONE, ownersOf, parseFilters, toQuery } from '../state.ts';
 import type { EraFilter, Filters, ViewState } from '../state.ts';
 import { glyphSvg } from './badge.ts';
 const ERA_LABEL: Record<EraFilter, string> = {
@@ -177,7 +177,8 @@ export function wireFilters(
     form.querySelector('.filter-count')!.textContent = countText(ctx.records, filters);
   };
   const sync = (filters: Filters): void => {
-    const next = { ...getState(), filters };
+    // Any change of filter or search goes back to the table's first page.
+    const next = firstPage({ ...getState(), filters });
     setState(next);
     replaceQuery(toQuery(next));
     refresh(filters);

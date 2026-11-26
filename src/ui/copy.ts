@@ -433,6 +433,14 @@ export const TABLE = {
   noVerdict: (reason: string): string => `No verdict: ${reason}`,
   scrollLabel: 'Table of objects. Scroll sideways to see every column.',
   gridRows: (n: number): string => `${formatCount(n)} ${n === 1 ? 'row' : 'rows'}`,
+  pager: {
+    label: 'Table pages',
+    prev: 'Previous',
+    next: 'Next',
+    size: 'Rows per page',
+    all: 'All',
+    range: (from: number, to: number, total: number): string => `Rows ${formatCount(from)}\u2013${formatCount(to)} of ${formatCount(total)}`,
+  },
 } as const;
 export const OFF_SCALE_ARROW = { above: '\u25B2', below: '\u25BC' } as const;
 /** One label per edge: how many objects are beyond the limit. */

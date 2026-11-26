@@ -4,14 +4,15 @@
 // is passed back to table.ts, which writes sort= into the address and hands the grid its new rows.
 // Modules: AG Grid's core already holds the client-side row model, sorting, column resize, pinning and keyboard
 // navigation. RowStyleModule adds getRowClass (the story row's lantern border), CellStyleModule adds cellClass (mono
-// numbers), ColumnApiModule adds getColumnState and applyColumnState (the sort in the header). Nothing else is registered.
-import { CellStyleModule, ColumnApiModule, createGrid, ModuleRegistry, RowStyleModule, themeQuartz } from 'ag-grid-community';
+// numbers), ColumnApiModule adds getColumnState and applyColumnState (the sort in the header), PaginationModule pages
+// the rows (Sexton draws its own pager under the grid, shared with the HTML table). Nothing else is registered.
+import { CellStyleModule, ColumnApiModule, createGrid, ModuleRegistry, PaginationModule, RowStyleModule, themeQuartz } from 'ag-grid-community';
 import type { CellKeyDownEvent, ColDef, GridApi, ICellRendererParams, RowClickedEvent, SortChangedEvent, SortDirection } from 'ag-grid-community';
 import { TABLE } from '../copy.ts';
 import { esc } from '../html.ts';
-import type { Sort, SortKey } from '../state.ts';
+import type { Paging, Sort, SortKey } from '../state.ts';
 import type { GridRow } from './grid-rows.ts';
-ModuleRegistry.registerModules([RowStyleModule, CellStyleModule, ColumnApiModule]);
+ModuleRegistry.registerModules([RowStyleModule, CellStyleModule, ColumnApiModule, PaginationModule]);
 /** Sexton's tokens as the grid's theme. Every colour is a token, read as a CSS variable. */
 export const sextonTheme = themeQuartz.withParams({
   backgroundColor: 'var(--surface-1)',
@@ -54,11 +55,13 @@ export interface GridOptionsIn {
   rows: GridRow[];
   /** The sort to show in the header, or null in the default order. */
   sort: Sort | null;
+  /** The page to show; its page number is already in range (pageSlice). */
+  paging: Paging;
   onSort: (sort: Sort) => void;
   onOpen: (norad: number) => void;
 }
 export interface GridHandle {
-  update: (rows: GridRow[], sort: Sort | null) => void;
+  update: (rows: GridRow[], sort: Sort | null, paging: Paging) => void;
   destroy: () => void;
 }
 const nameCell = (p: ICellRendererParams<GridRow>): string => {
@@ -122,6 +125,11 @@ export function mountGrid(host: HTMLElement, opts: GridOptionsIn): GridHandle {
     animateRows: false,
     // Sexton draws its own empty state above the grid, with a way out, so AG Grid's own overlay stays off.
     suppressNoRowsOverlay: true,
+    // Pages come from Sexton's address (page=, size=) and Sexton's own pager, so AG Grid's panel is not drawn.
+    pagination: opts.paging.size !== 'all',
+    paginationPageSize: opts.paging.size === 'all' ? 100 : opts.paging.size,
+    paginationPageSizeSelector: false,
+    suppressPaginationPanel: true,
     suppressDragLeaveHidesColumns: true,
     onSortChanged: (event: SortChangedEvent<GridRow>) => {
       if (applying || event.source !== 'uiColumnSorted') return;
@@ -143,12 +151,22 @@ export function mountGrid(host: HTMLElement, opts: GridOptionsIn): GridHandle {
       if (e?.key === 'Enter' && event.data?.ledger === true) opts.onOpen(event.data.norad);
     },
   });
+  /** Shows page `p.page` at `p.size` rows; "all" turns paging off. */
+  const showPage = (p: Paging): void => {
+    api.setGridOption('pagination', p.size !== 'all');
+    if (p.size !== 'all') {
+      api.setGridOption('paginationPageSize', p.size);
+      api.paginationGoToPage(p.page - 1);
+    }
+  };
   showSort(api, opts.sort);
+  showPage(opts.paging);
   return {
-    update: (rows, sort) => {
+    update: (rows, sort, paging) => {
       api.setGridOption('rowData', rows);
       // No row ids, so the rows are replaced whole and keep exactly the order given (and the new row numbers).
       showSort(api, sort);
+      showPage(paging);
     },
     destroy: () => api.destroy(),
   };

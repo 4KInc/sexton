@@ -93,7 +93,7 @@ describe('the grid module', () => {
     const shown = applyFilters(real.records, { ...NO_FILTERS, era: 'after' });
     const sort: Sort = { key: 'e', dir: 'desc' };
     const seen: Sort[] = [];
-    const grid = mountGrid(host, { rows: gridRows(shown, config, sort, false), sort, onSort: (s) => void seen.push(s), onOpen: () => {} });
+    const grid = mountGrid(host, { rows: gridRows(shown, config, sort, false), sort, paging: { page: 2, size: 25 }, onSort: (s) => void seen.push(s), onOpen: () => {} });
     await new Promise((r) => setTimeout(r, 50));
     expect(host.querySelector('[role="grid"], [role="treegrid"]')).not.toBeNull();
     const heads = [...host.querySelectorAll('.ag-header-cell')].map((h) => h.getAttribute('col-id'));
@@ -101,8 +101,15 @@ describe('the grid module', () => {
     // The legend sits directly above the grid, on screen, with the caption that names it.
     expect(read('src/ui/views/table.ts')).toMatch(/id="grid-caption"[^`]*TABLE\.caption[^`]*grid-key[^`]*TABLE\.colKey/);
     expect(host.querySelector('.ag-header-cell[col-id="e"]')!.getAttribute('aria-sort')).toBe('descending');
+    // Page 2 of 25 rows: the first row drawn is row 26, and AG Grid's own pager panel is not drawn.
+    const firstN = [...host.querySelectorAll('.ag-row')].map((r) => Number(r.querySelector('[col-id="n"]')?.textContent)).filter((n) => n > 0);
+    expect(Math.min(...firstN)).toBe(26);
+    expect(Math.max(...firstN)).toBeLessThanOrEqual(50);
+    // AG Grid keeps its own pager element, but hidden (suppressPaginationPanel); Sexton's pager is the one drawn.
+    const panel = host.querySelector('.ag-paging-panel');
+    expect(panel === null || panel.classList.contains('ag-hidden')).toBe(true);
     // A sort set by the code is not passed back as a reader's sort.
-    grid.update(gridRows(shown, config, { key: 'name', dir: 'asc' }, false), { key: 'name', dir: 'asc' });
+    grid.update(gridRows(shown, config, { key: 'name', dir: 'asc' }, false), { key: 'name', dir: 'asc' }, { page: 1, size: 'all' });
     await new Promise((r) => setTimeout(r, 50));
     expect(seen).toEqual([]);
     expect(host.querySelector('.ag-header-cell[col-id="name"]')!.getAttribute('aria-sort')).toBe('ascending');
@@ -115,7 +122,7 @@ describe('the grid module', () => {
     const src = read('src/ui/views/grid.ts');
     expect(src).not.toContain('AllCommunityModule');
     expect(src).not.toMatch(/ag-grid-enterprise|LicenseManager|licenseKey/);
-    expect(src).toMatch(/ModuleRegistry\.registerModules\(\[RowStyleModule, CellStyleModule, ColumnApiModule\]\)/);
+    expect(src).toMatch(/ModuleRegistry\.registerModules\(\[RowStyleModule, CellStyleModule, ColumnApiModule, PaginationModule\]\)/);
     const pkg = JSON.parse(read('package.json')) as { dependencies: Record<string, string> };
     expect(pkg.dependencies['ag-grid-community']).toMatch(/^\d+\.\d+\.\d+$/);
     expect(Object.keys(pkg.dependencies).some((d) => d.includes('enterprise'))).toBe(false);
