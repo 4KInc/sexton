@@ -8,7 +8,7 @@ import './styles/ledger.css';
 import './styles/census.css';
 import './styles/method.css';
 import './styles/print.css';
-import { NAV, PAGE_TITLES, SITE } from './copy.ts';
+import { NAV, PAGE_HEADINGS, PAGE_TITLES, SITE } from './copy.ts';
 import { esc, withSansDigits } from './html.ts';
 import { isRegister } from './register.ts';
 import type { UiRegister } from './register.ts';
@@ -48,6 +48,10 @@ function renderNav(route: Route): void {
 function heading(route: Route): string {
   if (route.name === 'sat') return `${PAGE_TITLES.sat}: NORAD ${route.norad}`;
   return PAGE_TITLES[route.name];
+}
+/** The h1. The same as the page title, except where PAGE_HEADINGS says it in the churchyard's words (the 404: "An empty plot"; its <title> stays "Not found · Sexton"). */
+function visibleHeading(route: Route): string {
+  return (route.name === 'sat' ? undefined : PAGE_HEADINGS[route.name]) ?? heading(route);
 }
 
 /** The list the visitor was last on, so a ledger can link back to it. A visitor who arrives on a ledger came from the churchyard. */
@@ -101,7 +105,7 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
     route.name === 'sat'
       ? `<p class="back-link"><a href="${esc(hashFor(lastList.name === 'table' ? 'table' : '', parseState(lastList.query)))}">${esc(SITE.backTo[lastList.name])}</a></p>`
       : '';
-  main.innerHTML = `<h1 id="page-title" tabindex="-1">${withSansDigits(heading(route))}</h1>${back}<div id="view"></div>`;
+  main.innerHTML = `<h1 id="page-title" tabindex="-1">${withSansDigits(visibleHeading(route))}</h1>${back}<div id="view"></div>`;
   const view = el('view');
   if (route.name === 'churchyard') {
     drawnNarrow = window.matchMedia(NARROW).matches;

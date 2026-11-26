@@ -20,8 +20,8 @@ Entry: Kiroween 2026, Costume Contest category. The graveyard interface is the d
 - The IADC disposal rule is voluntary and only partly followed. The rule: perigee raised at least 235 km + 1000·C_R·A/m above GEO, with eccentricity ≤ 0.003.
 - The FCC's first debris fine (DA 23-888, DISH, EchoStar-7, $150,000) found a disposal of about 122 km above GEO instead of the planned 300 km.
 - ESA's 2025 space environment report says 70–95% of GEO retirements succeed.
-- Roberts (Georgia Tech, 2025) published the audit method academically.
-- Sexton is the public, per-satellite, explorable instrument for that method. It credits Roberts wherever the method is described.
+- Roberts (Georgia Tech, 2025) published an academic audit of GEO disposal compliance.
+- Sexton is a public, per-satellite, explorable register built on the same idea. It credits Roberts for the idea wherever the method is described, and does not claim to reproduce that paper's method or figures (the paper was not opened). Sexton's formulas come from the IADC and FCC texts.
 
 ## Not in scope
 

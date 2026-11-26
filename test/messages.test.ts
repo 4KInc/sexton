@@ -3,13 +3,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { findHits } from '../scripts/check-language.ts';
+import { PAGE_HEADINGS, PAGE_TITLES } from '../src/ui/copy.ts';
 import type { UiRegister } from '../src/ui/register.ts';
 import { emptyFiltersHtml, loadErrorHtml, noStoneHtml, notFoundHtml, viewLoadErrorHtml } from '../src/ui/messages.ts';
 import { ledgerPageHtml } from '../src/ui/views/ledger.ts';
 const ROOT = process.cwd();
 const read = (f: string): string => readFileSync(join(ROOT, f), 'utf8');
 const real = JSON.parse(read('data/register.json')) as UiRegister;
-const text = (html: string): string => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+const text = (html: string): string => html.replace(/<span class="num">(\d+)<\/span>/g, '$1').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 describe('the messages', () => {
   it('not found: "No stone stands at this address." with a link back to the churchyard', () => {
     const html = notFoundHtml();
@@ -37,9 +38,21 @@ describe('the messages', () => {
     expect(real.records.some((r) => r.norad === 999999999)).toBe(false);
     for (const html of [noStoneHtml(999999999), ledgerPageHtml(real, 999999999)]) {
       expect(text(html)).toBe('No stone carries NORAD 999999999. Go to the table Back to the churchyard');
+      // The id is a reading: its digits are wrapped for the mono face, not drawn in IM Fell's old-style figures.
+      expect(html).toContain('No stone carries NORAD <span class="num">999999999</span>.');
       expect(html).toContain('<a href="#/table">Go to the table</a>');
       expect(html).toContain('<a href="#/">Back to the churchyard</a>');
     }
+  });
+  it('a number in a message is set in Plex Mono with tabular figures', () => {
+    expect(read('src/ui/styles/base.css')).toMatch(/\.message-text \.num\s*\{\s*font-family: var\(--font-mono\);\s*font-variant-numeric: tabular-nums;/);
+  });
+  it('the 404 heading is "An empty plot", and its page title stays "Not found · Sexton"', () => {
+    expect(PAGE_HEADINGS.notfound).toBe('An empty plot');
+    expect(PAGE_TITLES.notfound).toBe('Not found');
+    const main = read('src/ui/main.ts');
+    expect(main).toContain('document.title = `${heading(route)} · ${SITE.title}`;');
+    expect(main).toContain('withSansDigits(visibleHeading(route))');
   });
   it('every message passes the language check', () => {
     for (const html of [notFoundHtml(), loadErrorHtml(), viewLoadErrorHtml('#/method'), emptyFiltersHtml('x'), noStoneHtml(1)]) expect(findHits(text(html), 'messages')).toEqual([]);

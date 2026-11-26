@@ -332,6 +332,11 @@ main {
   align-items: center;
   margin: 0;
 }
+/* A number inside a message (a NORAD id) is a reading: Plex Mono, tabular figures. */
+.message-text .num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
 /* Over the churchyard, the empty message floats over the bare ground. */
 .plot .message--empty {
   position: absolute;

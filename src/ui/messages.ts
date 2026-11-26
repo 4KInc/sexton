@@ -1,9 +1,10 @@
 // The site's short error and empty-state messages (redesign 5). Each one says what happened, about the site only,
 // and gives one clear next action as a link or a button. Pure: no DOM, so each message and its action is tested.
 import { FILTERS, SITE } from './copy.ts';
-import { esc } from './html.ts';
+import { esc, withSansDigits } from './html.ts';
+/** `text` is set in the display face, so its digits go through withSansDigits (and the stylesheet sets them in mono). */
 const box = (role: string, text: string, actions: string): string =>
-  `<div class="message"${role === '' ? '' : ` role="${role}"`}><p class="message-text">${esc(text)}</p><p class="message-actions">${actions}</p></div>`;
+  `<div class="message"${role === '' ? '' : ` role="${role}"`}><p class="message-text">${withSansDigits(text)}</p><p class="message-actions">${actions}</p></div>`;
 /** An address that is no page of the site. */
 export const notFoundHtml = (): string => box('', SITE.notFound, `<a href="#/">${esc(SITE.backToChurchyard)}</a>`);
 /** register.json did not load. The button reloads the page. */

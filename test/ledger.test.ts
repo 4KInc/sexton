@@ -19,6 +19,8 @@ const EDGES = [200, 247, 280];
 /** The words a reader sees: tags removed, one line per element, entities decoded. */
 function textOf(html: string): string {
   return html
+    // A digit run wrapped for the mono face is inline text, not a block.
+    .replace(/<span class="num">(\d+)<\/span>/g, '$1')
     .replace(/<[^>]*>/g, '\n')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")

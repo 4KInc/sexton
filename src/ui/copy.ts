@@ -40,6 +40,8 @@ export const PAGE_TITLES = {
   method: 'Method',
   notfound: 'Not found',
 } as const;
+/** The visible heading of a page, where it differs from the page title (the 404 says it in the churchyard's words). */
+export const PAGE_HEADINGS: Partial<Record<keyof typeof PAGE_TITLES, string>> = { notfound: 'An empty plot' };
 
 /** First appearance of each term gets its one-line explanation (language.md). */
 export const TERMS = {
