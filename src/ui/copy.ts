@@ -401,6 +401,7 @@ export const TABLE = {
   defaultNote: (n: number): string =>
     `Default view: the ${formatCount(n)} payloads launched on or after 18 March 2002, the FCC rule date. Those below the IADC disposal threshold, under the stated assumptions, come first, then the rest by perigee, lowest first.`,
   showAll: (n: number): string => `Show all ${formatCount(n)}`,
+  downloadCsv: 'Download CSV',
   verdictKey: 'The verdict words',
   kicker: '\u00A7 02 \u00B7 The register',
   sortBy: 'Sort by',

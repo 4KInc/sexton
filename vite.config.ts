@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
 import { checkCaseDir } from './scripts/check-cases.ts';
@@ -26,6 +28,8 @@ function registerPlugin(): Plugin {
     },
     generateBundle() {
       this.emitFile({ type: 'asset', fileName: 'register.json', source: registerText(root).text });
+      // The link-preview image (og:image in index.html): the Devpost cover, 1200 by 630, at a fixed address on the site.
+      this.emitFile({ type: 'asset', fileName: 'og-cover.png', source: readFileSync(join(root, 'docs/images/devpost-cover.png')) });
     },
   };
 }

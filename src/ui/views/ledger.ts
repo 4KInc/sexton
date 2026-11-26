@@ -2,6 +2,7 @@
 // functions, so tests can read it without a DOM. Sections follow design 5.6.
 // The sentences live in ../ledger-text.ts, which the MCP server shares.
 import { noStoneHtml } from '../messages.ts';
+import { EXTERNAL, perigeeAside } from '../external.ts';
 import type { SatRecord } from '../../engine/types.ts';
 import { CARD, dataAge, LEDGER, assumptionsLine, CHURCHYARD_INTRO, METHOD_SECTIONS, NOTES, snapshotLabel, verdictCopy } from '../copy.ts';
 import { formatE, formatP, formatSigned } from '../format.ts';
@@ -37,10 +38,14 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
   const H = LEDGER.headings;
   const date = snapshotLabel(reg.snapshot.set).replace('CelesTrak snapshot, ', '');
   const era = v.era === 'before FCC rule' ? `<p class="era-badge">${esc(CARD.beforeRule)}</p>` : '';
+  // A figure from outside the register that the case file cites (src/ui/external.ts). The link prints with its address.
+  const ext = EXTERNAL.get(r.norad);
+  const fine = ext?.fine === undefined ? '' : `<p class="ledger-fine">${esc(ext.fine.before)}<a href="${esc(ext.fine.url)}">${esc(ext.fine.linkText)}</a>${esc(ext.fine.after)}</p>`;
+  const aside = ext?.perigee === undefined ? '' : `<span class="dd-aside">${esc(perigeeAside(ext.perigee, r.pKm))}</span>`;
   const identity = section(
     'identity',
     H.identity,
-    `<dl class="ledger-data">${row(F.name, r.name)}${row(F.norad, String(r.norad))}${row(F.designator, r.intlDes ?? LEDGER.notGiven)}${row(F.owner, r.owner ?? LEDGER.notGiven)}${row(F.launch, r.launchDate ?? LEDGER.unknown)}</dl>${era}`,
+    `<dl class="ledger-data">${row(F.name, r.name)}${row(F.norad, String(r.norad))}${row(F.designator, r.intlDes ?? LEDGER.notGiven)}${row(F.owner, r.owner ?? LEDGER.notGiven)}${row(F.launch, r.launchDate ?? LEDGER.unknown)}</dl>${era}${fine}`,
   );
   // The header card's badge carries the churchyard word and its meaning once, so this section holds the sentence only.
   const verdict = section('verdict', H.verdict, paras([verdictSentence(r, config)]));
@@ -64,7 +69,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     'orbit',
     H.orbit,
     `<p><strong>${esc(r.orbitSource.kind === 'GP' ? dataAge(r) : LEDGER.satcatSource)}</strong></p>` +
-      `<dl class="ledger-data">${row(F.perigee, `${pText} km`)}${row(F.apogee, `${formatSigned(r.qKm, decimals)} km`)}${row(F.eccentricity, formatE(r.e, config.iadc.eccentricityMax))}` +
+      `<dl class="ledger-data"><div><dt>${esc(F.perigee)}</dt><dd>${esc(`${pText} km`)}${aside}</dd></div>${row(F.apogee, `${formatSigned(r.qKm, decimals)} km`)}${row(F.eccentricity, formatE(r.e, config.iadc.eccentricityMax))}` +
       `${row(F.perigeeAltitude, `${formatSigned(r.perigeeKm, decimals).replace('+', '')} km`)}${row(F.apogeeAltitude, `${formatSigned(r.apogeeKm, decimals).replace('+', '')} km`)}</dl>` +
       paras(orbitNotes(r, config)) +
       noteHtml([NOTES.perigee(config.uncertaintyKm), NOTES.source(date)], METHOD_SECTIONS.gp),

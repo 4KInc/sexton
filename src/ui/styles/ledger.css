@@ -270,3 +270,17 @@
     gap: 0;
   }
 }
+/* A figure from outside the register, cited in the case file: the FCC order under the launch-era note, and the order's
+   perigee beside the register's. Muted, smaller, never in place of the register's own numbers. */
+.ledger-fine {
+  margin: var(--space-1) 0 0;
+  color: var(--bone-soft);
+  font-size: var(--fs-14);
+}
+.dd-aside {
+  display: block;
+  margin-top: 2px;
+  color: var(--bone-muted);
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+}

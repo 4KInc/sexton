@@ -49,6 +49,10 @@
   .era-badge {
     border-color: var(--ink);
   }
+  .ledger-fine,
+  .dd-aside {
+    color: var(--ink);
+  }
   a {
     color: var(--ink);
   }

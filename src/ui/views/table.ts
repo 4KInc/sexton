@@ -19,6 +19,7 @@ import { chipHtml } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { fineHtml } from './fine.ts';
 import { emptyFiltersHtml } from '../messages.ts';
+import { csvFileName, registerCsv } from '../csv.ts';
 import { gridRows } from './grid-rows.ts';
 import type { GridHandle } from './grid.ts';
 /** The grid replaces the HTML table above this width. At 600 px and below the table is the card list. */
@@ -147,7 +148,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   const isDefaultOrder = viewOf(reg.records, state.filters).byDefault && !query.has('sort');
   root.innerHTML =
     `<p class="kicker">${esc(TABLE.kicker)}</p><p class="lead">${esc(TABLE.lead)}</p>` +
-    `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, false, true)}<div class="view-note"><p class="status" id="table-status" role="status"></p><button type="button" class="button button--quiet" id="show-all" data-show-all hidden>${esc(TABLE.showAll(reg.records.length))}</button></div></div>` +
+    `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, false, true)}<div class="view-note"><p class="status" id="table-status" role="status"></p><button type="button" class="button button--quiet" id="show-all" data-show-all hidden>${esc(TABLE.showAll(reg.records.length))}</button><button type="button" class="button button--quiet" id="download-csv" data-download-csv>${esc(TABLE.downloadCsv)}</button></div></div>` +
     fineHtml(reg.snapshot.set, config, [
       TABLE.intro,
       TERMS.geo,
@@ -240,6 +241,22 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     replaceQuery(toQuery(state));
     draw('');
   };
+  // Every matching row in the order on screen, all pages, as a CSV file.
+  const csvButton = root.querySelector<HTMLButtonElement>('#download-csv')!;
+  const onCsv = (): void => {
+    const { byDefault, shown } = viewOf(reg.records, state.filters);
+    const text = registerCsv(orderRows(shown, state.sort, byDefault && !sorted), config, reg.snapshot.set);
+    // A byte-order mark, so a spreadsheet reads the names and the ± in UTF-8.
+    const url = URL.createObjectURL(new Blob(['\uFEFF', text], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = csvFileName(reg.snapshot.set);
+    document.body.append(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+  csvButton.addEventListener('click', onCsv);
   pager.addEventListener('click', onPager);
   pager.addEventListener('change', onPageSize);
   // Print every matching row: the browser says when it is about to print, and when it is done.
@@ -359,6 +376,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     host.removeEventListener('click', onClick);
     root.removeEventListener('click', onEmptyClear);
     pager.removeEventListener('click', onPager);
+    csvButton.removeEventListener('click', onCsv);
     pager.removeEventListener('change', onPageSize);
     window.removeEventListener('beforeprint', onBeforePrint);
     window.removeEventListener('afterprint', onAfterPrint);
