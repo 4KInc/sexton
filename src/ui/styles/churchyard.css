@@ -205,8 +205,9 @@
 
 /* The guided tour: one bar over the chart. Count, the step, and its three buttons. */
 .tour {
-  /* One slim line (design 3, step 1): the count, the sentence and "Skip the tour" sharing the middle column,
-     Back and Next at the end. No second line, so the bar never pushes the chart down more than ~40 px. */
+  /* The count, the sentence and "Leave the tour" share the middle column, Back and Next at the end, centred
+     on the bar's height. The sentence wraps (two lines on a desktop, more on a phone), so it is never cut off;
+     the bar grows taller instead. */
   display: flex;
   align-items: center;
   gap: var(--space-1) var(--space-2);
@@ -235,14 +236,12 @@
   min-width: 0;
 }
 .tour-text {
-  overflow: hidden;
   min-width: 0;
 }
 .tour-line {
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
   font-size: var(--fs-14);
   line-height: 1.35;
 }
@@ -976,7 +975,8 @@
   .tour--free {
     order: 0;
   }
-  /* The one slim line wraps here: the count and the sentence first, Back, Next and Skip below, right-aligned. */
+  /* Here the count and Back and Next share the first row, the buttons pushed to the right edge; the sentence and
+     "Leave the tour" take the full row below. */
   .tour {
     flex-wrap: wrap;
   }
@@ -984,10 +984,8 @@
     flex-basis: 100%;
     order: 1;
   }
-  .tour-line {
-    white-space: normal;
-  }
   .tour-actions {
+    margin-left: auto;
     justify-content: flex-end;
   }
   .stage .chart-note {

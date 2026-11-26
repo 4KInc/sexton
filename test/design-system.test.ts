@@ -171,7 +171,7 @@ describe('the guided tour', () => {
       `Mind the road. ${facts[0]}`,
       `I walk this line. ${facts[1]}`,
       `These I keep lit. ${facts[2]}`,
-      facts[3],
+      `This one walks the road. ${facts[3]}`,
     ]);
     // The sexton's own lines are short, carry no number, and stay about the churchyard.
     for (const [i, s] of steps.entries()) {
@@ -264,13 +264,15 @@ describe('fixes after the first look', () => {
     expect(html).toContain('696 retired payloads drawn.');
     expect(css).not.toMatch(/\.toolbar \.status\s*\{[^}]*text-overflow/);
   });
-  it('the tour bar is one slim line: the skip link sits beside the step, not under it', () => {
+  it('the tour bar: the leave link sits beside the step, and the step wraps instead of being cut off', () => {
     const html = tourHtml(0, tourSteps(real));
     expect(html.indexOf('class="tour-text"')).toBeLessThan(html.indexOf('data-tour="skip"'));
     expect(html).toMatch(/<button type="button" class="link-button" data-tour="skip">Leave the tour<\/button>/);
     expect(html.indexOf('data-tour="skip"')).toBeLessThan(html.indexOf('class="tour-actions"'));
     expect(css).toMatch(/\.tour\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;/);
-    expect(css).toMatch(/\.tour-line\s*\{[^}]*white-space:\s*nowrap/);
+    // Changed on purpose: the sentence wraps at every width, and nothing in the tour is cut off with an ellipsis.
+    expect(css).toMatch(/\.tour-line\s*\{[^}]*white-space:\s*normal/);
+    for (const m of css.matchAll(/([^{}]*\.tour[^{}]*)\{([^}]*)\}/g)) expect(m[2], m[1]).not.toMatch(/text-overflow|white-space:\s*nowrap/);
     expect(css).toMatch(/justify-content:\s*flex-end/);
     expect(css).toMatch(/\.link-button\s*\{[^}]*text-decoration:\s*underline/);
   });

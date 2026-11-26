@@ -74,8 +74,7 @@ export const TOUR = {
     zone: (km: number): string => `Mind the road. The road is the protected zone, \u00B1${km} km around GEO.`,
     rule: 'I walk this line. The FCC rule covers satellites launched from 18 March 2002.',
     story: (n: number, of: number): string => `These I keep lit. ${n} of ${of} launched since then sit in or near the zone.`,
-    // No first-person line here: the step line is one line, and a prefix would push the order number out of sight.
-    echostar: 'EchoStar 7: fined $150,000 by the FCC (DA 23-888). Perigee about 122 km against a planned 300 km.',
+    echostar: 'This one walks the road. EchoStar 7: fined $150,000 by the FCC (DA 23-888). Perigee about 122 km against a planned 300 km.',
   },
   zoneSub: 'The protected zone is the band the IADC guidelines ask retired satellites to leave.',
   ruleSub: 'The rule applies only to satellites the FCC authorizes. Stones launched before the line are dimmed.',
