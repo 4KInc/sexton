@@ -377,6 +377,7 @@ export const TABLE = {
   verdictKey: 'The verdict words',
   kicker: '\u00A7 02 \u00B7 The register',
   sortBy: 'Sort by',
+  sortDefault: 'Default: verdict, then perigee',
   verdictKeySummary: 'The verdict words, and what each one means',
   caption: 'Objects near GEO in the register',
   /** Shown in the table's caption: what the short column heads mean. */
@@ -417,7 +418,7 @@ export { MINUS };
  * test/census-page.test.ts checks this list against section 6.
  */
 export interface Comparison {
-  id: 'esa' | 'roberts';
+  id: 'esa';
   /** Name of the source, as design.md section 6 lists it. */
   source: string;
   /** What the source says. Never rendered while `verified` is false. */
@@ -439,15 +440,6 @@ export const COMPARISONS: readonly Comparison[] = [
     verified: true,
     where: 'Executive summary, page 7 of 146 (21 October 2025). Issue 10 of 8 September 2026 gives 70\u201390% in the same sentence',
     range: [70, 95],
-  },
-  {
-    id: 'roberts',
-    source: 'Roberts, Georgia Tech, 2025',
-    figure: 'Roberts: 73%.',
-    url: 'https://iac.gatech.edu/publications/pub/8089',
-    verified: false,
-    where: null,
-    range: null,
   },
 ];
 /** Method sections that a chart's caveat links to. Each is the id of a heading on the method page (tested against docs/methodology.md). */

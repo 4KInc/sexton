@@ -116,6 +116,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   // The toolbar (search, filters, count) comes first, then one line of fine print. The long text is behind "Limits"
   // and the verdict key is a closed panel, so the table starts high on the screen.
   const config = reg.config;
+  const isDefaultOrder = viewOf(reg.records, state.filters).byDefault && !query.has('sort');
   root.innerHTML =
     `<p class="kicker">${esc(TABLE.kicker)}</p><p class="lead">${esc(TABLE.lead)}</p>` +
     `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, state.filters.owner !== null || state.filters.era !== null || state.filters.verdicts.length > 0 || state.filters.bones, true)}<div class="view-note"><p class="status" id="table-status" role="status"></p><button type="button" class="button button--quiet" id="show-all" data-show-all hidden>${esc(TABLE.showAll(reg.records.length))}</button></div></div>` +
@@ -128,8 +129,8 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
       CHURCHYARD_INTRO.noRetirementDate,
       assumptionsLine(config),
       CHURCHYARD_INTRO.blindSpot,
-    ]) +
-    `<div class="sortbar"><label for="sort-by">${esc(TABLE.sortBy)}</label><select id="sort-by">${PHONE_SORTS.map((k) => `<option value="${k}"${state.sort.key === k ? ' selected' : ''}>${esc(TABLE.columns[k])}</option>`).join('')}</select></div>` +
+    ], undefined, true) +
+    `<div class="sortbar"><label for="sort-by">${esc(TABLE.sortBy)}</label><select id="sort-by"><option value="default"${isDefaultOrder ? ' selected' : ''}>${esc(TABLE.sortDefault)}</option>${PHONE_SORTS.map((k) => `<option value="${k}"${!isDefaultOrder && state.sort.key === k ? ' selected' : ''}>${esc(TABLE.columns[k])}</option>`).join('')}</select></div>` +
     `<details class="guide guide--table"><summary>${esc(TABLE.verdictKeySummary)}</summary><div class="guide-body">${verdictKeyHtml(config)}</div></details>` +
     `<div id="table-host"></div>`;
   const form = root.querySelector<HTMLFormElement>('#filters')!;
@@ -175,6 +176,13 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   form.addEventListener('click', onMore);
   const sortBy = root.querySelector<HTMLSelectElement>('#sort-by')!;
   const onSortBy = (): void => {
+    if (sortBy.value === 'default') {
+      sorted = false;
+      state = { ...state, sort: parseState(new URLSearchParams()).sort };
+      replaceQuery(toQuery(state));
+      draw('');
+      return;
+    }
     const key = sortBy.value as SortKey;
     state = { ...state, sort: { key, dir: 'asc' } };
     sorted = true;

@@ -12,10 +12,11 @@ import { esc } from '../html.ts';
  */
 export function fineHtml(snapshotSet: string, config: Config, limits: readonly string[], drawn?: string, short = false): string {
   const snapshot = snapshotLabel(snapshotSet);
+  const limitsItem =
+    `<li class="fine-limits"><details class="limits"><summary>${esc(HERO.limits)}</summary><div class="limits-body">${limits.map((t) => `<p>${esc(t)}</p>`).join('')}<p class="chart-note-mono">${esc(NOTES.method)} <a href="#/method?s=${METHOD_SECTIONS.rules}" aria-label="${esc(NOTES.link(METHOD_SECTIONS.rules))}">\u00A7</a> \u00B7 <a href="#/method?s=${METHOD_SECTIONS.blind}" aria-label="${esc(NOTES.link(METHOD_SECTIONS.blind))}">\u00A7</a></p></div></details></li>`;
   if (short) {
     return (
-      `<div class="hero-fine"><ul class="fine-list fine-list--short"><li>${esc(snapshot)}</li>` +
-      `<li class="fine-limits"><details class="limits"><summary>${esc(HERO.limits)}</summary><div class="limits-body">${limits.map((t) => `<p>${esc(t)}</p>`).join('')}<p class="chart-note-mono">${esc(NOTES.method)} <a href="#/method?s=${METHOD_SECTIONS.rules}" aria-label="${esc(NOTES.link(METHOD_SECTIONS.rules))}">\u00A7</a> \u00B7 <a href="#/method?s=${METHOD_SECTIONS.blind}" aria-label="${esc(NOTES.link(METHOD_SECTIONS.blind))}">\u00A7</a></p></div></details></li></ul></div>`
+      `<div class="hero-fine"><ul class="fine-list fine-list--short"><li>${esc(snapshot)}</li>` + limitsItem + '</ul></div>'
     );
   }
   const parts = HERO.fine(snapshot, config).map((t) => `<li>${esc(t)}</li>`);
@@ -30,7 +31,6 @@ export function fineHtml(snapshotSet: string, config: Config, limits: readonly s
   const row2 = parts.slice(rowSplit);
   const items = [...row1, '<li class="fine-break" aria-hidden="true"></li>', ...row2].join('');
   return (
-    `<div class="hero-fine"><ul class="fine-list">${items}` +
-    `<li class="fine-limits"><details class="limits"><summary>${esc(HERO.limits)}</summary><div class="limits-body">${limits.map((t) => `<p>${esc(t)}</p>`).join('')}<p class="chart-note-mono">${esc(NOTES.method)} <a href="#/method?s=${METHOD_SECTIONS.rules}" aria-label="${esc(NOTES.link(METHOD_SECTIONS.rules))}">\u00A7</a> \u00B7 <a href="#/method?s=${METHOD_SECTIONS.blind}" aria-label="${esc(NOTES.link(METHOD_SECTIONS.blind))}">\u00A7</a></p></div></details></li></ul></div>`
+    `<div class="hero-fine"><ul class="fine-list">${items}` + limitsItem + '</ul></div>'
   );
 }

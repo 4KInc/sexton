@@ -35,7 +35,7 @@ describe('comparison figures', () => {
     }
     expect(html).not.toMatch(/70\D{1,3}95|73\s?%/);
   });
-  it('the whole page, as shipped, shows the checked ESA range and not the Roberts figure', () => {
+  it('the whole page, as shipped, shows the checked ESA range and no Roberts figure', () => {
     const text = textOf(censusHtml(real));
     expect(text).toMatch(/70\D{1,3}95\s?%/);
     expect(text).toContain('Executive summary, page 7 of 146');
@@ -47,8 +47,6 @@ describe('comparison figures', () => {
     const html = comparisonHtml(list);
     expect(html).toContain(list[0]!.figure);
     expect(html).toContain(`href="${list[0]!.url}"`);
-    expect(html).not.toContain(list[1]!.figure);
-    expect(html).not.toContain(list[1]!.source);
   });
   it('a figure marked verified without a recorded place is still not rendered', () => {
     const html = comparisonHtml(COMPARISONS.map((c) => ({ ...c, verified: true, where: null })));
@@ -58,7 +56,7 @@ describe('comparison figures', () => {
     const design = read('.kiro/specs/sexton-core/design.md');
     const section = design.slice(design.indexOf('## 6. Sources'), design.indexOf('## 7. Testing'));
     for (const c of COMPARISONS) {
-      const row = section.split('\n').find((l) => l.startsWith('| ') && l.includes(c.id === 'esa' ? 'ESA: 70' : 'Roberts: 73%'));
+      const row = section.split('\n').find((l) => l.startsWith('| ') && l.includes('ESA: 70'));
       expect(row, c.id).toBeDefined();
       const designVerified = /\|\s*verified\s*\|/.test(row!);
       expect(c.verified, `${c.id} in copy.ts against design.md section 6`).toBe(designVerified);

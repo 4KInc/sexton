@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { disposalRate, postRuleSummary } from '../src/engine/headline.ts';
-import { COMPARISONS, verdictCopy, VERDICT_ORDER } from '../src/ui/copy.ts';
+import { COMPARISONS, TABLE, verdictCopy, VERDICT_ORDER } from '../src/ui/copy.ts';
 import type { UiRegister } from '../src/ui/register.ts';
 import { applyFilters, NO_FILTERS, parseFilters, sortRecords } from '../src/ui/state.ts';
 import { censusHtml, statsHtml, validationHtml } from '../src/ui/views/census.ts';
@@ -206,5 +206,17 @@ describe('the table default view (design 3, step 4)', () => {
     expect(tableHtml(shown, config, { key: 'norad', dir: 'asc' })).toContain('aria-sort="ascending"');
     const byNorad = sortRecords(shown, { key: 'norad', dir: 'asc' }).map((r) => r.norad);
     expect([...byNorad].sort((a, b) => a - b)).toEqual(byNorad);
+  });
+});
+describe('the sort control in the default view', () => {
+  it('names the order actually used, and a picked sort still replaces it', () => {
+    const src = read('src/ui/views/table.ts');
+    expect(src).toContain('<option value="default"');
+    expect(src).toContain('TABLE.sortDefault');
+    expect(TABLE.sortDefault).toBe('Default: verdict, then perigee');
+    expect(src).toContain("sortBy.value === 'default'");
+  });
+  it('uses the short readings strip, as the churchyard does', () => {
+    expect(read('src/ui/views/table.ts')).toMatch(/\], undefined, true\) \+/);
   });
 });

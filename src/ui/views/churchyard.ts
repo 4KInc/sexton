@@ -469,10 +469,10 @@ export function heroHtml(reg: UiRegister): string {
 export function isCoverCapture(query: URLSearchParams): boolean {
   return query.get('cover') === '1';
 }
-/** "Sexton — 36 of 131 retired GEO satellites still in or near the protected zone", for the cover capture only. */
+/** "Sexton — 36 of 131 retired GEO payloads launched since the 2002 FCC rule are still in or near the protected zone", for the cover capture only. */
 export function coverTitle(reg: Pick<UiRegister, 'records'>): string {
   const s = postRuleSummary(reg.records);
-  return `${SITE.title} \u2014 ${formatCount(s.inOrNearZone)} of ${formatCount(s.postRule)} retired GEO satellites still in or near the protected zone`;
+  return `${SITE.title} \u2014 ${formatCount(s.inOrNearZone)} of ${formatCount(s.postRule)} retired GEO payloads launched since the 2002 FCC rule are still in or near the protected zone`;
 }
 /** The verdict words with their stone shapes, in one row beside the chart. The meanings are in the guide below. */
 export function compactLegendHtml(config: Config): string {
