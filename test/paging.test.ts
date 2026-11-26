@@ -113,6 +113,18 @@ describe('the HTML table and the pager', () => {
     expect(pagerHtml(pageSlice(range(312), 7, 50), 50)).toContain('data-page="next" disabled');
     expect(pagerHtml(pageSlice(range(1764), 1, 'all'), 'all')).toContain('Rows 1\u20131,764 of 1,764');
   });
+  it('keeps the size label and its select together, and on a phone puts them on a second row at the right', () => {
+    const html = pagerHtml(pageSlice(range(312), 2, 50), 50);
+    expect(html).toMatch(/<span class="pager-size-group"><label class="pager-size" for="page-size">Rows per page<\/label><select id="page-size"[^>]*>[\s\S]*?<\/select><\/span>/);
+    const css = read('src/ui/styles/table.css');
+    expect(css).toMatch(/\.pager-size-group\s*\{[^}]*display: inline-flex;[^}]*flex: none;[^}]*white-space: nowrap;/);
+    expect(css).toMatch(/@media \(max-width: 600px\)\s*\{[^@]*\.pager\s*\{[^}]*display: grid;[^}]*grid-template-columns: auto minmax\(0, 1fr\) auto;[^@]*\.pager-size-group\s*\{[^}]*grid-column: 1 \/ -1;[^}]*justify-self: end;/);
+  });
+  it('the total is on screen once: the count under the grid shows only with all rows on one page, or with no pager', () => {
+    const table = read('src/ui/views/table.ts');
+    expect(table).toContain("gridFoot.hidden = grid === null || (pagerShown && paging().size !== 'all');");
+    expect(table).toContain('showFoot(slice.total > 0);');
+  });
   it('prints every row and no pager', () => {
     const css = read('src/ui/styles/print.css');
     expect(css).toMatch(/\.toolbar--table,\s*\.pager,/);

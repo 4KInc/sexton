@@ -429,8 +429,15 @@ th[aria-sort='descending'] .sort::after {
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
-.pager-size {
+.pager-size-group {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
   margin-left: auto;
+  white-space: nowrap;
+}
+.pager-size {
   color: var(--bone-muted);
   font-size: var(--fs-13);
 }
@@ -445,16 +452,24 @@ th[aria-sort='descending'] .sort::after {
   font-family: var(--font-mono);
   font-size: var(--fs-13);
 }
+/* A phone: two rows. Previous, the range (centred) and Next on the first; the size label and its select together,
+   at the right, on the second. */
 @media (max-width: 600px) {
   .pager {
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--space-1);
+  }
+  .pager .button {
+    min-width: 0;
   }
   .pager-range {
-    order: -1;
-    flex-basis: 100%;
-    text-align: left;
+    min-width: 0;
+    text-align: center;
   }
-  .pager-size {
+  .pager-size-group {
+    grid-column: 1 / -1;
+    justify-self: end;
     margin-left: 0;
   }
 }

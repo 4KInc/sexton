@@ -112,7 +112,8 @@ export function pagerHtml(slice: PageSlice<unknown>, size: PageSize): string {
     `<button type="button" class="button" data-page="prev"${slice.page <= 1 ? ' disabled' : ''}>${esc(P.prev)}</button>` +
     `<p class="pager-range mono" id="pager-range" role="status" aria-live="polite">${esc(P.range(slice.from, slice.to, slice.total))}</p>` +
     `<button type="button" class="button" data-page="next"${slice.page >= slice.pages ? ' disabled' : ''}>${esc(P.next)}</button>` +
-    `<label class="pager-size" for="page-size">${esc(P.size)}</label><select id="page-size" data-page-size>${options}</select>` +
+    // The label and its select are one unit, so they never wrap apart.
+    `<span class="pager-size-group"><label class="pager-size" for="page-size">${esc(P.size)}</label><select id="page-size" data-page-size>${options}</select></span>` +
     `</nav>`
   );
 }
@@ -171,12 +172,20 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   const showAll = root.querySelector<HTMLButtonElement>('#show-all')!;
   const gridHost = root.querySelector<HTMLElement>('#grid-host')!;
   const gridCount = root.querySelector<HTMLElement>('#grid-count')!;
+  const gridFoot = root.querySelector<HTMLElement>('#grid-foot')!;
   const pager = root.querySelector<HTMLElement>('#pager')!;
   let grid: GridHandle | null = null;
   let stopped = false;
   /** While the page prints, the HTML table holds every matching row and the pager is hidden (print.css). */
   let printing = false;
   const paging = (): Paging => state.paging ?? DEFAULT_PAGING;
+  /**
+   * The count under the grid ("131 rows") is shown only where the pager does not already give it: with all rows on one
+   * page, or with no pager. So the total is on screen once.
+   */
+  const showFoot = (pagerShown: boolean): void => {
+    gridFoot.hidden = grid === null || (pagerShown && paging().size !== 'all');
+  };
   /** Brings the pager in line with a slice, in place, so the focused button keeps focus. */
   const showPager = (slice: PageSlice<unknown>): void => {
     pager.hidden = slice.total === 0;
@@ -212,6 +221,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     host.innerHTML = tableHtml(shown, reg.config, state.sort, plain, printing ? null : paging());
     showPager(slice);
     gridCount.textContent = TABLE.gridRows(shown.length);
+    showFoot(slice.total > 0);
     grid?.update(gridRows(shown, config, state.sort, plain), plain ? null : state.sort, { ...paging(), page: slice.page });
   };
   const onPager = (event: Event): void => {
@@ -276,7 +286,8 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
         });
         // The grid is named by the caption above it, as the HTML table is by its <caption>.
         gridHost.querySelector('[role="grid"], [role="treegrid"]')?.setAttribute('aria-labelledby', 'grid-caption');
-        for (const el of [gridHost, root.querySelector<HTMLElement>('#grid-caption')!, root.querySelector<HTMLElement>('#grid-foot')!]) el.hidden = false;
+        for (const el of [gridHost, root.querySelector<HTMLElement>('#grid-caption')!]) el.hidden = false;
+        showFoot(!pager.hidden);
         root.classList.add('grid-on');
       })
       .catch(() => {
