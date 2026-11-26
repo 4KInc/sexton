@@ -14,8 +14,8 @@ import {
 import { formatP, formatSigned } from '../format.ts';
 import { esc } from '../html.ts';
 import { replaceQuery } from '../router.ts';
-import { applyFilters, hasFilters, parseState, sortRecords, SORT_KEYS, toQuery } from '../state.ts';
-import type { Sort, SortKey, ViewState } from '../state.ts';
+import { applyFilters, hasFilters, NO_FILTERS, parseState, sortRecords, SORT_KEYS, toQuery } from '../state.ts';
+import type { Filters, Sort, SortKey, ViewState } from '../state.ts';
 import { chipHtml } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { fineHtml } from './fine.ts';
@@ -24,9 +24,23 @@ import { fineHtml } from './fine.ts';
 const PHONE_SORTS: readonly SortKey[] = ['name', 'norad', 'launch', 'p'];
 const edgesOf = (config: Config): number[] => [config.protectedZoneKm, config.thresholdLowKm, config.thresholdHighKm];
 
-function headerHtml(sort: Sort): string {
+/** A story row: launched on or after the rule date, unquiet or in a shallow grave. The same test as the chart's story stones. */
+const isStoryRow = (r: SatRecord): boolean =>
+  r.verdict.kind === 'verdict' && r.verdict.era === null && (r.verdict.verdict === 'unquiet' || r.verdict.verdict === 'shallow grave');
+/** The default order: story rows first, then perigee, lowest first. Ties break on NORAD id. */
+export function defaultOrder(records: readonly SatRecord[]): SatRecord[] {
+  return [...records].sort((a, b) => Number(isStoryRow(b)) - Number(isStoryRow(a)) || a.pKm - b.pKm || a.norad - b.norad);
+}
+/** The default view's set: retired payloads launched on or after the rule date. */
+export const defaultSet = (records: readonly SatRecord[]): SatRecord[] => applyFilters(records, { ...NO_FILTERS, era: 'after' });
+/** The set the table shows. With no filter at all it is the default view. Any filter gives exactly applyFilters, as it always did. */
+export function viewOf(records: readonly SatRecord[], filters: Filters): { byDefault: boolean; shown: SatRecord[] } {
+  const byDefault = !hasFilters(filters);
+  return { byDefault, shown: byDefault ? defaultSet(records) : applyFilters(records, filters) };
+}
+function headerHtml(sort: Sort | null): string {
   return SORT_KEYS.map((key) => {
-    const aria = sort.key === key ? ` aria-sort="${sort.dir === 'asc' ? 'ascending' : 'descending'}"` : '';
+    const aria = sort !== null && sort.key === key ? ` aria-sort="${sort.dir === 'asc' ? 'ascending' : 'descending'}"` : '';
     const short = (TABLE.heads as Partial<Record<SortKey, string>>)[key];
     // A short head is drawn; the full name is read out.
     const label = short === undefined ? esc(TABLE.columns[key]) : `<span aria-hidden="true">${esc(short)}</span><span class="visually-hidden">${esc(TABLE.columns[key])}</span>`;
@@ -36,7 +50,7 @@ function headerHtml(sort: Sort): string {
 
 function verdictCell(r: SatRecord, config: Config): string {
   const v = r.verdict;
-  if (v.kind === 'verdict') return chipHtml(v.verdict, config);
+  if (v.kind === 'verdict') return chipHtml(v.verdict, config, isStoryRow(r) ? 'story' : v.era === null ? 'quiet' : v.era === 'before FCC rule' ? 'early' : null);
   if (v.kind === 'unmarked bones') return esc(TABLE.bones(r.status));
   return esc(TABLE.noVerdict(v.reason));
 }
@@ -66,13 +80,13 @@ export function rowHtml(r: SatRecord, config: Config): string {
   );
 }
 /** The table for an already filtered set. Sorting happens here. */
-export function tableHtml(shown: readonly SatRecord[], config: Config, sort: Sort): string {
+export function tableHtml(shown: readonly SatRecord[], config: Config, sort: Sort, byDefault = false): string {
   const key = `<span class="col-key"> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</span>`;
-  const rows = sortRecords(shown, sort).map((r) => rowHtml(r, config)).join('');
+  const rows = (byDefault ? defaultOrder(shown) : sortRecords(shown, sort)).map((r) => rowHtml(r, config)).join('');
   return (
     `<div class="table-wrap" role="region" aria-label="${esc(TABLE.scrollLabel)}" tabindex="0">` +
     `<table class="register-table" role="table"><caption>${esc(TABLE.caption)}${key}</caption>` +
-    `<thead role="rowgroup"><tr role="row">${headerHtml(sort)}</tr></thead><tbody role="rowgroup">${rows}</tbody></table></div>`
+    `<thead role="rowgroup"><tr role="row">${headerHtml(byDefault ? null : sort)}</tr></thead><tbody role="rowgroup">${rows}</tbody></table></div>`
   );
 }
 
@@ -104,7 +118,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   const config = reg.config;
   root.innerHTML =
     `<p class="kicker">${esc(TABLE.kicker)}</p><p class="lead">${esc(TABLE.lead)}</p>` +
-    `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, state.filters.owner !== null || state.filters.era !== null || state.filters.verdicts.length > 0 || state.filters.bones, true)}<p class="status" id="table-status" role="status"></p></div>` +
+    `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, state.filters.owner !== null || state.filters.era !== null || state.filters.verdicts.length > 0 || state.filters.bones, true)}<div class="view-note"><p class="status" id="table-status" role="status"></p><button type="button" class="button button--quiet" id="show-all" data-show-all hidden>${esc(TABLE.showAll(reg.records.length))}</button></div></div>` +
     fineHtml(reg.snapshot.set, config, [
       TABLE.intro,
       TERMS.geo,
@@ -121,16 +135,26 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   const form = root.querySelector<HTMLFormElement>('#filters')!;
   const status = root.querySelector<HTMLElement>('#table-status')!;
   const host = root.querySelector<HTMLElement>('#table-host')!;
+  const showAll = root.querySelector<HTMLButtonElement>('#show-all')!;
+  // With no filter at all the table opens on the default view. Any filter, including "Show unmarked bones", leaves it,
+  // and a link with a filter in it shows exactly what it showed before. A column the reader picks overrides the default order.
+  let sorted = query.has('sort');
   const draw = (sortNote: string): void => {
-    const shown = applyFilters(reg.records, state.filters);
-    status.textContent = [
-      shown.length === 0 && hasFilters(state.filters) ? FILTERS.none : FILTERS.count(shown.length, reg.records.length),
-      sortNote,
-    ]
-      .filter((s) => s !== '')
-      .join(' ');
-    host.innerHTML = tableHtml(shown, reg.config, state.sort);
+    const { byDefault, shown } = viewOf(reg.records, state.filters);
+    showAll.hidden = !byDefault;
+    status.textContent = byDefault
+      ? [TABLE.defaultNote(shown.length), sortNote].filter((s) => s !== '').join(' ')
+      : [shown.length === 0 ? FILTERS.none : FILTERS.count(shown.length, reg.records.length), sortNote].filter((s) => s !== '').join(' ');
+    host.innerHTML = tableHtml(shown, reg.config, state.sort, byDefault && !sorted);
   };
+  const onShowAll = (): void => {
+    // The same path as ticking the box: the form reads it, the address takes bones=1, the table redraws.
+    const box = form.querySelector<HTMLInputElement>('#f-bones')!;
+    box.checked = true;
+    box.dispatchEvent(new Event('change', { bubbles: true }));
+    host.querySelector<HTMLElement>('.table-wrap')?.focus();
+  };
+  showAll.addEventListener('click', onShowAll);
   draw('');
   const unwire = wireFilters(
     form,
@@ -153,6 +177,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   const onSortBy = (): void => {
     const key = sortBy.value as SortKey;
     state = { ...state, sort: { key, dir: 'asc' } };
+    sorted = true;
     replaceQuery(toQuery(state));
     draw(TABLE.sortedBy(TABLE.columns[key], 'asc'));
   };
@@ -163,6 +188,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     const key = button.dataset['sort'] as SortKey;
     const dir = state.sort.key === key && state.sort.dir === 'asc' ? 'desc' : 'asc';
     state = { ...state, sort: { key, dir } };
+    sorted = true;
     replaceQuery(toQuery(state));
     sortBy.value = key;
     draw(TABLE.sortedBy(TABLE.columns[key], dir));
@@ -172,6 +198,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   host.addEventListener('click', onClick);
   return () => {
     unwire();
+    showAll.removeEventListener('click', onShowAll);
     form.removeEventListener('click', onMore);
     sortBy.removeEventListener('change', onSortBy);
     host.removeEventListener('click', onClick);

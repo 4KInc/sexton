@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { findHits } from '../scripts/check-language.ts';
-import { LEDGER } from '../src/ui/copy.ts';
+import { assumptionsLine, LEDGER } from '../src/ui/copy.ts';
 import { marginsSentence } from '../src/ui/ledger-text.ts';
 import type { Retired } from '../src/ui/ledger-text.ts';
 import type { UiRegister } from '../src/ui/register.ts';
@@ -110,9 +110,12 @@ describe('the ledger page layout', () => {
     const labels = [...head.matchAll(/<dt>([^<]*)<\/dt><dd>([^<]*)<\/dd>/g)];
     expect(labels.map((m) => m[1])).toEqual(['Perigee above GEO', 'Apogee above GEO', 'Eccentricity', 'Orbit source and data age', 'Snapshot and sources', 'Assumptions']);
     expect(labels[0]![2]).toBe('+110.1 km');
-    expect(labels[3]![2]).toContain('GP mean elements, epoch 2026-11-22');
-    expect(labels[4]![2]).toBe('CelesTrak snapshot, 22 Nov 2026');
-    expect(labels[5]![2]).toContain('±25 km');
+    // Short values only (design 3, step 4): the sentence is in the Assumptions section, once.
+    expect(labels[3]![2]).toMatch(/^GP epoch 2026-11-22 \d\d:\d\d UTC$/);
+    expect(labels[4]![2]).toBe('22 Nov 2026');
+    expect(labels[5]![2]).toBe('C_R·A/m 0.012–0.045, ±25 km. See Assumptions.');
+    for (const m of labels) expect(m[2]!.length, m[1]).toBeLessThanOrEqual(50);
+    expect(page.split(assumptionsLine(real.config)).length - 1).toBe(1);
   });
   it('has two columns: the verdict and maths on the left, the object, elements and Cite this on the right', () => {
     const main = page.slice(page.indexOf('ledger-col--main'), page.indexOf('ledger-col--side'));

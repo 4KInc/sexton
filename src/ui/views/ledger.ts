@@ -78,7 +78,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     'cite',
     H.cite,
     `<ul class="cite">${LEDGER.citation(r.name, r.norad, reg.snapshot.set).map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` +
-      paras([assumptionsLine(config), LEDGER.citeNote]),
+      paras([LEDGER.citeNote]),
   );
   const actions = section(
     'actions',
@@ -95,9 +95,9 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
     [F.perigee, `${pText} km`],
     [F.apogee, `${formatSigned(r.qKm, decimals)} km`],
     [F.eccentricity, formatE(r.e, config.iadc.eccentricityMax)],
-    [H.orbit, r.orbitSource.kind === 'GP' ? dataAge(r) : LEDGER.satcatSource],
-    [H.snapshot, snapshotLabel(reg.snapshot.set)],
-    [H.assumptions, assumptionsLine(config)],
+    [H.orbit, r.orbitSource.kind === 'GP' ? LEDGER.strip.gp(r.orbitSource.epoch) : LEDGER.strip.satcat],
+    [H.snapshot, date],
+    [H.assumptions, LEDGER.strip.assumptions(config)],
   ];
   const head =
     `<header class="ledger-head"><p class="entry-no">No. ${r.norad}</p>` +

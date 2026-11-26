@@ -44,10 +44,10 @@
 }
 .readings dt {
   color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 .readings dd {
   margin: 4px 0 0;

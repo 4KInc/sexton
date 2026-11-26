@@ -308,7 +308,13 @@ export const LEDGER = {
     `${snapshotLabel(snapshotDate)}.`,
     `${SITE.url}#/sat/${norad}`,
   ],
-  citeNote: 'A verdict holds only under its assumptions and for the data of this snapshot. Cite them with it.',
+  citeNote: 'A verdict holds only under the Assumptions above and for the data of this snapshot. Cite them with it.',
+  /** The readings strip takes short values only. The sentence is in the Assumptions section. */
+  strip: {
+    assumptions: (config: Config): string => `C_R\u00B7A/m ${config.iadc.crAmMin}\u2013${config.iadc.crAmMax}, \u00B1${config.uncertaintyKm} km. See Assumptions.`,
+    satcat: 'SATCAT, no element date',
+    gp: (epoch: string): string => `GP epoch ${epoch.slice(0, 10)} ${epoch.slice(11, 16)} UTC`,
+  },
   fields: {
     name: 'Name',
     norad: 'NORAD id',
@@ -362,8 +368,12 @@ export const LEDGER = {
   footer: (set: string): string => `Sexton register, snapshot ${set}. Source files and their SHA-256 hashes:`,
 } as const;
 export const TABLE = {
-  intro: 'Every object the register holds, with the same numbers as the churchyard.',
-  lead: 'Every object the register holds, one numbered line each, with the same numbers as the churchyard.',
+  intro: 'The objects the register holds, with the same numbers as the churchyard.',
+  lead: 'The register, one numbered line each, with the same numbers as the churchyard.',
+  /** The default view: a filter, said plainly, with one control to leave it. */
+  defaultNote: (n: number): string =>
+    `Default view: the ${formatCount(n)} payloads launched on or after 18 March 2002, the FCC rule date. Those below the IADC disposal threshold, under the stated assumptions, come first, then the rest by perigee, lowest first.`,
+  showAll: (n: number): string => `Show all ${formatCount(n)}`,
   verdictKey: 'The verdict words',
   kicker: '\u00A7 02 \u00B7 The register',
   sortBy: 'Sort by',
@@ -500,7 +510,6 @@ export const VALIDATION = {
   above: 'Sexton\u2019s share is above the published range. Sexton has not adjusted its method to match.',
   noGroup: (year: number): string => `No retired payload in the register was launched after ${year}.`,
   noPublished: 'No published range has been checked against its source yet.',
-  notRoberts: 'Roberts (2025) is not shown: the paper has not been opened, and its figure and its method are unchecked.',
 } as const;
 export const HEADLINE = {
   heading: 'Launched on or after 18 March 2002',
@@ -607,7 +616,6 @@ export const CENSUS = {
   },
   comparison: {
     intro: 'Other studies give success rates for disposal in GEO. Each figure is shown only after someone has found it in the source itself.',
-    pending: (source: string): string => `Comparison with ${source} pending a checked source.`,
     verified: (source: string, where: string): string => `Source: ${source}, ${where}.`,
   },
   caveat: {

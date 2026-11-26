@@ -97,10 +97,15 @@ describe('tokens and surfaces', () => {
     expect(opacity).toBeLessThanOrEqual(0.05);
     expect(base).not.toMatch(/animation|transition/);
   });
-  it('shows the header as a wordmark, a mono kicker and mono nav links with a hairline underline', () => {
+  it('shows the header as a wordmark, a sans tagline and sans nav links (13 px or more) with a hairline underline', () => {
     const base = strip(read('src/ui/styles/base.css'));
-    expect(/\.site-tagline\s*\{([^}]*)\}/.exec(base)![1]).toMatch(/font-family:\s*var\(--font-mono\)[^}]*text-transform:\s*uppercase/);
-    expect(/\.nav-list a\s*\{([^}]*)\}/.exec(base)![1]).toMatch(/font-family:\s*var\(--font-mono\)[^}]*text-transform:\s*uppercase/);
+    // Design 3, step 4: spaced mono capitals are for section marks, ticks, zone names and numbers only.
+    for (const sel of ['\\.site-tagline', '\\.nav-list a', '\\.button']) {
+      const rule = new RegExp(`${sel}\\s*\\{([^}]*)\\}`).exec(base)![1]!;
+      expect(rule, sel).toMatch(/font-family:\s*var\(--font-body\)/);
+      expect(rule, sel).toMatch(/font-size:\s*var\(--fs-1[345]\)/);
+      expect(rule, sel).not.toMatch(/uppercase/);
+    }
     expect(base).toMatch(/\.nav-list a\[aria-current='page'\]\s*\{[^}]*border-bottom:\s*1px solid var\(--bone\)/);
     expect(read('index.html')).toContain('Register of retired geostationary satellites');
   });
@@ -264,5 +269,17 @@ describe('fixes after the first look', () => {
   it('folds GEO and perigee into the caption, and puts the glossary in the first tour step', () => {
     expect(tourSteps(real)[0]!.sub).toBe('The protected zone is the band the IADC guidelines ask retired satellites to leave.');
     expect(read('src/ui/views/churchyard.ts')).not.toContain('stage-terms');
+  });
+});
+describe('mono capitals (design 3, step 4)', () => {
+  it('are kept for section marks, chart zone names, axis text and number units only', () => {
+    const allowed = /^(\.kicker,\s*\.mono-label|\.band-name|\.axis-title|\.zone-label|\.fcc-label|\.break-label|\.pbar-unit)$/;
+    const dir = join(ROOT, 'src/ui/styles');
+    for (const f of readdirSync(dir).filter((n) => n.endsWith('.css'))) {
+      const css = readFileSync(join(dir, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+        if (/text-transform:\s*uppercase/.test(m[2]!)) expect(m[1]!.trim(), `${f}: ${m[1]!.trim()}`).toMatch(allowed);
+      }
+    }
   });
 });

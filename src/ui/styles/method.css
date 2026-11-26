@@ -87,15 +87,20 @@
   border-top: 1px solid var(--rule-strong);
   font-size: var(--fs-14);
 }
+/* The terms line spans the grid, so the three boxes below it fill one row with no hole. */
+.msec--glance .msec-body > p:first-child {
+  grid-column: 1 / -1;
+  max-width: none;
+}
 .msec--glance strong {
   display: block;
   margin-bottom: 4px;
   color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
   font-weight: 400;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 .method pre {
   overflow-x: auto;
@@ -126,10 +131,10 @@
 .toc > summary {
   padding: var(--space-1) var(--space-2);
   color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  letter-spacing: 0.02em;
+  text-transform: none;
   cursor: pointer;
 }
 .toc ul {

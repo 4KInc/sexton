@@ -26,11 +26,11 @@ const textOf = (html: string): string =>
     .replace(/\s+/g, ' ');
 
 describe('comparison figures', () => {
-  it('an unverified figure is not rendered, only the pending line', () => {
+  it('an unverified figure is not rendered, and its source is not named', () => {
     const html = comparisonHtml(COMPARISONS.map((c) => ({ ...c, verified: false })));
     for (const c of COMPARISONS) {
       expect(html).not.toContain(c.figure);
-      expect(html).toContain(`Comparison with ${c.source} pending a checked source.`);
+      expect(html).not.toContain(c.source);
       expect(html).not.toContain(c.url);
     }
     expect(html).not.toMatch(/70\D{1,3}95|73\s?%/);
@@ -40,7 +40,7 @@ describe('comparison figures', () => {
     expect(text).toMatch(/70\D{1,3}95\s?%/);
     expect(text).toContain('Executive summary, page 7 of 146');
     expect(text).not.toMatch(/\b73\s?%/);
-    expect(text).toContain('pending a checked source');
+    expect(text).not.toMatch(/Roberts|pending a checked source/);
   });
   it('a verified figure is rendered with its source and link, and only that one', () => {
     const list: Comparison[] = COMPARISONS.map((c, i) => (i === 0 ? { ...c, verified: true, where: 'page 12' } : { ...c }));
@@ -48,7 +48,7 @@ describe('comparison figures', () => {
     expect(html).toContain(list[0]!.figure);
     expect(html).toContain(`href="${list[0]!.url}"`);
     expect(html).not.toContain(list[1]!.figure);
-    expect(html).toContain('pending a checked source');
+    expect(html).not.toContain(list[1]!.source);
   });
   it('a figure marked verified without a recorded place is still not rendered', () => {
     const html = comparisonHtml(COMPARISONS.map((c) => ({ ...c, verified: true, where: null })));

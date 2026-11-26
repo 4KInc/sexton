@@ -381,11 +381,11 @@
 .census .register-table thead th {
   background: none;
   color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
   font-weight: 400;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 .census .register-table tbody th {
   font-weight: 400;

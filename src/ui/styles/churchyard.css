@@ -161,10 +161,10 @@
   padding: var(--space-1) var(--space-2);
   background: var(--surface-2);
   border-radius: var(--radius);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  letter-spacing: 0.02em;
+  text-transform: none;
   cursor: pointer;
 }
 .toolbar .filters {
@@ -279,9 +279,9 @@
   background: none;
   border: 0;
   color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  letter-spacing: 0.06em;
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  letter-spacing: 0.02em;
   text-decoration: underline;
   text-underline-offset: 0.25em;
   white-space: nowrap;

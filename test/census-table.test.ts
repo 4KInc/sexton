@@ -6,10 +6,10 @@ import { describe, expect, it } from 'vitest';
 import { disposalRate, postRuleSummary } from '../src/engine/headline.ts';
 import { COMPARISONS, verdictCopy, VERDICT_ORDER } from '../src/ui/copy.ts';
 import type { UiRegister } from '../src/ui/register.ts';
-import { NO_FILTERS } from '../src/ui/state.ts';
+import { applyFilters, NO_FILTERS, parseFilters, sortRecords } from '../src/ui/state.ts';
 import { censusHtml, statsHtml, validationHtml } from '../src/ui/views/census.ts';
 import { filtersHtml } from '../src/ui/views/filters.ts';
-import { rowHtml, tableHtml } from '../src/ui/views/table.ts';
+import { defaultOrder, defaultSet, rowHtml, tableHtml, viewOf } from '../src/ui/views/table.ts';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const read = (p: string): string => readFileSync(join(ROOT, p), 'utf8');
 const css = (f: string): string => read(`src/ui/styles/${f}`).replace(/\/\*[\s\S]*?\*\//g, '');
@@ -72,7 +72,7 @@ describe('the table', () => {
     for (const v of VERDICT_ORDER) {
       const r = real.records.find((x) => x.verdict.kind === 'verdict' && x.verdict.verdict === v)!;
       const row = rowHtml(r, config);
-      expect(row).toContain(`<span class="chip"><svg class="glyph"`);
+      expect(row).toMatch(/<span class="chip( chip--(story|quiet|early))?"><svg class="glyph"/);
       expect(row).toContain(`<span class="chip-word">${verdictCopy(v, config).word}</span>`);
       expect(row).toMatch(/aria-hidden="true"/);
     }
@@ -162,5 +162,49 @@ describe('the table on a phone (below 600 px)', () => {
     expect(before).not.toMatch(/td:nth-child\(4\)::before/);
     expect(before).not.toMatch(/position:\s*absolute;[^}]*right:\s*0/);
     expect(before).toMatch(/\.register-table thead th\s*\{[^}]*position:\s*sticky/);
+  });
+});
+
+describe('the table default view (design 3, step 4)', () => {
+  const all = real.records;
+  const storyOf = (r: (typeof all)[number]): boolean =>
+    r.verdict.kind === 'verdict' && r.verdict.era === null && (r.verdict.verdict === 'unquiet' || r.verdict.verdict === 'shallow grave');
+  it('with no filter shows only launches on or after the rule date: 131 payloads', () => {
+    const v = viewOf(all, NO_FILTERS);
+    expect(v.byDefault).toBe(true);
+    expect(v.shown).toHaveLength(postRuleSummary(all).postRule);
+    expect(v.shown.every((r) => r.verdict.kind === 'verdict' && r.verdict.era === null)).toBe(true);
+  });
+  it('puts unquiet and shallow grave first, then perigee, lowest first', () => {
+    const order = defaultOrder(defaultSet(all));
+    const firstOther = order.findIndex((r) => !storyOf(r));
+    expect(firstOther).toBe(order.filter(storyOf).length);
+    for (const part of [order.slice(0, firstOther), order.slice(firstOther)]) {
+      for (let i = 1; i < part.length; i++) expect(part[i]!.pKm).toBeGreaterThanOrEqual(part[i - 1]!.pKm);
+    }
+  });
+  it('lights only the story rows in lantern', () => {
+    for (const r of defaultSet(all)) {
+      const html = rowHtml(r, config);
+      expect(html.includes('chip--story'), String(r.norad)).toBe(storyOf(r));
+    }
+  });
+  it('an explicit filter link gives exactly what applyFilters gives, in the order it always had', () => {
+    const queries = ['owner=US', 'verdict=unquiet', 'verdict=buried&verdict=uncertain', 'era=before', 'era=after', 'era=unknown', 'bones=1', 'q=echostar', 'q=27378', 'owner=US&era=after&verdict=unquiet&sort=p&dir=desc'];
+    for (const qs of queries) {
+      const f = parseFilters(new URLSearchParams(qs));
+      const v = viewOf(all, f);
+      expect(v.byDefault, qs).toBe(false);
+      expect(v.shown.map((r) => r.norad), qs).toEqual(applyFilters(all, f).map((r) => r.norad));
+    }
+    // "bones=1" is "Show all": every one of the register's objects.
+    expect(viewOf(all, parseFilters(new URLSearchParams('bones=1'))).shown).toHaveLength(all.length);
+  });
+  it('the default order marks no sorted column; a chosen sort does', () => {
+    const shown = defaultSet(all);
+    expect(tableHtml(shown, config, { key: 'norad', dir: 'asc' }, true)).not.toContain('aria-sort');
+    expect(tableHtml(shown, config, { key: 'norad', dir: 'asc' })).toContain('aria-sort="ascending"');
+    const byNorad = sortRecords(shown, { key: 'norad', dir: 'asc' }).map((r) => r.norad);
+    expect([...byNorad].sort((a, b) => a - b)).toEqual(byNorad);
   });
 });

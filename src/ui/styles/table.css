@@ -39,10 +39,10 @@
 .field legend {
   padding: 0;
   color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 .field .check-list label {
   color: var(--bone);
@@ -131,10 +131,10 @@
   text-align: left;
   padding: var(--space-1) 0;
   color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 .register-table th,
 .register-table td {
@@ -151,12 +151,12 @@
   z-index: 2;
   border-bottom: 1px solid var(--rule-strong);
   color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
   font-weight: 400;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   line-height: 1.3;
-  text-transform: uppercase;
+  text-transform: none;
   text-wrap: nowrap;
 }
 #table-host .register-table thead th:nth-child(2),
@@ -281,6 +281,18 @@ th[aria-sort='descending'] .sort::after {
   width: 1rem;
   height: 1.2rem;
 }
+/* The chart's marks: lantern for the story, muted bone at 60% for other post-rule payloads, moss at 43% for older ones. */
+.chip--story .glyph {
+  --mark: var(--lantern);
+}
+.chip--quiet .glyph {
+  --mark: var(--bone-muted);
+  opacity: 0.6;
+}
+.chip--early .glyph {
+  --mark: var(--moss);
+  opacity: 0.43;
+}
 .chip-word {
   font-size: var(--fs-14);
 }
@@ -361,10 +373,24 @@ th[aria-sort='descending'] .sort::after {
 }
 .toolbar--table .status {
   margin: 0;
-  max-width: none;
-  color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
+  max-width: 78ch;
+  color: var(--bone-soft);
+  font-size: var(--fs-14);
+  line-height: 1.45;
+}
+/* The default view's note and its one way out, side by side. */
+.view-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+.view-note [hidden] {
+  display: none;
+}
+.view-note .button {
+  white-space: nowrap;
+  min-height: 2.5rem;
 }
 .guide--table {
   margin: var(--space-1) 0 var(--space-2);
@@ -407,10 +433,10 @@ th[aria-sort='descending'] .sort::after {
   }
   .sortbar label {
     color: var(--bone-muted);
-    font-family: var(--font-mono);
-    font-size: var(--fs-12);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-family: var(--font-body);
+    font-size: var(--fs-13);
+    letter-spacing: 0.02em;
+    text-transform: none;
   }
   .sortbar select {
     min-height: 2.5rem;

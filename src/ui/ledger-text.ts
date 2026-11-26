@@ -132,6 +132,6 @@ export function ledgerText(r: Retired, reg: UiRegister, caseFile?: CaseFile): st
     parts.push(block(H.caseFile, [...(caseFile.provisional ? [LEDGER.provisional] : []), caseFile.title, '', caseFile.body]));
   }
   parts.push(block(H.context, [CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.noRetirementDate]));
-  parts.push(block(H.cite, [...LEDGER.citation(r.name, r.norad, reg.snapshot.set), assumptionsLine(config), LEDGER.citeNote]));
+  parts.push(block(H.cite, [...LEDGER.citation(r.name, r.norad, reg.snapshot.set), LEDGER.citeNote]));
   return parts.join('\n\n');
 }

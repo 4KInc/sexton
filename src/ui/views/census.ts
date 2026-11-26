@@ -97,15 +97,14 @@ export function gpzStatusCount(records: readonly SatRecord[]): number {
   return records.filter((r) => r.verdict.kind === 'verdict' && r.statusSource === 'GPZ table').length;
 }
 
-/** The comparison list: a figure only when verified, otherwise the pending line. Never the figure itself. */
+/** The comparison list: only figures found in a source that was opened. An unchecked source is not named. */
 export function comparisonHtml(comparisons: readonly Comparison[] = COMPARISONS): string {
   const items = comparisons
-    .map((c) => {
-      if (c.verified && c.where !== null) {
-        return `<li data-published>${esc(c.figure)} ${esc(CENSUS.comparison.verified(c.source, c.where))} <a href="${esc(c.url)}">${esc(c.source)}</a></li>`;
-      }
-      return `<li>${esc(CENSUS.comparison.pending(c.source))}</li>`;
-    })
+    .map((c) =>
+      c.verified && c.where !== null
+        ? `<li data-published>${esc(c.figure)} ${esc(CENSUS.comparison.verified(c.source, c.where))} <a href="${esc(c.url)}">${esc(c.source)}</a></li>`
+        : '',
+    )
     .join('');
   return `<p>${esc(CENSUS.comparison.intro)}</p><ul>${items}</ul>`;
 }
@@ -249,7 +248,7 @@ export function validationHtml(records: readonly SatRecord[], comparisons: reado
   const r = disposalRate(records, config);
   if (r.n === 0) return `<p>${esc(VALIDATION.noGroup(r.afterLaunchYear))}</p>`;
   const found = comparisons.find((c) => c.verified && c.where !== null && c.range !== null);
-  const head = `<aside class="vnote"><h3>${esc(VALIDATION.groupsTitle)}</h3><p>${esc(VALIDATION.intro(r.afterLaunchYear))}</p><p>${esc(VALIDATION.notRoberts)}</p></aside>`;
+  const head = `<aside class="vnote"><h3>${esc(VALIDATION.groupsTitle)}</h3><p>${esc(VALIDATION.intro(r.afterLaunchYear))}</p></aside>`;
   const row = (k: string, v: string, attr: string): string =>
     `<div><dt>${esc(k)}</dt><dd data-validation="${attr}"${attr === 'published' ? ' data-published' : ''}>${esc(v)}</dd></div>`;
   let rows =
