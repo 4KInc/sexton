@@ -159,12 +159,26 @@ describe('the chart: grey the mass, light the story', () => {
 describe('the guided tour', () => {
   const steps = tourSteps(real);
   it('has the four steps, in the words asked for, with figures that are already in the repository', () => {
-    expect(steps.map((s) => s.text)).toEqual([
+    // Changed on purpose (the sexton's voice): each step opens with a short first-person line, and its factual
+    // sentence follows word for word as before.
+    const facts = [
       'The road is the protected zone, ±200 km around GEO.',
       'The FCC rule covers satellites launched from 18 March 2002.',
       '36 of 131 launched since then sit in or near the zone.',
       'EchoStar 7: fined $150,000 by the FCC (DA 23-888). Perigee about 122 km against a planned 300 km.',
+    ];
+    expect(steps.map((s) => s.text)).toEqual([
+      `Mind the road. ${facts[0]}`,
+      `I walk this line. ${facts[1]}`,
+      `These I keep lit. ${facts[2]}`,
+      facts[3],
     ]);
+    // The sexton's own lines are short, carry no number, and stay about the churchyard.
+    for (const [i, s] of steps.entries()) {
+      const voice = s.text.slice(0, s.text.length - facts[i]!.length).trim();
+      expect(voice.split(' ').length, voice).toBeLessThanOrEqual(5);
+      expect(voice, voice).not.toMatch(/\d/);
+    }
     const doc = read('docs/methodology.md');
     for (const f of ['DA 23-888', '$150,000', '122 km', '300 km']) expect(doc, f).toContain(f);
     expect(steps[3]!.select).toBe(27378);
@@ -175,7 +189,8 @@ describe('the guided tour', () => {
     expect(steps[1]!.sub).toContain('The IADC guidelines are voluntary.');
     expect(steps[1]!.sub).toContain('applies only to satellites the FCC authorizes');
     for (const s of steps) expect(findHits(`${s.text} ${s.sub}`, 'tour')).toEqual([]);
-    expect(TOUR.start).toBe('Take the tour');
+    expect(TOUR.start).toBe('Walk with the sexton');
+    expect(findHits([TOUR.label, TOUR.start, TOUR.next, TOUR.back, TOUR.done, TOUR.skip].join(' '), 'tour')).toEqual([]);
   });
   it('moves one step at a time, and ends at either end (property)', () => {
     fc.assert(
@@ -195,8 +210,11 @@ describe('the guided tour', () => {
     expect(html).toContain('data-tour="next"');
     expect(html).toContain('data-tour="skip"');
     expect(html).toContain('>1 / 4</p>');
-    expect(tourHtml(3, steps)).toContain('data-tour="done">Explore freely</button>');
-    expect(tourHtml(null, steps)).toContain('data-tour-start>Take the tour</button>');
+    // Changed on purpose (the sexton's voice): the buttons are in character but say what they do. The step count stays plain.
+    expect(html).toContain('data-tour="next">Next stone</button>');
+    expect(html).toContain('aria-label="Walk with the sexton: a guided tour"');
+    expect(tourHtml(3, steps)).toContain('data-tour="done">Done</button>');
+    expect(tourHtml(null, steps)).toContain('data-tour-start>Walk with the sexton</button>');
     expect(html.match(/<button/g)).toHaveLength(3);
   });
   it('remembers a skip, and never throws when storage is blocked', () => {
@@ -249,7 +267,7 @@ describe('fixes after the first look', () => {
   it('the tour bar is one slim line: the skip link sits beside the step, not under it', () => {
     const html = tourHtml(0, tourSteps(real));
     expect(html.indexOf('class="tour-text"')).toBeLessThan(html.indexOf('data-tour="skip"'));
-    expect(html).toMatch(/<button type="button" class="link-button" data-tour="skip">Skip the tour<\/button>/);
+    expect(html).toMatch(/<button type="button" class="link-button" data-tour="skip">Leave the tour<\/button>/);
     expect(html.indexOf('data-tour="skip"')).toBeLessThan(html.indexOf('class="tour-actions"'));
     expect(css).toMatch(/\.tour\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;/);
     expect(css).toMatch(/\.tour-line\s*\{[^}]*white-space:\s*nowrap/);

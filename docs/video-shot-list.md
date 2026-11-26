@@ -5,7 +5,7 @@ A storyboard for the owner to edit. Narration lines are prompts, not final text,
 ## Before recording
 
 - Browser at 1440×900, clean profile, zoom 100%, dark system theme, motion not reduced (the lantern flicker and the fog need it). Live site: https://4kinc.github.io/sexton/
-- Open `#/` once and press "Skip the tour", so the tour bar does not show in later takes (the site remembers the skip).
+- Open `#/` once and press "Leave the tour", so the tour bar does not show in later takes (the site remembers the skip).
 - Kiro IDE with this repository open, the `sexton` MCP server connected, and the hooks enabled (Hooks panel).
 - Do not show a CI run that has not happened. The one real Kiro CLI run is 45353477849 (2026-11-24).
 - Short clips, jump cuts between them. Paste text, never type it on camera. Record each shot separately and cut on the action.

@@ -61,17 +61,20 @@ export const CHURCHYARD_INTRO = {
 
 /** The guided tour over the churchyard (views/tour.ts). Figures: the FCC order DA 23-888 (docs/methodology.md, Sources). */
 export const TOUR = {
-  label: 'Guided tour',
-  start: 'Take the tour',
-  next: 'Next',
+  // The tour is voiced by the sexton, the churchyard's keeper, walking a visitor round by lantern. The buttons stay
+  // obvious; the first-person lines are about the churchyard only, and each step's factual sentence follows unchanged.
+  label: 'Walk with the sexton: a guided tour',
+  start: 'Walk with the sexton',
+  next: 'Next stone',
   back: 'Back',
-  done: 'Explore freely',
-  skip: 'Skip the tour',
+  done: 'Done',
+  skip: 'Leave the tour',
   stepOf: (i: number, n: number): string => `Step ${i} of ${n}.`,
   steps: {
-    zone: (km: number): string => `The road is the protected zone, \u00B1${km} km around GEO.`,
-    rule: 'The FCC rule covers satellites launched from 18 March 2002.',
-    story: (n: number, of: number): string => `${n} of ${of} launched since then sit in or near the zone.`,
+    zone: (km: number): string => `Mind the road. The road is the protected zone, \u00B1${km} km around GEO.`,
+    rule: 'I walk this line. The FCC rule covers satellites launched from 18 March 2002.',
+    story: (n: number, of: number): string => `These I keep lit. ${n} of ${of} launched since then sit in or near the zone.`,
+    // No first-person line here: the step line is one line, and a prefix would push the order number out of sight.
     echostar: 'EchoStar 7: fined $150,000 by the FCC (DA 23-888). Perigee about 122 km against a planned 300 km.',
   },
   zoneSub: 'The protected zone is the band the IADC guidelines ask retired satellites to leave.',
