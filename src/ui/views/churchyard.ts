@@ -37,6 +37,7 @@ import { badgeHtml, glyphSvg } from './badge.ts';
 import { fineHtml } from './fine.ts';
 import { moveStep, rememberSkip, tourHtml, tourSkipped, tourSteps } from './tour.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
+import { emptyFiltersHtml } from '../messages.ts';
 import { axisText, zoneNames } from '../svg/axis.ts';
 import type { AxisText } from '../svg/axis.ts';
 import { bandsOf } from '../svg/bands.ts';
@@ -524,6 +525,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
         (narrow ? `<p class="chart-note">${esc(CHART.scrollNote)} <a id="scroll-table" href="#/table">${esc(CHART.scrollLink)}</a>.</p>` : '') +
         `<div class="plot"><div class="chart-wrap${narrow ? ' chart-wrap--scroll' : ''}" id="chart-host"${narrow ? ` role="region" aria-label="${esc(CHART.scrollRegion)}"` : ''}></div>` +
         `<div class="tip" id="stone-tip" hidden aria-hidden="true"></div>` +
+        emptyFiltersHtml('chart-empty') +
         `<section class="card" id="stone-card" aria-live="polite" aria-label="Selected stone"></section></div>`
       : `<p class="empty">${esc(CHART.empty)}</p>`) +
     `</section>` +
@@ -573,6 +575,9 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       : drawn.length === 0
         ? FILTERS.none
         : `${FILTERS.count(shown.length, reg.records.length)} ${FILTERS.drawn(drawn.length)}`;
+    // The filters hide every stone: say so over the empty ground, with a way out.
+    const empty = root.querySelector<HTMLElement>('#chart-empty');
+    if (empty !== null) empty.hidden = drawn.length > 0 || !hasFilters(state.filters);
     if (host !== null) {
       host.innerHTML = chartSvg(reg, narrow, selected, drawn, tabStop ?? selected);
       const model = chartModel(reg, narrow, shown);
@@ -660,6 +665,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       return;
     }
     if (target.closest('[data-clear]') !== null) select(null);
+    if (target.closest('[data-empty-clear]') !== null) form.querySelector<HTMLButtonElement>('[data-clear-filters]')?.click();
     const tourBtn = target.closest<HTMLElement>('[data-tour], [data-tour-start]');
     if (tourBtn !== null && tourStep !== null) {
       const act = tourBtn.dataset['tour'];

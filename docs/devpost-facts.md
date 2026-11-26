@@ -1,6 +1,6 @@
 # Devpost facts (draft, bullets only)
 
-Each line states a fact and where it comes from. Nothing here is written for the page. Counts are at commit time of this file (2026-11-24, snapshot 2026-11-22).
+Each line states a fact and where it comes from. Nothing here is written for the page. Counts are at commit time of this file (refreshed 2026-11-26, snapshot 2026-11-22).
 
 ## The problem
 - The IADC disposal rule asks for a perigee raised at least 235 km + 1000·C_R·A/m above GEO, with eccentricity at most 0.003 (`docs/methodology.md`, Formulas; IADC-02-01 Rev. 2, https://orbitaldebris.jsc.nasa.gov/library/IADC-Space-Debris-Guidelines-Revision-2.pdf).
@@ -16,21 +16,29 @@ Each line states a fact and where it comes from. Nothing here is written for the
 - 565 of 696 retired payloads predate any guideline (the same test).
 - 141 of 696 verdicts are borderline: the perigee is within 25 km of a band edge (README census block).
 - 239 of 696 orbits come from GP mean elements and 457 from SATCAT whole-km altitudes (README census block, `docs/methodology.md`).
-- Validation: 27 of 45 retired payloads launched after 2007 are buried (60.0%); the ±25 km band runs from 24 of 45 (53.3%) to 29 of 45 (64.4%). This is below ESA's range, and the method was not tuned (`docs/methodology.md`, Validation; `test/headline.test.ts`).
-- The Roberts (2025) figure is not shown: the paper was not opened, only the Georgia Tech listing page (https://iac.gatech.edu/publications/pub/8089).
+- Validation: 27 of 45 retired payloads launched after 2007 are buried (60.0%); the ±25 km band runs from 24 of 45 (53.3%) to 29 of 45 (64.4%). This is below ESA's range, and the method was not tuned (`docs/methodology.md`, Validation; `test/headline.test.ts`; `test/census-table.test.ts`).
+- Validation breakdown for the 45: 27 buried, 1 uncertain, 1 shallow grave, 16 unquiet. Counting uncertain as a success gives 27 to 28 of 45 (60.0% to 62.2%); moving every perigee 25 km either way gives 24 to 29 of 45. 32 of 45 would be needed to reach 70% (`docs/methodology.md`, Validation, "Where Sexton falls").
 - Every verdict carries its assumptions (C_R·A/m 0.012 to 0.045 m²/kg, ±25 km mean-element uncertainty) and its data age (`.kiro/steering/language.md`; `test/ledger.test.ts`).
 - The register only sees objects still near GEO (±2,000 km window); satellites sent much higher, or that left GEO, may be missing (`docs/methodology.md`, The near-GEO filter).
 - Sexton has no retirement dates and never states one (`.kiro/steering/language.md`; tests that look for a retirement word beside a year).
 
 ## Build facts
 - Static site, no backend, no accounts, no analytics: Vite and TypeScript, SVG for the churchyard, deployed to GitHub Pages (`.kiro/steering/tech.md`; `.github/workflows/deploy.yml`).
-- 771 tests in 22 test files, run by `npm test` (type check, Vitest, language check) (`npm test` output, 2026-11-24).
-- 47 `fc.assert` property-test calls in 11 files (`docs/kiro-usage.md`).
-- About 4,100 lines of TypeScript in `src/`, 900 of CSS, 1,500 in `scripts/`, 4,800 in `test/` (`git ls-files`, `wc -l`).
+- 967 tests in 35 test files, run by `npm test` (type check, Vitest, language check) (`npm test` output, 2026-11-26).
+- 53 `fc.assert` property-test calls in 14 files (`grep -c "fc.assert" test/*.ts`, 2026-11-26).
+- About 5,700 lines of TypeScript in `src/`, 3,600 of CSS, 1,600 in `scripts/`, 6,500 in `test/` (`git ls-files`, `wc -l`, 2026-11-26).
+- Built JavaScript (`npm run build`, 2026-11-26): main entry chunk 95.1 kB (32.5 kB gzip), kept under a 185 kB limit (`.kiro/steering/tech.md`). Loaded on first open: the desktop grid 693.5 kB (195.3 kB gzip), the ledger 9.3 kB, the method page 25.2 kB, the Markdown reader 65.6 kB.
+- The desktop table is AG Grid Community 36.3.0 (MIT, Community features only), loaded by dynamic `import()` only when `#/table` opens wider than 600 px. Registering three modules instead of AllCommunityModule makes the grid chunk 693 kB instead of 1,172 kB. Phones, print and a failed load use the HTML table (`src/ui/views/grid.ts`, `src/ui/views/table.ts`, `test/grid.test.ts`).
+- The ledger and method pages load on first open; a failed load shows a short message with a "Try again" link (`src/ui/lazy.ts`, `test/lazy.test.ts`).
 - Data from a committed CelesTrak snapshot; only `scripts/snapshot.ts` downloads, within CelesTrak's usage policy (https://celestrak.org/usage-policy.php; `.kiro/steering/tech.md`).
 - The self-hosted display font is IM FELL English under the SIL Open Font License 1.1 (`docs/credits.md`).
 - Three case files written by a custom agent: EchoStar-7 (27378), Intelsat 511 (15873), Luch/Olymp (40258) (`data/cases/`).
 
+## Design facts
+- The 36 story stones (unquiet or shallow grave, launched on or after 18 March 2002) are lit in lantern amber with a soft halo and a slow, staggered flicker (opacity 0.85 to 1, 3 to 6 s); every other stone is muted bone, and stones launched before the rule date are moss (`.kiro/steering/design.md`, Palette; `src/ui/styles/churchyard.css`; `test/design-system.test.ts`).
+- Two fog layers drift across the road (the protected zone) at 40 s and 90 s, at most 0.12 opacity. All motion stops under `prefers-reduced-motion` (`.kiro/steering/design.md`; `src/ui/styles/churchyard.css`).
+- One filter toolbar for the churchyard and the table: search, Owner and Launch era menus, six verdict chips with live counts, an "Unmarked bones" switch, removable pills and "Showing N of 1,764". The address is the source of truth. On a phone it opens as a modal sheet (`src/ui/views/filters.ts`; `test/state.test.ts`).
+- Error and empty messages keep a next action: "No stone stands at this address.", "No stones match these filters." with "Clear all", "No stone carries NORAD 999999999." (`src/ui/messages.ts`; `test/messages.test.ts`).
 ## Kiro features used
 - Spec: 3 files, 25 numbered tasks (`.kiro/specs/sexton-core/`).
 - Steering: 5 files (`.kiro/steering/`: product, tech, design, language, structure).
@@ -38,7 +46,7 @@ Each line states a fact and where it comes from. Nothing here is written for the
 - Custom agent: `orbital-coroner`, limited to writing `data/cases/*.md` (`.kiro/agents/orbital-coroner.md`).
 - MCP server: 4 read-only tools, `is_buried`, `census`, `explain`, `list` (`scripts/mcp/server.ts`; `.kiro/settings/mcp.json`). `explain(27378)` and `census()` were answered in Kiro chat (`docs/kiro-journal.md`, MCP).
 - Kiro CLI in CI: manual workflow, shape-tested and run once with the secret `KIRO_API_KEY`: run 45353477849 on 2026-11-24 passed (56 s): Kiro reported 771 tests in 22 files passing and no change to README.md or data/register.json, and the plain steps agreed (`.github/workflows/kiro-verify.yml`; `test/kiro-workflow.test.ts`).
-- Journal: 41 dated lines (`docs/kiro-journal.md`).
+- Journal: 82 dated lines (`docs/kiro-journal.md`, 2026-11-26).
 - Feature-by-feature table: `docs/kiro-usage.md`.
 
 ## Where Kiro surprised us (from the journal)

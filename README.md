@@ -1,10 +1,14 @@
 # Sexton
 
-When a geostationary satellite retires, it should be raised into a disposal orbit above the GEO belt. GEO is the circular orbit about 35,786 km above the equator, where a satellite stays over one spot. Nobody publishes a plain register of which retired satellites were raised. Sexton is that register. It is for space-sustainability researchers, journalists and regulators, and it uses only public CelesTrak data.
+**A public register of retired geostationary satellites, drawn as a churchyard: one stone per satellite, showing whether it was raised into the graveyard orbit.**
 
-Each satellite gets one of six verdicts, with its assumptions and the age of its data beside it. Sexton is built for the Kiroween 2026 Costume Contest: the churchyard is the data model, so every stone's height, moss and sway is a number from the register.
+For debris researchers, journalists, regulators and anyone curious. 36 of the 131 retired payloads launched since the 2002 FCC rule are still in or near the protected zone around GEO, below the IADC disposal threshold under the stated assumptions.
 
 **Live site:** https://4kinc.github.io/sexton/
+
+GEO is the circular orbit about 35,786 km above the equator, where a satellite stays over one spot. When a satellite there retires, it should be raised into a disposal orbit above the belt. Nobody publishes a plain register of which retired satellites were raised. Sexton is that register, built only from public CelesTrak data. Each satellite gets one of six verdicts, with its assumptions and the age of its data beside it. The register only sees objects still near GEO.
+
+Sexton is built for the Kiroween 2026 Costume Contest: the churchyard is the data model. A stone's height is its perigee above GEO. Moss marks stones launched before 18 March 2002, the FCC rule date. Lantern light marks the 36.
 
 ![The churchyard: one stone per retired satellite, taller for a higher perigee](docs/images/churchyard.png)
 
@@ -15,6 +19,16 @@ CelesTrak snapshot, 22 Nov 2026. 131 of the 696 retired payloads in the register
 As a plausibility check, 27 of 45 retired payloads launched after 2007 are buried (60.0%, band 53.3% to 64.4%). ESA's report gives 70% to 95% for payloads reaching end of life in the last decade. The two count different groups, and Sexton did not adjust its method to match. See [the method page](docs/methodology.md).
 
 The IADC guidelines are voluntary. The FCC rule (47 CFR § 25.283) applies only to satellites the FCC authorizes. The register only sees objects still near GEO.
+
+## Built with
+
+- Vite and TypeScript (strict), no UI framework. The churchyard is hand-built SVG. Static site on GitHub Pages: no backend, no accounts, no analytics.
+- [AG Grid Community](https://www.ag-grid.com/) 36.3.0 (MIT) for the desktop table. It loads only when `#/table` opens wider than 600 px. Phones, print and a failed load get the plain HTML table.
+- [marked](https://marked.js.org/) (MIT) renders the method page and the case files.
+- Fonts: IM FELL English, IBM Plex Sans and IBM Plex Mono, self-hosted, SIL Open Font License 1.1.
+- Tests: Vitest and fast-check. `npm test` runs 967 tests in 35 files, then the language check.
+
+Every package and its licence is in [THIRD_PARTY.md](THIRD_PARTY.md).
 
 ## Built with Kiro
 
@@ -66,7 +80,7 @@ The IADC threshold is 235 km + 1000·C_R·A/m above GEO, which is 247 to 280 km 
 
 **The MCP server.** [scripts/mcp/server.ts](scripts/mcp/server.ts) lets an AI assistant ask the register for a verdict, a census, a list or a full ledger. See "Use it from an AI assistant" below.
 
-**Kiro in CI.** [.github/workflows/kiro-verify.yml](.github/workflows/kiro-verify.yml) is started by hand. It installs Kiro CLI, runs it headless to run the tests and rebuild the census, then runs `npm test` and `git diff --exit-code` on `README.md` and `data/register.json` itself, so any difference fails the run. It needs a repository secret named `KIRO_API_KEY` (Settings, Secrets and variables, Actions). It has been run once: run 45353477849 on 2026-11-24 passed (56 s): Kiro reported 771 tests in 22 files passing and no change to README.md or data/register.json, and the plain steps agreed. More in [docs/kiro-usage.md](docs/kiro-usage.md), which maps every Kiro feature to its file and lists every property test.
+**Kiro in CI.** [.github/workflows/kiro-verify.yml](.github/workflows/kiro-verify.yml) is started by hand. It installs Kiro CLI, runs it headless to run the tests and rebuild the census, then runs `npm test` and `git diff --exit-code` on `README.md` and `data/register.json` itself, so any difference fails the run. It needs a repository secret named `KIRO_API_KEY` (Settings, Secrets and variables, Actions). It has been run once: run 45353477849 on 2026-11-24 passed (56 s): Kiro reported the 771 tests in 22 files that existed then passing and no change to README.md or data/register.json, and the plain steps agreed. More in [docs/kiro-usage.md](docs/kiro-usage.md), which maps every Kiro feature to its file and lists every property test.
 
 ## Limits
 
@@ -85,7 +99,7 @@ Needs Node 24.
 ```
 npm install
 npm run dev          # local site
-npm test             # type check, Vitest and fast-check, then the language check
+npm test             # type check, 967 Vitest and fast-check tests in 35 files, then the language check
 npm run build        # static site in dist/
 npm run census       # rebuild data/register.json and the census block above
 ```

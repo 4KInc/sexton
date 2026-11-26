@@ -299,7 +299,8 @@ describe('one example per verdict, from the real register', () => {
 
 describe('page, download and print', () => {
   it('a missing id and an object with no verdict get a plain note, not a ledger', () => {
-    expect(textOf(ledgerPageHtml(real, 999999999))).toContain('The register has no object with NORAD id 999999999.');
+    // Changed on purpose (redesign 5): the page for an unknown id has the site's short message, with links to the table and the churchyard.
+    expect(textOf(ledgerPageHtml(real, 999999999))).toContain('No stone carries NORAD 999999999.');
     const living = real.records.find((r) => r.verdict.kind === 'no verdict')!;
     const t = textOf(ledgerPageHtml(real, living.norad));
     expect(t).toContain('has no verdict');

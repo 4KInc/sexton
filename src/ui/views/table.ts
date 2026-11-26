@@ -5,7 +5,6 @@ import {
   assumptionsLine,
   CHURCHYARD_INTRO,
   dataAge,
-  FILTERS,
   TABLE,
   TERMS,
   VERDICT_ORDER,
@@ -19,6 +18,7 @@ import type { Filters, Sort, SortKey, ViewState } from '../state.ts';
 import { chipHtml } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { fineHtml } from './fine.ts';
+import { emptyFiltersHtml } from '../messages.ts';
 import { gridRows } from './grid-rows.ts';
 import type { GridHandle } from './grid.ts';
 /** The grid replaces the HTML table above this width. At 600 px and below the table is the card list. */
@@ -138,6 +138,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     ], undefined, true) +
     `<div class="sortbar"><label for="sort-by">${esc(TABLE.sortBy)}</label><select id="sort-by"><option value="default"${isDefaultOrder ? ' selected' : ''}>${esc(TABLE.sortDefault)}</option>${PHONE_SORTS.map((k) => `<option value="${k}"${!isDefaultOrder && state.sort.key === k ? ' selected' : ''}>${esc(TABLE.columns[k])}</option>`).join('')}</select></div>` +
     `<details class="guide guide--table"><summary>${esc(TABLE.verdictKeySummary)}</summary><div class="guide-body">${verdictKeyHtml(config)}</div></details>` +
+    emptyFiltersHtml('table-empty') +
     `<p class="grid-caption" id="grid-caption" tabindex="-1" hidden>${esc(TABLE.caption)}<span class="grid-key"> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</span></p>` +
     `<div class="grid-host" id="grid-host" hidden></div>` +
     `<p class="grid-foot" id="grid-foot" hidden><span class="mono" id="grid-count"></span></p>` +
@@ -158,7 +159,9 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     showAll.hidden = !byDefault;
     status.textContent = byDefault
       ? [TABLE.defaultNote(shown.length), sortNote].filter((s) => s !== '').join(' ')
-      : [shown.length === 0 ? FILTERS.none : '', sortNote].filter((s) => s !== '').join(' ');
+      : sortNote;
+    // No rows: the empty state says so and offers "Clear all". The toolbar's count ("Showing 0 of 1,764") is the live announcement.
+    root.querySelector<HTMLElement>('#table-empty')!.hidden = shown.length > 0;
     host.innerHTML = tableHtml(shown, reg.config, state.sort, byDefault && !sorted);
     gridCount.textContent = TABLE.gridRows(shown.length);
     grid?.update(gridRows(shown, config, state.sort, byDefault && !sorted), byDefault && !sorted ? null : state.sort);
@@ -250,6 +253,10 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     host.querySelector<HTMLButtonElement>(`button[data-sort="${key}"]`)?.focus();
   };
   host.addEventListener('click', onClick);
+  const onEmptyClear = (event: Event): void => {
+    if ((event.target as Element).closest('[data-empty-clear]') !== null) form.querySelector<HTMLButtonElement>('[data-clear-filters]')?.click();
+  };
+  root.addEventListener('click', onEmptyClear);
   return () => {
     stopped = true;
     wide.removeEventListener('change', ensureGrid);
@@ -258,5 +265,6 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     showAll.removeEventListener('click', onShowAll);
     sortBy.removeEventListener('change', onSortBy);
     host.removeEventListener('click', onClick);
+    root.removeEventListener('click', onEmptyClear);
   };
 }

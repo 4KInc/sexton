@@ -18,6 +18,7 @@ import { hashFor, parseState } from './state.ts';
 import { mountCensus } from './views/census.ts';
 import { mountChurchyard } from './views/churchyard.ts';
 import { runLazy } from './lazy.ts';
+import { loadErrorHtml, notFoundHtml } from './messages.ts';
 import { mountTable } from './views/table.ts';
 
 // The wide chart is 1,650 units across and scales to its box, so below this width its 12-unit text
@@ -117,7 +118,7 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
     const { query } = route;
     lazyView(view, id, () => import('./views/method.ts').then((m) => () => m.mountMethod(view, query)));
   } else {
-    view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
+    view.innerHTML = notFoundHtml();
   }
   markTitle(route, view);
   // After a navigation, move keyboard and screen-reader focus to the new page title.
@@ -141,7 +142,8 @@ async function boot(): Promise<void> {
     reg = data;
   } catch {
     renderNav({ name: 'churchyard', query: new URLSearchParams() });
-    main.innerHTML = `<h1>${esc(SITE.title)}</h1><p role="alert">${esc(SITE.loadError)}</p>`;
+    main.innerHTML = `<h1>${esc(SITE.title)}</h1>${loadErrorHtml()}`;
+    main.querySelector('[data-retry]')?.addEventListener('click', () => window.location.reload());
     return;
   }
   const banner = el('sample-banner');

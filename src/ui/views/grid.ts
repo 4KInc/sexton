@@ -120,6 +120,8 @@ export function mountGrid(host: HTMLElement, opts: GridOptionsIn): GridHandle {
     suppressCellFocus: false,
     ensureDomOrder: true,
     animateRows: false,
+    // Sexton draws its own empty state above the grid, with a way out, so AG Grid's own overlay stays off.
+    suppressNoRowsOverlay: true,
     suppressDragLeaveHidesColumns: true,
     onSortChanged: (event: SortChangedEvent<GridRow>) => {
       if (applying || event.source !== 'uiColumnSorted') return;

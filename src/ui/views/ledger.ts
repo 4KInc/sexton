@@ -1,6 +1,7 @@
 // The ledger: one page per retired payload (design 5.6, R7). The page is a string built by pure
 // functions, so tests can read it without a DOM. Sections follow design 5.6.
 // The sentences live in ../ledger-text.ts, which the MCP server shares.
+import { noStoneHtml } from '../messages.ts';
 import type { SatRecord } from '../../engine/types.ts';
 import { CARD, dataAge, LEDGER, assumptionsLine, CHURCHYARD_INTRO, METHOD_SECTIONS, NOTES, snapshotLabel, verdictCopy } from '../copy.ts';
 import { formatE, formatP, formatSigned } from '../format.ts';
@@ -117,7 +118,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
 /** The page for any NORAD id: a ledger, or a plain note when the object has no verdict or is not in the register. */
 export function ledgerPageHtml(reg: UiRegister, norad: number, cases: ReadonlyMap<number, CaseFile> = CASES): string {
   const r = reg.records.find((x) => x.norad === norad);
-  if (r === undefined) return `<p>${esc(LEDGER.notFound(norad))}</p><p><a href="#/table">${esc(LEDGER.back)}</a></p>`;
+  if (r === undefined) return noStoneHtml(norad);
   if (!isRetired(r)) {
     const reason = r.verdict.kind === 'no verdict' ? r.verdict.reason : `unmarked bones, ${r.status}`;
     return `<p>${esc(LEDGER.noLedger(r.name, r.norad, reason))}</p><p><a href="#/table">${esc(LEDGER.back)}</a></p>`;
