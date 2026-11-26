@@ -119,7 +119,7 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   const isDefaultOrder = viewOf(reg.records, state.filters).byDefault && !query.has('sort');
   root.innerHTML =
     `<p class="kicker">${esc(TABLE.kicker)}</p><p class="lead">${esc(TABLE.lead)}</p>` +
-    `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, state.filters.owner !== null || state.filters.era !== null || state.filters.verdicts.length > 0 || state.filters.bones, true)}<div class="view-note"><p class="status" id="table-status" role="status"></p><button type="button" class="button button--quiet" id="show-all" data-show-all hidden>${esc(TABLE.showAll(reg.records.length))}</button></div></div>` +
+    `<div class="toolbar toolbar--table">${filtersHtml(reg.records, state.filters, config, false, true)}<div class="view-note"><p class="status" id="table-status" role="status"></p><button type="button" class="button button--quiet" id="show-all" data-show-all hidden>${esc(TABLE.showAll(reg.records.length))}</button></div></div>` +
     fineHtml(reg.snapshot.set, config, [
       TABLE.intro,
       TERMS.geo,
@@ -150,9 +150,8 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   };
   const onShowAll = (): void => {
     // The same path as ticking the box: the form reads it, the address takes bones=1, the table redraws.
-    const box = form.querySelector<HTMLInputElement>('#f-bones')!;
-    box.checked = true;
-    box.dispatchEvent(new Event('change', { bubbles: true }));
+    const box = form.querySelector<HTMLButtonElement>('#f-bones')!;
+    if (box.getAttribute('aria-checked') !== 'true') box.click();
     host.querySelector<HTMLElement>('.table-wrap')?.focus();
   };
   showAll.addEventListener('click', onShowAll);
@@ -164,16 +163,8 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
       state = next;
     },
     () => draw(''),
+    { records: reg.records, config },
   );
-  const onMore = (event: Event): void => {
-    const toggle = (event.target as Element).closest<HTMLButtonElement>('[data-more]');
-    if (toggle === null) return;
-    const more = root.querySelector<HTMLElement>('#more-filters')!;
-    const open = !more.hasAttribute('data-open');
-    more.toggleAttribute('data-open', open);
-    toggle.setAttribute('aria-expanded', String(open));
-  };
-  form.addEventListener('click', onMore);
   const sortBy = root.querySelector<HTMLSelectElement>('#sort-by')!;
   const onSortBy = (): void => {
     if (sortBy.value === 'default') {
@@ -207,7 +198,6 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   return () => {
     unwire();
     showAll.removeEventListener('click', onShowAll);
-    form.removeEventListener('click', onMore);
     sortBy.removeEventListener('change', onSortBy);
     host.removeEventListener('click', onClick);
   };

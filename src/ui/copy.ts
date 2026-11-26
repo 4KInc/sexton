@@ -259,8 +259,19 @@ export function stoneLabel(
 }
 
 export const FILTERS = {
-  more: 'Owner, era and verdict filters',
   legend: 'Filter the register',
+  toggle: 'Filters',
+  panel: 'Filter options',
+  done: 'Done',
+  placeholder: 'Name or NORAD id',
+  clearSearch: 'Clear search',
+  clearAll: 'Clear all',
+  active: 'Active filters',
+  bonesPill: 'Unmarked bones',
+  searchPill: (q: string): string => `Search: ${q}`,
+  ownerPill: (o: string): string => `Owner: ${o}`,
+  remove: (label: string): string => `Remove filter: ${label}`,
+  showing: (shown: number, total: number): string => `Showing ${formatCount(shown)} of ${formatCount(total)}`,
   note: 'The churchyard and the table share these filters. They are saved in the address, so you can share a filtered view.',
   search: 'Search by name or NORAD id',
   searchHint: 'For example "echostar" or "27378".',
@@ -274,7 +285,6 @@ export const FILTERS = {
   eraAfter: 'Launched on or after 18 March 2002',
   eraUnknown: 'Launch date unknown',
   bones: 'Show unmarked bones (rocket bodies and debris)',
-  clear: 'Clear filters',
   none: 'No objects match these filters.',
   drawnShort: (n: number): string => `${formatCount(n)} retired ${n === 1 ? 'payload' : 'payloads'} drawn; others are in the table`,
   drawn: (n: number): string => `${n} drawn in the churchyard. Living and unknown-status payloads are in the table only.`,

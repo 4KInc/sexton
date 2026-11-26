@@ -91,7 +91,8 @@ describe('caveats where they apply', () => {
     const src = read('src/ui/views/method.ts');
     expect(src).toContain("query.get('s')");
     expect(src).toContain('window.setTimeout');
-    expect(read('src/ui/main.ts')).toContain('mountMethod(view, route.query)');
+    // Changed on purpose: the method page now loads on first open, so main.ts mounts it from the loaded module with the same query.
+    expect(read('src/ui/main.ts')).toContain('m.mountMethod(view, query)');
   });
 });
 describe('the owner table', () => {

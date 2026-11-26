@@ -87,24 +87,58 @@ describe('filters and search round-trip through the hash query', () => {
     expect(toQuery(a).toString()).toBe(toQuery(b).toString());
     expect(toQuery(a).toString()).toBe('owner=US&verdict=buried&verdict=fallen&q=x');
   });
-  it('the form shows the state from the address, including an owner the register does not have', () => {
+  it('the toolbar shows the state from the address, including an owner the register does not have', () => {
+    // Changed on purpose (filter toolbar): verdicts are toggle chips with aria-pressed and unmarked bones is a switch, not checkboxes.
     const html = filtersHtml(all, withFilters({ owner: 'ZZ', verdicts: ['fallen'], era: 'before', bones: true, q: 'echo "x"' }), reg.config, true);
     expect(html).toContain('<option value="ZZ" selected>');
-    expect(html).toMatch(/value="fallen" checked/);
+    expect(html).toMatch(/data-verdict="fallen" aria-pressed="true"/);
+    expect(html).toMatch(/data-verdict="buried" aria-pressed="false"/);
     expect(html).toMatch(/value="before" selected/);
-    expect(html).toMatch(/name="bones" value="1" checked/);
+    expect(html).toMatch(/role="switch" id="f-bones" data-bones aria-checked="true"/);
     expect(html).toContain('value="echo &quot;x&quot;"');
-    expect(html).not.toMatch(/value="buried" checked/);
-    expect(html).not.toContain('data-clear-filters disabled');
-    expect(filtersHtml(all, NO_FILTERS, reg.config, false)).toContain('data-clear-filters disabled');
+    // One removable pill for each active filter, and a "Clear all" link.
+    expect(html.match(/data-remove=/g)).toHaveLength(5);
+    expect(html).toContain('data-clear-filters');
+    expect(html).not.toMatch(/class="filter-active"[^>]* hidden/);
   });
-  it('the form sits in a <details> element titled "Filter the register", open only when asked', () => {
+  it('with no filter the active-filter line is hidden, and the options start closed unless asked', () => {
     const shut = filtersHtml(all, NO_FILTERS, reg.config, false);
-    expect(shut).toContain('<details class="filters-details"><summary>Filter the register</summary>');
-    expect(filtersHtml(all, NO_FILTERS, reg.config, true)).toContain('<details class="filters-details" open>');
+    expect(shut).toMatch(/class="filter-active"[^>]* hidden/);
+    expect(shut).not.toContain('data-open');
+    expect(shut).toContain('aria-expanded="false" aria-controls="filter-panel"');
+    expect(filtersHtml(all, NO_FILTERS, reg.config, true)).toContain('<form class="filters" id="filters" aria-label="Filter the register" data-open');
+  });
+  it('each verdict chip counts what it would show with the other filters as they are', () => {
+    const html = filtersHtml(all, withFilters({ owner: 'US' }), reg.config, false);
+    for (const v of VERDICT_ORDER) {
+      const n = applyFilters(all, { ...NO_FILTERS, owner: 'US', verdicts: [v] }).length;
+      expect(html).toContain(`data-verdict="${v}" aria-pressed="false"><svg`);
+      expect(html).toMatch(new RegExp(`data-verdict="${v}"[^]*?fchip-count mono">${n}</span>`));
+    }
+  });
+  it('only the Unquiet and Shallow grave chips are story chips (lantern when pressed)', () => {
+    const html = filtersHtml(all, NO_FILTERS, reg.config, false);
+    const story = [...html.matchAll(/class="fchip( chip--story)?" data-verdict="([^"]+)"/g)].filter((m) => m[1] !== undefined).map((m) => m[2]);
+    expect(story).toEqual(['shallow grave', 'unquiet']);
   });
 });
-
+describe('addresses from before the filter toolbar', () => {
+  // The toolbar changed the controls, not the address: these queries still parse to the same filters and the same set.
+  const cases: [string, Partial<Filters>][] = [
+    ['owner=US', { owner: 'US' }],
+    ['verdict=unquiet&verdict=shallow%20grave', { verdicts: ['shallow grave', 'unquiet'] }],
+    ['era=after&bones=1', { era: 'after', bones: true }],
+    ['q=echostar&owner=US&verdict=unquiet&era=after', { q: 'echostar', owner: 'US', verdicts: ['unquiet'], era: 'after' }],
+    ['bones=1&sort=e&dir=desc', { bones: true }],
+  ];
+  for (const [query, want] of cases) {
+    it(`#/table?${query}`, () => {
+      const f = parseState(new URLSearchParams(query)).filters;
+      expect(f).toEqual({ ...NO_FILTERS, ...want });
+      expect(norads(applyFilters(all, f))).toEqual(norads(applyFilters(all, { ...NO_FILTERS, ...want })));
+    });
+  }
+});
 describe('applyFilters on the fixture register', () => {
   it('no filters: everything except unmarked bones', () => {
     const out = applyFilters(all, NO_FILTERS);

@@ -1,0 +1,429 @@
+/* The filter toolbar, shared by the churchyard and the table. Colours come from tokens.css.
+   Row one: search and the Filters button. The options (two selects, six verdict chips, one switch) sit in a panel:
+   closed on the churchyard until opened, always in the row on the table at 901 px and wider, a bottom sheet on a phone. */
+.filters {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+.search {
+  position: relative;
+  flex: 0 1 21rem;
+  min-width: min(100%, 13rem);
+}
+.search input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0 2.5rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--bone);
+  font: inherit;
+  font-size: var(--fs-14);
+  appearance: none;
+}
+.search input:hover {
+  border-color: var(--rule-strong);
+}
+.search input::placeholder {
+  color: var(--bone-muted);
+  opacity: 1;
+}
+.search input::-webkit-search-cancel-button,
+.search input::-webkit-search-decoration {
+  appearance: none;
+  display: none;
+}
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--bone-muted);
+  pointer-events: none;
+}
+.search-clear {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--bone-soft);
+  cursor: pointer;
+}
+.search-clear[hidden] {
+  display: none;
+}
+.search-clear:hover {
+  background: var(--surface-3);
+  color: var(--bone);
+}
+.search-clear svg,
+.pill svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.5rem;
+  padding: 0 14px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--bone);
+  font: inherit;
+  font-size: var(--fs-14);
+  cursor: pointer;
+}
+.filter-toggle:hover,
+.filter-toggle[aria-expanded='true'] {
+  background: var(--surface-3);
+  border-color: var(--rule-strong);
+}
+.filter-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid var(--bone-soft);
+  color: var(--bone);
+  font-size: var(--fs-12);
+}
+.filter-badge[hidden] {
+  display: none;
+}
+/* The options. Closed until the Filters button opens them. */
+.filter-panel {
+  display: none;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-1);
+  border-radius: var(--radius);
+}
+.filters[data-open] .filter-panel {
+  display: flex;
+}
+.filter-sheet-head,
+.filter-scrim {
+  display: none;
+}
+/* A select menu: the native <select> stays underneath for the keyboard and screen readers. */
+.select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.5rem;
+  padding-left: 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.select:hover {
+  border-color: var(--rule-strong);
+}
+.select label {
+  color: var(--bone-muted);
+  font-size: var(--fs-13);
+  white-space: nowrap;
+}
+.select select {
+  min-width: 0;
+  max-width: 15rem;
+  min-height: 2.4rem;
+  padding: 0 2rem 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--bone);
+  font: inherit;
+  font-size: var(--fs-14);
+  text-overflow: ellipsis;
+  cursor: pointer;
+  appearance: none;
+}
+.select select:focus-visible {
+  outline-offset: 2px;
+}
+.select option {
+  background: var(--surface-2);
+  color: var(--bone);
+}
+/* The chevron is two borders turned 45 degrees, so it takes the text colour tokens. */
+.select::after {
+  content: '';
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1.5px solid var(--bone-soft);
+  border-bottom: 1.5px solid var(--bone-soft);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+/* Verdict chips: the chart's glyph, the word, and what the word would give with the other filters as they are. */
+.vchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.fchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 2.5rem;
+  padding: 0 12px 0 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bone-soft);
+  font: inherit;
+  font-size: var(--fs-14);
+  cursor: pointer;
+}
+.fchip .glyph {
+  --mark: var(--bone-muted);
+  width: 0.9rem;
+  height: 1.1rem;
+}
+.fchip-count {
+  color: var(--bone-muted);
+  font-size: var(--fs-12);
+}
+.fchip:hover {
+  background: var(--surface-2);
+}
+/* Pressed: filled, with a 2 px border, so the state is not only a colour. The padding gives back the 1 px, so the width does not change. */
+.fchip[aria-pressed='true'] {
+  padding: 0 11px 0 7px;
+  border-width: 2px;
+  background: var(--bone-fill-22);
+  border-color: var(--bone-soft);
+  color: var(--bone);
+}
+.fchip[aria-pressed='true'] .glyph {
+  --mark: var(--bone);
+}
+.fchip[aria-pressed='true'] .fchip-count {
+  color: var(--bone-soft);
+}
+/* The story verdicts, when pressed: the border and the glyph take the lantern. The words stay bone. */
+.fchip.chip--story[aria-pressed='true'] {
+  background: var(--lantern-fill);
+  border-color: var(--lantern);
+}
+.fchip.chip--story[aria-pressed='true'] .glyph {
+  --mark: var(--lantern);
+}
+/* The switch for unmarked bones. */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 2.5rem;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--bone);
+  font: inherit;
+  font-size: var(--fs-14);
+  text-align: left;
+  cursor: pointer;
+}
+.switch-track {
+  position: relative;
+  flex: none;
+  width: 2.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--bone-muted);
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  background: var(--bone-muted);
+}
+.switch[aria-checked='true'] .switch-track {
+  border-color: var(--bone);
+  background: var(--bone-fill-50);
+}
+.switch[aria-checked='true'] .switch-thumb {
+  left: calc(100% - 0.875rem - 2px);
+  background: var(--bone);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .switch-thumb {
+    transition: left 0.18s ease;
+  }
+  .fchip,
+  .pill,
+  .filter-toggle {
+    transition: background-color 0.18s ease;
+  }
+}
+.filters-note {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--bone-muted);
+  font-size: var(--fs-12);
+}
+/* Active filters: a pill for each, "Clear all", and the result count. Hidden when no filter is on. */
+.filter-active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 6px var(--space-1);
+}
+.filter-active[hidden] {
+  display: none;
+}
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 2rem;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--bone);
+  font: inherit;
+  font-size: var(--fs-13);
+  cursor: pointer;
+}
+.pill:hover {
+  background: var(--surface-3);
+}
+.filter-count {
+  margin-left: auto;
+  color: var(--bone-soft);
+  font-size: var(--fs-13);
+}
+/* Wider than a phone, the open panel floats over what is below it, so opening it never pushes the chart down. */
+@media (min-width: 601px) {
+  .filter-row {
+    position: relative;
+  }
+  .filters[data-open] .filter-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    padding: var(--space-2);
+    background: var(--surface-2);
+    box-shadow: 0 12px 32px var(--shadow);
+  }
+}
+/* The table, 901 px and wider: the options are part of the row, with no button and no panel. */
+@media (min-width: 901px) {
+  .filters--bar .filter-toggle {
+    display: none;
+  }
+  .filters--bar .filter-panel,
+  .filters--bar[data-open] .filter-panel {
+    display: contents;
+    position: static;
+    padding: 0;
+    box-shadow: none;
+  }
+  .filters--bar .filters-note {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+/* A phone: the options open as a bottom sheet with a Done button. */
+@media (max-width: 600px) {
+  .search {
+    flex: 1 1 10rem;
+  }
+  .filters[data-open] .filter-panel {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 30;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    max-height: 82vh;
+    max-height: 82dvh;
+    overflow-y: auto;
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    box-shadow: 0 -12px 32px var(--shadow);
+  }
+  .filters[data-open] .filter-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    background: var(--vignette);
+  }
+  .filters[data-open] .filter-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .filter-sheet-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-20);
+  }
+  .filters[data-open] .select {
+    display: flex;
+  }
+  .select select {
+    flex: 1;
+    max-width: none;
+  }
+  .filters[data-open] .select {
+    background: var(--surface-3);
+  }
+  .filter-count {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+}

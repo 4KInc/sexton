@@ -2,6 +2,7 @@
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/churchyard.css';
+import './styles/filters.css';
 import './styles/table.css';
 import './styles/ledger.css';
 import './styles/census.css';
@@ -16,8 +17,6 @@ import type { Route } from './router.ts';
 import { hashFor, parseState } from './state.ts';
 import { mountCensus } from './views/census.ts';
 import { mountChurchyard } from './views/churchyard.ts';
-import { mountLedger } from './views/ledger.ts';
-import { mountMethod } from './views/method.ts';
 import { mountTable } from './views/table.ts';
 
 // The wide chart is 1,650 units across and scales to its box, so below this width its 12-unit text
@@ -53,10 +52,34 @@ function heading(route: Route): string {
 let lastList: { name: 'churchyard' | 'table'; query: URLSearchParams } = { name: 'churchyard', query: new URLSearchParams() };
 let stopView: (() => void) | null = null;
 let drawnNarrow: boolean | null = null;
+/** Counts redraws, so a lazy view that arrives after the reader has moved on is dropped. */
+let renderId = 0;
 
+/** The churchyard, the table, the census, the method page and a ledger have a visible title of their own (a kicker and a lead line, the "At a glance" card,
+ * or the header card), so their heading stays for screen readers and as the focus target only. */
+function markTitle(route: Route, view: HTMLElement): void {
+  el('page-title').classList.toggle(
+    'visually-hidden',
+    route.name === 'churchyard' || route.name === 'table' || route.name === 'census' || route.name === 'method' || view.querySelector('.ledger-head') !== null,
+  );
+}
+/** Loads a view's module, then mounts it, unless the reader has already gone elsewhere. */
+function lazyView(view: HTMLElement, id: number, load: () => Promise<() => () => void>): void {
+  view.innerHTML = `<p>${esc(SITE.loading)}</p>`;
+  load()
+    .then((mount) => {
+      if (id !== renderId) return;
+      stopView = mount();
+      markTitle(parseHash(window.location.hash), view);
+    })
+    .catch(() => {
+      if (id === renderId) view.innerHTML = `<p role="alert">${esc(SITE.loadError)}</p>`;
+    });
+}
 function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   stopView?.();
   stopView = null;
+  const id = ++renderId;
   const main = el('main');
   document.title = `${heading(route)} · ${SITE.title}`;
   renderNav(route);
@@ -77,20 +100,18 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
   } else if (route.name === 'table') {
     stopView = mountTable(view, reg, route.query);
   } else if (route.name === 'sat') {
-    stopView = mountLedger(view, reg, route.norad);
+    // The ledger and the method page carry the case files, the methodology text and the Markdown reader, so they load when first opened.
+    const { norad } = route;
+    lazyView(view, id, () => import('./views/ledger.ts').then((m) => () => m.mountLedger(view, reg, norad)));
   } else if (route.name === 'census') {
     stopView = mountCensus(view, reg);
   } else if (route.name === 'method') {
-    stopView = mountMethod(view, route.query);
+    const { query } = route;
+    lazyView(view, id, () => import('./views/method.ts').then((m) => () => m.mountMethod(view, query)));
   } else {
     view.innerHTML = `<p>${esc(SITE.notFound)}</p><p><a href="#/">${esc(SITE.backToChurchyard)}</a></p>`;
   }
-  // The churchyard, the table, the census, the method page and a ledger have a visible title of their own (a kicker and a lead line, the "At a glance" card,
-  // or the header card), so their heading stays for screen readers and as the focus target only.
-  el('page-title').classList.toggle(
-    'visually-hidden',
-    route.name === 'churchyard' || route.name === 'table' || route.name === 'census' || route.name === 'method' || view.querySelector('.ledger-head') !== null,
-  );
+  markTitle(route, view);
   // After a navigation, move keyboard and screen-reader focus to the new page title.
   if (!isFirst) el('page-title').focus({ preventScroll: false });
 }

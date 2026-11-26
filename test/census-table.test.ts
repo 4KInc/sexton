@@ -85,22 +85,21 @@ describe('the table', () => {
     expect(t).not.toMatch(/nth-child\(even\)\s*\{[^}]*background:\s*var\(--(panel|surface)/);
     expect(t).toMatch(/tbody tr:hover\s*\{[^}]*background:\s*var\(--stone\)/);
   });
-  it('has a toolbar: search first, the other filters behind a button on a phone, and the same form fields', () => {
+  it('has a toolbar: search first, the other filters in a panel behind a button on a phone, and the same form fields', () => {
+    // Changed on purpose (filter toolbar): one markup for both views; the table's bar is always open from 901 px up (CSS).
     const bar = filtersHtml(real.records, NO_FILTERS, config, false, true);
     expect(bar).toContain('<form class="filters filters--bar"');
     expect(bar).not.toContain('<details');
-    expect(bar.indexOf('id="f-q"')).toBeLessThan(bar.indexOf('data-more'));
-    expect(bar).toContain('aria-expanded="false" aria-controls="more-filters"');
-    expect(bar).toContain('<div class="more-filters" id="more-filters">');
+    expect(bar.indexOf('id="f-q"')).toBeLessThan(bar.indexOf('data-filter-toggle'));
+    expect(bar).toContain('aria-expanded="false" aria-controls="filter-panel"');
+    expect(bar).toContain('id="filter-panel"');
     for (const id of ['f-owner', 'f-era', 'f-bones']) expect(bar).toContain(`id="${id}"`);
-    expect(bar).toContain('placeholder="echostar or 27378"');
-    // Opened when a filter is already set.
-    expect(filtersHtml(real.records, NO_FILTERS, config, true, true)).toContain('id="more-filters" data-open');
-    // The churchyard form is unchanged: a closed details.
-    expect(filtersHtml(real.records, NO_FILTERS, config, false)).toContain('<details class="filters-details">');
+    expect(bar).toContain('placeholder="Name or NORAD id"');
+    expect(filtersHtml(real.records, NO_FILTERS, config, true, true)).toContain('data-open');
+    // The churchyard form is the same toolbar, without the always-open bar class.
+    expect(filtersHtml(real.records, NO_FILTERS, config, false)).not.toContain('filters--bar');
   });
 });
-
 describe('the table on a phone (below 600 px)', () => {
   const retired = real.records.find((r) => r.norad === 27378)!;
   const row = rowHtml(retired, config);

@@ -18,7 +18,7 @@ A Victorian churchyard at night, seen through a modern instrument. Cinematic and
 - The ground is a near-black blue, never #000, with three surfaces that get lighter as they rise. Text is bone at three levels: primary 7:1 or better, secondary and muted 4.5:1 or better on every surface.
 - One story colour: lantern, with a soft halo and a slow flicker (opacity 0.85 to 1, 3 to 6 s, staggered), for the story stones only. Post-rule stones that are not the story are muted bone at 60%. Stones launched before the rule date are moss at 43% (the least that keeps 3:1 against the ground). Story stones draw in lantern alone (outline, halo, any fill), with no moss; their years since launch are on the card. A selected stone turns bone, thick, still, with the lantern box. Error bars on non-story stones are quiet (about 25% effective).
 - Verdict marks differ by shape and fill: buried solid pale, shallow grave half filled, restless lightly filled, uncertain hatched, unquiet an open outline, fallen tipped and dim. The legend, the badges and the census key draw the same marks.
-- Atmosphere tokens (OKLCH): `--lantern-halo` (halo behind a story stone), `--fog-light` (two fog layers on the road, 40 s and 90 s drifts, at most 0.12 opacity, static under reduced motion), `--bone-fill-50/30/22` (the census key's fills). The moon is one static glow near the top right of the high ground.
+- Atmosphere tokens (OKLCH): `--lantern-halo` (halo behind a story stone), `--fog-light` (two fog layers on the road, 40 s and 90 s drifts, at most 0.12 opacity, static under reduced motion), `--bone-fill-50/30/22` (the census key's fills), `--lantern-fill` (lantern at 16%, behind a pressed Unquiet or Shallow grave filter chip). The moon is one static glow near the top right of the high ground.
 - Every text and background pair meets WCAG AA. Check contrast when choosing or changing a colour.
 
 ## Type
@@ -47,6 +47,11 @@ Inside the chart, every mark carries data; if a mark carries no data, leave it o
 - Use the full width on desktop. No single narrow text column with empty space beside it.
 - Long explanations go in collapsible panels or side notes, not in the opening.
 - Verdicts show as badges: the churchyard word large, with its plain meaning under it, smaller. This still pairs each word with its meaning once.
+## Filter toolbar
+- One toolbar for the churchyard and the table: a search field (icon, clear button), Owner and Launch era as styled native selects, six verdict toggle chips (the chart's glyph, the word, a live count for the other filters; `aria-pressed`), "Show unmarked bones" as a switch (`role="switch"`), and a line of removable pills with "Clear all" and "Showing N of M" (hidden with no filter).
+- Pressed chips are filled with a 2 px border. Only a pressed Unquiet or Shallow grave chip takes lantern (border, glyph, `--lantern-fill`); its words stay bone.
+- Churchyard: the options open in a panel that floats over the chart, so the plot top stays under 420 px. Table: always in the row from 901 px. Phone: a bottom sheet with a Done button. Escape closes the panel where it can close.
+
 ## Motion
 
 - Slow and subtle.

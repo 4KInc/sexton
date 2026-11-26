@@ -399,8 +399,12 @@ describe('labels and landmarks', () => {
   it('the filter form is a labelled form with a labelled fieldset for the verdicts', () => {
     const html = filtersHtml(real.records, NO_FILTERS, config, true);
     expect(html).toMatch(/<form[^>]*aria-label="[^"]+"/);
-    expect(html).toMatch(/<fieldset[^>]*><legend>[^<]+<\/legend>/);
-    expect(html).toMatch(/<summary>[^<]+<\/summary>/);
+    // Changed on purpose (filter toolbar): the verdict chips sit in a fieldset whose legend is read, not drawn; the options are a named group behind a button that says whether it is expanded.
+    expect(html).toMatch(/<fieldset[^>]*><legend[^>]*>[^<]+<\/legend>/);
+    expect(html).toMatch(/<button[^>]*role="switch"[^>]*aria-checked="(true|false)"/);
+    expect(html).toMatch(/<button[^>]*aria-expanded="(true|false)" aria-controls="filter-panel"/);
+    expect(html).toMatch(/aria-pressed="(true|false)"/);
+    expect(html).toMatch(/<div class="filter-panel"[^>]*role="group"[^>]*aria-label="[^"]+"/);
   });
   it('the sort buttons are real buttons inside column headers, and the sorted column says which way', () => {
     const html = tableHtml(real.records.slice(0, 5), config, { key: 'norad', dir: 'desc' });

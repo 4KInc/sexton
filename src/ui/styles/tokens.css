@@ -69,6 +69,8 @@
   --fog: oklch(0.85 0.03 250 / 0.07);
   --vignette: oklch(0.07 0.02 258 / 0.7);
   --lantern-glow: oklch(0.8 0.13 70 / 0.35);
+  /* The fill behind a pressed Unquiet or Shallow grave filter chip: lantern at 16%, under bone text. */
+  --lantern-fill: oklch(0.8 0.13 70 / 0.16);
   /* Bone at three fills, for the verdict marks in the census key and its bars (the chart uses fill-opacity). */
   --bone-fill-50: oklch(0.82 0.012 85 / 0.5);
   --bone-fill-30: oklch(0.82 0.012 85 / 0.3);

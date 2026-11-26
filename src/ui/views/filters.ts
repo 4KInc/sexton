@@ -1,23 +1,50 @@
-// The filter form, shared by the churchyard and the table (design 5.4, R6.8).
-// The form's field names are the hash query keys, so a form maps straight to state.ts.
-import type { SatRecord } from '../../engine/types.ts';
+// The filter toolbar, shared by the churchyard and the table (design 5.4, R6.8).
+// A search field, two select menus, verdict toggle chips, a switch for unmarked bones, and a line of active filters.
+// The controls read back through the same parser the hash uses, so the address stays the source of truth.
+import type { SatRecord, VerdictName } from '../../engine/types.ts';
 import { FILTERS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
 import type { Config } from '../../engine/config.ts';
 import { esc } from '../html.ts';
 import { replaceQuery } from '../router.ts';
-import { ERA_FILTERS, hasFilters, OWNER_NONE, ownersOf, parseFilters, toQuery } from '../state.ts';
+import { applyFilters, ERA_FILTERS, hasFilters, OWNER_NONE, ownersOf, parseFilters, toQuery } from '../state.ts';
 import type { EraFilter, Filters, ViewState } from '../state.ts';
-
+import { glyphSvg } from './badge.ts';
 const ERA_LABEL: Record<EraFilter, string> = {
   before: FILTERS.eraBefore,
   after: FILTERS.eraAfter,
   unknown: FILTERS.eraUnknown,
 };
-
 const option = (value: string, label: string, selected: boolean): string =>
   `<option value="${esc(value)}"${selected ? ' selected' : ''}>${esc(label)}</option>`;
-
-/** The form inside a <details> element, as a string. `open` is whether it starts open. `records` is the whole register, so the owner list does not shrink while filtering. */
+const icon = (cls: string, d: string): string =>
+  `<svg class="${cls}" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">${d}</svg>`;
+const SEARCH_ICON = icon('search-icon', '<circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/>');
+const CROSS = '<path d="M4 4l8 8M12 4l-8 8"/>';
+const SLIDERS = icon('toggle-icon', '<path d="M2 4.5h12M2 11.5h12"/><circle cx="10" cy="4.5" r="1.8"/><circle cx="6" cy="11.5" r="1.8"/>');
+/** The story verdicts: their chip is lantern when pressed (design.md, Palette). */
+const STORY_VERDICTS: readonly VerdictName[] = ['unquiet', 'shallow grave'];
+/** Count of the filter groups other than search, for the badge on the Filters button. */
+const groupsOn = (f: Filters): number => Number(f.owner !== null) + Number(f.verdicts.length > 0) + Number(f.era !== null) + Number(f.bones);
+/** What a verdict chip would show if pressed: the other filters stay as they are, the verdict filter is this one word. */
+const chipCount = (records: readonly SatRecord[], f: Filters, v: VerdictName): number => applyFilters(records, { ...f, verdicts: [v] }).length;
+/** The pills, "Clear all" and the result count. */
+function activeInner(records: readonly SatRecord[], filters: Filters, config: Config): string {
+  const pills: [string, string][] = [];
+  if (filters.q !== '') pills.push(['q', FILTERS.searchPill(filters.q)]);
+  if (filters.owner !== null) pills.push(['owner', FILTERS.ownerPill(filters.owner === OWNER_NONE ? FILTERS.noOwner : filters.owner)]);
+  for (const v of filters.verdicts) pills.push([`verdict:${v}`, verdictCopy(v, config).word]);
+  if (filters.era !== null) pills.push(['era', ERA_LABEL[filters.era]]);
+  if (filters.bones) pills.push(['bones', FILTERS.bonesPill]);
+  return (
+    `<ul class="pills">${pills.map(([key, label]) => `<li><button type="button" class="pill" data-remove="${esc(key)}" aria-label="${esc(FILTERS.remove(label))}"><span>${esc(label)}</span>${icon('', CROSS)}</button></li>`).join('')}</ul>` +
+    `<button type="button" class="link-button" data-clear-filters>${esc(FILTERS.clearAll)}</button>` +
+    `<span class="filter-count mono">${esc(FILTERS.showing(applyFilters(records, filters).length, records.length))}</span>`
+  );
+}
+/**
+ * The toolbar as a string. `open` is whether the options panel starts open. `bar` draws it for the table: on a wide
+ * screen the options are always in the row. `records` is the whole register, so the owner list does not shrink while filtering.
+ */
 export function filtersHtml(records: readonly SatRecord[], filters: Filters, config: Config, open: boolean, bar = false): string {
   const { codes, hasNone } = ownersOf(records);
   // An owner in the address that the register does not have still shows in the select, so the form matches the address.
@@ -27,78 +54,151 @@ export function filtersHtml(records: readonly SatRecord[], filters: Filters, con
     option('', FILTERS.anyOwner, filters.owner === null) +
     [...codes, ...extra].map((c) => option(c, c, filters.owner === c)).join('') +
     (hasNone ? option(OWNER_NONE, FILTERS.noOwner, filters.owner === OWNER_NONE) : '');
-  const verdicts = VERDICT_ORDER.map((v) => {
-    const id = `f-verdict-${v.replace(' ', '-')}`;
-    return `<li><input type="checkbox" id="${id}" name="verdict" value="${esc(v)}"${filters.verdicts.includes(v) ? ' checked' : ''}><label for="${id}">${esc(verdictCopy(v, config).word)}</label></li>`;
-  }).join('');
-  const eras =
-    option('', FILTERS.anyEra, filters.era === null) + ERA_FILTERS.map((e) => option(e, ERA_LABEL[e], filters.era === e)).join('');
-  // `bar` draws the form as an always-open toolbar row (the table). Otherwise it sits in a closed <details> (the churchyard).
-  const form = (inner: string): string =>
-    bar
-      ? `<form class="filters filters--bar" id="filters" aria-label="${esc(FILTERS.legend)}" novalidate>${inner}</form>`
-      : `<details class="filters-details"${open ? ' open' : ''}><summary>${esc(FILTERS.legend)}</summary><form class="filters" id="filters" aria-label="${esc(FILTERS.legend)}" novalidate>${inner}</form></details>`;
-  const searchF = `<div class="field"><label for="f-q">${esc(FILTERS.search)}</label><input type="search" id="f-q" name="q" value="${esc(filters.q)}" autocomplete="off"${bar ? ' placeholder="echostar or 27378"' : ''} aria-describedby="f-q-hint"><span id="f-q-hint" class="hint">${esc(FILTERS.searchHint)}</span></div>`;
-  const ownerF = `<div class="field"><label for="f-owner">${esc(FILTERS.owner)}</label><select id="f-owner" name="owner">${owners}</select></div>`;
-  const eraF = `<div class="field"><label for="f-era">${esc(FILTERS.era)}</label><select id="f-era" name="era">${eras}</select></div>`;
-  const verdictF = `<fieldset class="field"><legend>${esc(FILTERS.verdict)}</legend><ul class="check-list">${verdicts}</ul></fieldset>`;
-  const bonesF = `<div class="field field--check"><input type="checkbox" id="f-bones" name="bones" value="1"${filters.bones ? ' checked' : ''}><label for="f-bones">${esc(FILTERS.bones)}</label></div>`;
-  const clearF = `<p class="filters-clear"><button type="button" class="button" data-clear-filters${hasFilters(filters) ? '' : ' disabled'}>${esc(FILTERS.clear)}</button></p>`;
-  const note = `<p class="filters-note">${esc(FILTERS.note)}</p>`;
-  if (bar) {
-    // On a phone only the search box shows; a button opens the rest. On a wide screen the rest is always there.
-    return form(
-      `${note}${searchF}<button type="button" class="button button--quiet more-toggle" aria-expanded="${open}" aria-controls="more-filters" data-more>${esc(FILTERS.more)}</button>` +
-        `<div class="more-filters" id="more-filters"${open ? ' data-open' : ''}>${ownerF}${eraF}${verdictF}${bonesF}${clearF}</div>`,
+  const eras = option('', FILTERS.anyEra, filters.era === null) + ERA_FILTERS.map((e) => option(e, ERA_LABEL[e], filters.era === e)).join('');
+  const chips = VERDICT_ORDER.map((v) => {
+    const on = filters.verdicts.includes(v);
+    return (
+      `<button type="button" class="fchip${STORY_VERDICTS.includes(v) ? ' chip--story' : ''}" data-verdict="${esc(v)}" aria-pressed="${on}">` +
+      `${glyphSvg(v)}<span class="fchip-word">${esc(verdictCopy(v, config).word)}</span><span class="fchip-count mono">${chipCount(records, filters, v)}</span></button>`
     );
-  }
-  return form(`${note}<div class="filters-row">${searchF}${ownerF}${eraF}</div>${verdictF}${bonesF}${clearF}`);
+  }).join('');
+  const search =
+    `<div class="search">${SEARCH_ICON}<label class="visually-hidden" for="f-q">${esc(FILTERS.search)}</label>` +
+    `<input type="search" id="f-q" name="q" value="${esc(filters.q)}" autocomplete="off" placeholder="${esc(FILTERS.placeholder)}" aria-describedby="f-q-hint">` +
+    `<button type="button" class="search-clear" data-clear-search${filters.q === '' ? ' hidden' : ''}>${icon('', CROSS)}<span class="visually-hidden">${esc(FILTERS.clearSearch)}</span></button>` +
+    `<span id="f-q-hint" class="visually-hidden">${esc(FILTERS.searchHint)}</span></div>`;
+  const badge = groupsOn(filters);
+  return (
+    `<form class="filters${bar ? ' filters--bar' : ''}" id="filters" aria-label="${esc(FILTERS.legend)}"${open ? ' data-open' : ''} novalidate>` +
+    `<div class="filter-row">${search}` +
+    `<button type="button" class="filter-toggle" aria-expanded="${open}" aria-controls="filter-panel" data-filter-toggle>${SLIDERS}<span>${esc(FILTERS.toggle)}</span><span class="filter-badge mono" data-filter-badge${badge === 0 ? ' hidden' : ''}>${badge}</span></button>` +
+    `<div class="filter-panel" id="filter-panel" role="group" aria-label="${esc(FILTERS.panel)}">` +
+    `<div class="filter-sheet-head"><span class="filter-sheet-title">${esc(FILTERS.toggle)}</span><button type="button" class="button button--primary" data-filter-done>${esc(FILTERS.done)}</button></div>` +
+    `<div class="select"><label for="f-owner">${esc(FILTERS.owner)}</label><select id="f-owner" name="owner">${owners}</select></div>` +
+    `<div class="select"><label for="f-era">${esc(FILTERS.era)}</label><select id="f-era" name="era">${eras}</select></div>` +
+    `<fieldset class="vchips"><legend class="visually-hidden">${esc(FILTERS.verdict)}</legend>${chips}</fieldset>` +
+    `<button type="button" class="switch" role="switch" id="f-bones" data-bones aria-checked="${filters.bones}"><span class="switch-track"><span class="switch-thumb"></span></span><span>${esc(FILTERS.bones)}</span></button>` +
+    `<p class="filters-note">${esc(FILTERS.note)}</p>` +
+    `</div>` +
+    `<div class="filter-active" role="group" aria-label="${esc(FILTERS.active)}"${hasFilters(filters) ? '' : ' hidden'}>${activeInner(records, filters, config)}</div>` +
+    `</div>` +
+    `<div class="filter-scrim" data-filter-done aria-hidden="true"></div>` +
+    `</form>`
+  );
 }
-/** Reads the form back into filters, through the same parser the hash uses. */
+/** Reads the controls back into filters, through the same parser the hash uses. */
 export function readFilters(form: HTMLFormElement): Filters {
   const pairs: [string, string][] = [];
-  for (const [key, value] of new FormData(form)) pairs.push([key, String(value)]);
+  const value = (name: string): string => form.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${name}"]`)?.value ?? '';
+  pairs.push(['q', value('q')], ['owner', value('owner')], ['era', value('era')]);
+  for (const chip of form.querySelectorAll<HTMLElement>('[data-verdict][aria-pressed="true"]')) pairs.push(['verdict', chip.dataset['verdict'] ?? '']);
+  if (form.querySelector('[data-bones]')?.getAttribute('aria-checked') === 'true') pairs.push(['bones', '1']);
   return parseFilters(new URLSearchParams(pairs));
 }
-
+/** The register and the config, for the chip counts and the result count. */
+export interface FilterContext {
+  records: readonly SatRecord[];
+  config: Config;
+}
 /**
- * Wires the form. On every change it writes the query into the hash (no redraw of the form, so
- * focus stays) and calls `onChange`. Returns a function that removes the listeners.
+ * Wires the toolbar. On every change it writes the query into the hash (no redraw of the form, so
+ * focus stays), refreshes the chips and the active line, and calls `onChange`. Returns a function that removes the listeners.
  */
 export function wireFilters(
   form: HTMLFormElement,
   getState: () => ViewState,
   setState: (next: ViewState) => void,
   onChange: () => void,
+  ctx: FilterContext,
 ): () => void {
+  const q = form.querySelector<HTMLInputElement>('#f-q')!;
+  const toggle = form.querySelector<HTMLButtonElement>('[data-filter-toggle]')!;
+  const setOpen = (open: boolean): void => {
+    form.toggleAttribute('data-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+  };
+  /** The toggle is hidden where the options are always shown (the table on a wide screen). */
+  const collapsible = (): boolean => toggle.getClientRects().length > 0;
+  const refresh = (filters: Filters): void => {
+    for (const chip of form.querySelectorAll<HTMLElement>('[data-verdict]')) {
+      const v = chip.dataset['verdict'] as VerdictName;
+      chip.setAttribute('aria-pressed', String(filters.verdicts.includes(v)));
+      chip.querySelector('.fchip-count')!.textContent = String(chipCount(ctx.records, filters, v));
+    }
+    form.querySelector('[data-bones]')!.setAttribute('aria-checked', String(filters.bones));
+    form.querySelector<HTMLElement>('[data-clear-search]')!.hidden = q.value === '';
+    const badge = form.querySelector<HTMLElement>('[data-filter-badge]')!;
+    badge.textContent = String(groupsOn(filters));
+    badge.hidden = groupsOn(filters) === 0;
+    const active = form.querySelector<HTMLElement>('.filter-active')!;
+    active.hidden = !hasFilters(filters);
+    active.innerHTML = activeInner(ctx.records, filters, ctx.config);
+  };
   const sync = (filters: Filters): void => {
     const next = { ...getState(), filters };
     setState(next);
     replaceQuery(toQuery(next));
-    form.querySelector<HTMLButtonElement>('[data-clear-filters]')!.disabled = !hasFilters(filters);
+    refresh(filters);
     onChange();
+  };
+  const pressed = (el: Element, on: boolean): void => el.setAttribute('aria-pressed', String(on));
+  const remove = (key: string): void => {
+    if (key === 'q') q.value = '';
+    else if (key === 'owner' || key === 'era') form.querySelector<HTMLSelectElement>(`[name="${key}"]`)!.value = '';
+    else if (key === 'bones') form.querySelector('[data-bones]')!.setAttribute('aria-checked', 'false');
+    else form.querySelector(`[data-verdict="${key.slice('verdict:'.length)}"]`)?.setAttribute('aria-pressed', 'false');
   };
   const onInput = (): void => sync(readFilters(form));
   const onClick = (event: Event): void => {
-    if ((event.target as Element).closest('[data-clear-filters]') === null) return;
-    for (const el of form.elements) {
-      if (el instanceof HTMLInputElement && el.type === 'checkbox') el.checked = false;
-      if (el instanceof HTMLInputElement && el.type === 'search') el.value = '';
-      if (el instanceof HTMLSelectElement) el.value = '';
+    const target = event.target as Element;
+    const chip = target.closest('[data-verdict]');
+    const sw = target.closest('[data-bones]');
+    const gone = target.closest<HTMLElement>('[data-remove]');
+    if (chip !== null) {
+      pressed(chip, chip.getAttribute('aria-pressed') !== 'true');
+      sync(readFilters(form));
+    } else if (sw !== null) {
+      sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true'));
+      sync(readFilters(form));
+    } else if (gone !== null) {
+      remove(gone.dataset['remove']!);
+      sync(readFilters(form));
+      (form.querySelector<HTMLElement>('.pill') ?? q).focus();
+    } else if (target.closest('[data-clear-filters]') !== null) {
+      for (const key of ['q', 'owner', 'era', 'bones', ...VERDICT_ORDER.map((v) => `verdict:${v}`)]) remove(key);
+      sync(readFilters(form));
+      q.focus();
+    } else if (target.closest('[data-clear-search]') !== null) {
+      remove('q');
+      sync(readFilters(form));
+      q.focus();
+    } else if (target.closest('[data-filter-toggle]') !== null) {
+      const open = !form.hasAttribute('data-open');
+      setOpen(open);
+      if (open) form.querySelector<HTMLElement>('#f-owner')?.focus();
+    } else if (target.closest('[data-filter-done]') !== null) {
+      setOpen(false);
+      toggle.focus();
     }
-    sync(readFilters(form));
-    form.querySelector<HTMLInputElement>('#f-q')?.focus();
+  };
+  // Escape closes the options where they can be closed (the churchyard, and the table below the wide layout).
+  const onKey = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape' || !form.hasAttribute('data-open') || !collapsible()) return;
+    setOpen(false);
+    toggle.focus();
   };
   // Enter in the search box must not submit the form.
   const onSubmit = (event: Event): void => event.preventDefault();
   form.addEventListener('input', onInput);
   form.addEventListener('change', onInput);
   form.addEventListener('click', onClick);
+  form.addEventListener('keydown', onKey);
   form.addEventListener('submit', onSubmit);
   return () => {
     form.removeEventListener('input', onInput);
     form.removeEventListener('change', onInput);
     form.removeEventListener('click', onClick);
+    form.removeEventListener('keydown', onKey);
     form.removeEventListener('submit', onSubmit);
   };
 }

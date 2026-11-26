@@ -513,7 +513,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     (cover ? `<p class="cover-title">${esc(coverTitle(reg))}</p>` : heroHtml(reg)) +
     `<section class="stage" aria-label="${esc(PAGE_TITLES.churchyard)}">` +
     `<div class="toolbar">` +
-    filtersHtml(reg.records, state.filters, config, hasFilters(state.filters)) +
+    filtersHtml(reg.records, state.filters, config, false) +
     `<p class="status visually-hidden" id="chart-status" role="status"></p>` +
     (hasStones ? `<a class="skip-link skip-link--inline" id="skip-table" href="#/table">${esc(SITE.skipToTable)}</a>${compactLegendHtml(config)}` : '') +
     (hasStones ? `<div id="tour-start-host" class="toolbar-tour-start"></div>` : '') +
@@ -605,6 +605,7 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
       state = next;
     },
     draw,
+    { records: reg.records, config },
   );
   const select = (norad: number | null): void => {
     selected = norad;
