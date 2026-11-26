@@ -31,7 +31,9 @@ export const sextonTheme = themeQuartz.withParams({
   headerRowBorder: { style: 'solid', width: 1, color: 'var(--rule-strong)' },
   columnBorder: false,
   headerColumnBorder: false,
+  // The column separators are the resize handles: short and faint, and bone only while the header is hovered (table.css).
   headerColumnResizeHandleColor: 'var(--rule)',
+  headerColumnResizeHandleHeight: '40%',
   pinnedColumnBorder: { style: 'solid', width: 1, color: 'var(--rule-strong)' },
   wrapperBorder: false,
   wrapperBorderRadius: 2,
@@ -42,7 +44,7 @@ export const sextonTheme = themeQuartz.withParams({
   accentColor: 'var(--lantern)',
   borderColor: 'var(--rule)',
   iconColor: 'var(--bone-soft)',
-  cellHorizontalPadding: 12,
+  cellHorizontalPadding: 10,
   spacing: 6,
   browserColorScheme: 'dark',
   // No motion in the grid, so nothing moves under prefers-reduced-motion either (rows do not animate: animateRows is off).
@@ -82,19 +84,22 @@ function columns(): ColDef<GridRow>[] {
   });
   // cellClass replaces the class the rightAligned type would add, so it is named here again.
   const num = { type: 'rightAligned', cellClass: 'grid-num ag-right-aligned-cell' } as const;
+  // Every column but the two pinned ones flexes from a minimum wide enough for its header and sort arrow, so the
+  // whole grid fits the content column (1,248 px at 1280, 1,408 px at 1440) with no sideways scroll.
+  const fit = (minWidth: number, flex = 1): Pick<ColDef<GridRow>, 'minWidth' | 'flex'> => ({ minWidth, flex });
   return [
-    { colId: 'n', headerName: '#', valueGetter: (p) => p.data?.n, width: 56, pinned: 'left', sortable: false, resizable: false, cellClass: 'grid-num grid-n ag-right-aligned-cell', type: 'rightAligned' },
+    { colId: 'n', headerName: '#', valueGetter: (p) => p.data?.n, width: 48, pinned: 'left', sortable: false, resizable: false, cellClass: 'grid-num grid-n ag-right-aligned-cell', type: 'rightAligned' },
     data('name', { field: 'name', pinned: 'left', width: 180, cellRenderer: nameCell }),
-    data('norad', { field: 'norad', width: 100, ...num }),
-    data('owner', { field: 'owner', width: 76 }),
-    data('launch', { field: 'launch', width: 110, cellClass: 'grid-num' }),
-    data('verdict', { field: 'verdictHtml', width: 144, cellRenderer: (p: ICellRendererParams<GridRow>) => p.data?.verdictHtml ?? '' }),
-    data('borderline', { field: 'borderline', width: 52, cellRenderer: borderlineCell, cellClass: 'grid-mark' }),
-    data('p', { field: 'p', width: 88, ...num }),
-    data('q', { field: 'q', width: 88, ...num }),
-    data('e', { field: 'e', width: 88, ...num }),
-    data('source', { field: 'source', width: 76, cellClass: 'grid-num' }),
-    data('age', { field: 'age', minWidth: 340, flex: 1, cellClass: 'grid-num grid-age' }),
+    data('norad', { field: 'norad', ...fit(96), ...num }),
+    data('owner', { field: 'owner', ...fit(80) }),
+    data('launch', { field: 'launch', ...fit(124), cellClass: 'grid-num' }),
+    data('verdict', { field: 'verdictHtml', ...fit(144, 1.4), cellRenderer: (p: ICellRendererParams<GridRow>) => p.data?.verdictHtml ?? '' }),
+    data('borderline', { field: 'borderline', width: 52, minWidth: 52, cellRenderer: borderlineCell, cellClass: 'grid-mark' }),
+    data('p', { field: 'p', ...fit(80), ...num }),
+    data('q', { field: 'q', ...fit(80), ...num }),
+    data('e', { field: 'e', ...fit(80), ...num }),
+    data('source', { field: 'source', ...fit(72) }),
+    data('age', { field: 'age', ...fit(196, 2), cellClass: 'grid-num grid-age' }),
   ];
 }
 /** Draws the grid into `host`. */

@@ -54,7 +54,10 @@ Inside the chart, every mark carries data; if a mark carries no data, leave it o
 
 ## Desktop table (AG Grid)
 - Over 600 px the table is an AG Grid Community grid, themed with `themeQuartz.withParams` from the tokens: surface-1 ground, surface-2 header and hover, bone text, Plex Sans for text and headers, Plex Mono with tabular figures for numbers, 40 px rows and header, hairline row rules, no zebra stripes. Lantern only for focus and for a story row's 3 px left border (on its pinned row-number cell); the verdict cell is the table's own chip.
-- The grid scrolls in its own box (the viewport less 9rem, at least 26rem), with its header and the row number and Name columns held in place. Under it: the row count and the p, q, e, ± key.
+- The grid scrolls in its own box (the viewport less 9rem, at least 26rem), with its header and the row number and Name columns held in place. Directly above it: the caption and the one-line p, q, e, ± key. Under it: the row count.
+- The columns fit the content width with no sideways scroll at 1280 and 1440: # and Name are fixed and pinned, the rest flex from minimums that fit each header with its sort arrow. Header separators are the resize handles, short and faint, brighter only while the header is hovered.
+- The grid's data age sits beside its Orbit column, so it drops the source: "22 Nov 2026, 09:58 UTC" for GP rows, "Date not given" for SATCAT rows. Everywhere else (the HTML table, cards, ledger) keeps the full text.
+- The verdict chip's stone is drawn as in the chart legend: 28 by 34 px, bone-soft at full strength, lantern on a story row.
 
 ## Motion
 

@@ -413,9 +413,13 @@ th[aria-sort='descending'] .sort::after {
   display: none;
 }
 .grid-caption {
-  margin: var(--space-1) 0 4px;
+  max-width: none;
+  margin: var(--space-1) 0 6px;
   color: var(--bone-soft);
   font-size: var(--fs-14);
+}
+.grid-key {
+  color: var(--bone-muted);
 }
 .grid-foot {
   margin: var(--space-1) 0 0;
@@ -449,9 +453,22 @@ th[aria-sort='descending'] .sort::after {
 .grid-host .ag-row:has(a.grid-name) {
   cursor: pointer;
 }
+/* The chip's stone is drawn as in the chart legend: the same 28 by 34 box and bone-soft at full strength (lantern on a
+   story row). The negative margins keep the chip one line tall. */
 .grid-host .chip .glyph {
-  width: 0.9rem;
-  height: 1.1rem;
+  --mark: var(--bone-soft);
+  width: 28px;
+  height: 34px;
+  /* The viewBox runs 8 units below the stone's base, so the box sits a little higher than centred to centre the stone. */
+  margin-block: -11px -7px;
+  opacity: 1;
+}
+.grid-host .chip--story .glyph {
+  --mark: var(--lantern);
+}
+/* The column separators (the resize handles) brighten only while the header is under the pointer. */
+.grid-host .ag-header:hover .ag-header-cell-resize::after {
+  background-color: var(--rule-strong);
 }
 /* A story row: a thin lantern border on its left edge, drawn on the pinned part of the row. Nothing else changes. */
 .grid-host .grid-row--story {

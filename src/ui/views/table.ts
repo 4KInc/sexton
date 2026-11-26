@@ -138,9 +138,9 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     ], undefined, true) +
     `<div class="sortbar"><label for="sort-by">${esc(TABLE.sortBy)}</label><select id="sort-by"><option value="default"${isDefaultOrder ? ' selected' : ''}>${esc(TABLE.sortDefault)}</option>${PHONE_SORTS.map((k) => `<option value="${k}"${!isDefaultOrder && state.sort.key === k ? ' selected' : ''}>${esc(TABLE.columns[k])}</option>`).join('')}</select></div>` +
     `<details class="guide guide--table"><summary>${esc(TABLE.verdictKeySummary)}</summary><div class="guide-body">${verdictKeyHtml(config)}</div></details>` +
-    `<p class="grid-caption" id="grid-caption" tabindex="-1" hidden>${esc(TABLE.caption)}</p>` +
+    `<p class="grid-caption" id="grid-caption" tabindex="-1" hidden>${esc(TABLE.caption)}<span class="grid-key"> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</span></p>` +
     `<div class="grid-host" id="grid-host" hidden></div>` +
-    `<p class="grid-foot" id="grid-foot" hidden><span class="mono" id="grid-count"></span> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</p>` +
+    `<p class="grid-foot" id="grid-foot" hidden><span class="mono" id="grid-count"></span></p>` +
     `<div id="table-host"></div>`;
   const form = root.querySelector<HTMLFormElement>('#filters')!;
   const status = root.querySelector<HTMLElement>('#table-status')!;

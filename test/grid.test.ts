@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { gridAge } from '../src/ui/copy.ts';
 import type { UiRegister } from '../src/ui/register.ts';
 import { applyFilters, NO_FILTERS, parseState } from '../src/ui/state.ts';
 import type { Sort } from '../src/ui/state.ts';
@@ -19,12 +20,14 @@ const unescape = (s: string): string => s.replace(/&#39;/g, "'").replace(/&quot;
 const cellsOf = (html: string): string[] =>
   [...html.matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/g)].map((m) => m[1]!.replace(/<span class="visually-hidden">[^<]*<\/span>/g, '').replace(/<[^>]*>/g, '').trim()).map(unescape);
 describe('gridRows: the same rows as the HTML table', () => {
-  it('has the HTML table cell text for every record (name, NORAD, owner, launch, verdict word, ±, p, q, e, source, data age)', () => {
+  it('has the HTML table cell text for every record (name, NORAD, owner, launch, verdict word, ±, p, q, e, source)', () => {
     for (const r of real.records) {
       const g = gridRow(r, 1, config);
       const html = cellsOf(rowHtml(r, config));
       const verdict = g.verdictHtml.replace(/<[^>]*>/g, '').trim();
-      expect([g.name, String(g.norad), g.owner, g.launch, verdict, g.borderline === true ? '\u00B1' : '', g.p, g.q, g.e, g.source, g.age], String(r.norad)).toEqual(html);
+      // The data age is the one cell that differs on purpose: the grid drops its source, which is in the Orbit column beside it.
+      expect([g.name, String(g.norad), g.owner, g.launch, verdict, g.borderline === true ? '\u00B1' : '', g.p, g.q, g.e, g.source], String(r.norad)).toEqual(html.slice(0, 10));
+      expect(g.age, String(r.norad)).toBe(gridAge(r));
     }
   });
   const cases: [string, string][] = [
@@ -62,6 +65,18 @@ describe('gridRows: the same rows as the HTML table', () => {
     }
   });
 });
+describe('the grid data age', () => {
+  it('is the GP epoch as "22 Nov 2026, 09:58 UTC", or "Date not given" for SATCAT, and never repeats the source', () => {
+    expect(gridAge({ orbitSource: { kind: 'GP', epoch: '2026-11-22T09:58:12.345Z' } } as never)).toBe('22 Nov 2026, 09:58 UTC');
+    expect(gridAge({ orbitSource: { kind: 'GP', epoch: '2026-01-05T00:07:00Z' } } as never)).toBe('5 Jan 2026, 00:07 UTC');
+    expect(gridAge({ orbitSource: { kind: 'SATCAT' } } as never)).toBe('Date not given');
+    for (const r of real.records) {
+      const age = gridAge(r);
+      expect(age).not.toMatch(/GP|SATCAT|mean elements/);
+      expect(age).toMatch(r.orbitSource.kind === 'GP' ? /^\d{1,2} [A-Z][a-z]{2} \d{4}, \d{2}:\d{2} UTC$/ : /^Date not given$/);
+    }
+  });
+});
 describe('the grid module', () => {
   afterEach(() => {
     document.body.innerHTML = '';
@@ -83,6 +98,8 @@ describe('the grid module', () => {
     expect(host.querySelector('[role="grid"], [role="treegrid"]')).not.toBeNull();
     const heads = [...host.querySelectorAll('.ag-header-cell')].map((h) => h.getAttribute('col-id'));
     expect(heads).toEqual(['n', 'name', 'norad', 'owner', 'launch', 'verdict', 'borderline', 'p', 'q', 'e', 'source', 'age']);
+    // The legend sits directly above the grid, on screen, with the caption that names it.
+    expect(read('src/ui/views/table.ts')).toMatch(/id="grid-caption"[^`]*TABLE\.caption[^`]*grid-key[^`]*TABLE\.colKey/);
     expect(host.querySelector('.ag-header-cell[col-id="e"]')!.getAttribute('aria-sort')).toBe('descending');
     // A sort set by the code is not passed back as a reader's sort.
     grid.update(gridRows(shown, config, { key: 'name', dir: 'asc' }, false), { key: 'name', dir: 'asc' });

@@ -228,6 +228,14 @@ export function dataAge(record: Pick<SatRecord, 'orbitSource'>): string {
   return `GP mean elements, epoch ${date} ${time} UTC`;
 }
 
+/** The data age in the desktop grid, beside its Orbit column, so the source is not repeated: "22 Nov 2026, 09:58 UTC" or "Date not given". */
+export function gridAge(record: Pick<SatRecord, 'orbitSource'>): string {
+  const s = record.orbitSource;
+  if (s.kind === 'SATCAT') return 'Date not given';
+  const [y, m, d] = s.epoch.slice(0, 10).split('-');
+  return `${Number(d)} ${MONTHS[Number(m) - 1]} ${y}, ${s.epoch.slice(11, 16)} UTC`;
+}
+
 export const TIP = {
   perigee: (absText: string, below: boolean, uncertaintyKm: number): string => `Perigee ${absText} km ${below ? 'below' : 'above'} GEO, \u00B1${uncertaintyKm} km`,
   open: 'Click to select. Double-click opens the ledger.',

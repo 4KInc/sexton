@@ -2,7 +2,7 @@
 // The set comes from applyFilters and the order from orderRows, exactly as for the HTML table; the grid only draws them.
 import type { Config } from '../../engine/config.ts';
 import type { SatRecord } from '../../engine/types.ts';
-import { dataAge, TABLE } from '../copy.ts';
+import { gridAge, TABLE } from '../copy.ts';
 import { formatP, formatSigned } from '../format.ts';
 import type { Sort } from '../state.ts';
 import { edgesOf, isStoryRow, orderRows, verdictCell } from './table.ts';
@@ -23,6 +23,7 @@ export interface GridRow {
   q: string;
   e: string;
   source: string;
+  /** The data age without its source, which is in the Orbit column beside it. */
   age: string;
   /** Unquiet or shallow grave, launched on or after the rule date: the row takes a thin lantern left border. */
   story: boolean;
@@ -44,7 +45,7 @@ export function gridRow(r: SatRecord, n: number, config: Config): GridRow {
     q: formatSigned(r.qKm, decimals),
     e: r.e.toFixed(5),
     source: r.orbitSource.kind,
-    age: dataAge(r),
+    age: gridAge(r),
     story: isStoryRow(r),
   };
 }
