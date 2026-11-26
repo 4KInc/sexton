@@ -399,3 +399,101 @@ th[aria-sort='descending'] .sort::after {
     min-width: 0;
   }
 }
+/* The desktop grid (AG Grid Community, themed from the tokens in grid.ts). It scrolls inside its own box, about the
+   viewport tall, with its header and the Name column held in place. At 600 px and below, in print, and if the grid
+   does not load, the HTML table above is shown instead. */
+.grid-host {
+  height: calc(100vh - 9rem);
+  min-height: 26rem;
+  border-top: 1px solid var(--rule-strong);
+}
+.grid-host[hidden],
+.grid-caption[hidden],
+.grid-foot[hidden] {
+  display: none;
+}
+.grid-caption {
+  margin: var(--space-1) 0 4px;
+  color: var(--bone-soft);
+  font-size: var(--fs-14);
+}
+.grid-foot {
+  margin: var(--space-1) 0 0;
+  color: var(--bone-muted);
+  font-size: var(--fs-13);
+}
+.grid-host .grid-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-13);
+}
+.grid-host .grid-n {
+  color: var(--bone-muted);
+}
+.grid-host .grid-age {
+  color: var(--bone-soft);
+}
+.grid-host .grid-mark .mark {
+  color: var(--bone);
+  font-family: var(--font-mono);
+}
+.grid-host .grid-name {
+  color: var(--bone);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 3px;
+}
+.grid-host .ag-row {
+  cursor: default;
+}
+.grid-host .ag-row:has(a.grid-name) {
+  cursor: pointer;
+}
+.grid-host .chip .glyph {
+  width: 0.9rem;
+  height: 1.1rem;
+}
+/* A story row: a thin lantern border on its left edge, drawn on the pinned part of the row. Nothing else changes. */
+.grid-host .grid-row--story {
+  --mark: var(--lantern);
+}
+.grid-host .grid-row--story .ag-cell[col-id='n'] {
+  box-shadow: inset 3px 0 0 var(--mark);
+}
+/* The chip sits in the middle of its 40 px row. */
+.grid-host .ag-cell {
+  display: flex;
+  align-items: center;
+}
+.grid-host .ag-right-aligned-cell {
+  justify-content: flex-end;
+}
+.grid-host .ag-cell > span {
+  display: inline-flex;
+  align-items: center;
+}
+.grid-host .ag-cell .chip {
+  line-height: 1.4;
+}
+@media (min-width: 601px) {
+  .grid-on #table-host {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .grid-host,
+  .grid-caption,
+  .grid-foot {
+    display: none !important;
+  }
+}
+@media print {
+  .grid-host,
+  .grid-caption,
+  .grid-foot {
+    display: none !important;
+  }
+  .grid-on #table-host {
+    display: block;
+  }
+}

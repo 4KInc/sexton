@@ -52,6 +52,10 @@ Inside the chart, every mark carries data; if a mark carries no data, leave it o
 - Pressed chips are filled with a 2 px border. Only a pressed Unquiet or Shallow grave chip takes lantern (border, glyph, `--lantern-fill`); its words stay bone.
 - Churchyard: the options open in a panel that floats over the chart, so the plot top stays under 420 px. Table: always in the row from 901 px. Phone: a bottom sheet with a Done button. Escape closes the panel where it can close.
 
+## Desktop table (AG Grid)
+- Over 600 px the table is an AG Grid Community grid, themed with `themeQuartz.withParams` from the tokens: surface-1 ground, surface-2 header and hover, bone text, Plex Sans for text and headers, Plex Mono with tabular figures for numbers, 40 px rows and header, hairline row rules, no zebra stripes. Lantern only for focus and for a story row's 3 px left border (on its pinned row-number cell); the verdict cell is the table's own chip.
+- The grid scrolls in its own box (the viewport less 9rem, at least 26rem), with its header and the row number and Name columns held in place. Under it: the row count and the p, q, e, ± key.
+
 ## Motion
 
 - Slow and subtle.

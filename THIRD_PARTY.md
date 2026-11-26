@@ -47,6 +47,7 @@ Direct dependencies (from `package.json`):
 | Package | Version | Licence | Used for | In the shipped site |
 | --- | --- | --- | --- | --- |
 | marked | 18.2.1 | MIT | Rendering the methodology and case files | Yes |
+| ag-grid-community | 36.3.0 (exact) | MIT | The desktop table (Community features only; loaded on `#/table` over 600 px). Brings `ag-stack` 36.3.0 and `ag-charts-types` 14.3.0, both MIT | Yes |
 | @modelcontextprotocol/sdk | 1.32.2 | MIT | The MCP server in `scripts/mcp/` | No |
 | zod | 4.6.7 | MIT | MCP tool input schemas | No |
 | vite | 8.3.8 | MIT | Build | No |
@@ -55,8 +56,9 @@ Direct dependencies (from `package.json`):
 | fast-check | 4.10.3 | MIT | Property tests | No |
 | yaml | 2.9.1 | ISC | Parsing the workflow files in tests | No |
 | @types/node | 24.19.2 | MIT | Types | No |
+| happy-dom | 21.0.4 (exact) | MIT | A DOM for the grid smoke test | No |
 
-Transitive dependencies: `package-lock.json` lists 189 packages in all (the 9 above and 180 others, counting each platform build of a package). By licence, as read from the lock file: MIT 140, Apache-2.0 23, MPL-2.0 12, ISC 9, BSD-3-Clause 3, BSD-2-Clause 1, 0BSD 1. The 12 MPL-2.0 packages are all builds of `lightningcss`, a build-time tool that Vite uses. It is not part of the shipped site. Each package's own licence file is in `node_modules/<name>` after `npm install`.
+Transitive dependencies: `package-lock.json` lists 199 packages in all (the 11 above and 188 others, counting each platform build of a package; recounted 2026-11-26 after adding ag-grid-community and happy-dom). By licence, as read from the lock file: MIT 149, Apache-2.0 23, MPL-2.0 12, ISC 9, BSD-3-Clause 3, BSD-2-Clause 2, 0BSD 1. The 12 MPL-2.0 packages are all builds of `lightningcss`, a build-time tool that Vite uses. It is not part of the shipped site. Each package's own licence file is in `node_modules/<name>` after `npm install`.
 
 ## GitHub Actions
 

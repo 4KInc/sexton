@@ -180,4 +180,41 @@
   .pbar-tick::before {
     background: var(--ink-muted);
   }
+  /* The table on paper (redesign 4): the HTML table, never the grid. The controls are left off, the header and the
+     name column print as ink on paper, and the table is not a scroll box, so every row prints. */
+  .toolbar--table,
+  .sortbar,
+  .guide--table,
+  .filter-scrim {
+    display: none;
+  }
+  #table-host .table-wrap {
+    max-height: none;
+    overflow: visible;
+  }
+  .register-table thead th,
+  #table-host .register-table thead th,
+  #table-host .register-table tbody th,
+  #view > .kicker,
+  #view > .lead {
+    position: static;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .register-table th,
+  .register-table td {
+    color: var(--ink);
+    border-bottom-color: var(--ink-muted);
+  }
+  #table-host .register-table tbody th::before,
+  .register-table caption,
+  .register-table .col-key {
+    color: var(--ink-muted);
+  }
+  .register-table .chip {
+    border-color: var(--ink-muted);
+  }
+  .register-table .sort {
+    color: var(--ink);
+  }
 }

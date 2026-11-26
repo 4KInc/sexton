@@ -417,6 +417,7 @@ export const TABLE = {
   bones: (kind: string): string => `No verdict: unmarked bones (${kind})`,
   noVerdict: (reason: string): string => `No verdict: ${reason}`,
   scrollLabel: 'Table of objects. Scroll sideways to see every column.',
+  gridRows: (n: number): string => `${formatCount(n)} ${n === 1 ? 'row' : 'rows'}`,
 } as const;
 export const OFF_SCALE_ARROW = { above: '\u25B2', below: '\u25BC' } as const;
 /** One label per edge: how many objects are beyond the limit. */

@@ -601,6 +601,8 @@ describe('no hard-coded colours outside tokens.css', () => {
       for (const m of css.matchAll(/([^{}]+)\{([^{}]*var\(--lantern\)[^{}]*)\}/g)) uses.push(m[1]!.trim());
     }
     expect(uses.length).toBeGreaterThan(0);
-    for (const sel of uses) expect(sel, sel).toMatch(/focus|selected|\.card:has|\.stone-pos--story|\.halo-stop|\.chip--story/);
+    // Changed on purpose (redesign 4, step B): the grid's story row takes the lantern through --mark for its thin left border,
+    // the same story rule as .chip--story. The selector is read without its comment.
+    for (const sel of uses) expect(sel.replace(/\/\*[\s\S]*?\*\//g, '').trim(), sel).toMatch(/focus|selected|\.card:has|\.stone-pos--story|\.halo-stop|\.chip--story|\.grid-row--story/);
   });
 });

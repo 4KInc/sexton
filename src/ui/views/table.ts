@@ -19,13 +19,17 @@ import type { Filters, Sort, SortKey, ViewState } from '../state.ts';
 import { chipHtml } from './badge.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { fineHtml } from './fine.ts';
+import { gridRows } from './grid-rows.ts';
+import type { GridHandle } from './grid.ts';
+/** The grid replaces the HTML table above this width. At 600 px and below the table is the card list. */
+export const GRID_MEDIA = '(min-width: 601px)';
 
 /** The sorts a phone offers in a select, because it has no column headers. */
 const PHONE_SORTS: readonly SortKey[] = ['name', 'norad', 'launch', 'p'];
-const edgesOf = (config: Config): number[] => [config.protectedZoneKm, config.thresholdLowKm, config.thresholdHighKm];
+export const edgesOf = (config: Config): number[] => [config.protectedZoneKm, config.thresholdLowKm, config.thresholdHighKm];
 
 /** A story row: launched on or after the rule date, unquiet or in a shallow grave. The same test as the chart's story stones. */
-const isStoryRow = (r: SatRecord): boolean =>
+export const isStoryRow = (r: SatRecord): boolean =>
   r.verdict.kind === 'verdict' && r.verdict.era === null && (r.verdict.verdict === 'unquiet' || r.verdict.verdict === 'shallow grave');
 /** The default order: story rows first, then perigee, lowest first. Ties break on NORAD id. */
 export function defaultOrder(records: readonly SatRecord[]): SatRecord[] {
@@ -48,7 +52,7 @@ function headerHtml(sort: Sort | null): string {
   }).join('');
 }
 
-function verdictCell(r: SatRecord, config: Config): string {
+export function verdictCell(r: SatRecord, config: Config): string {
   const v = r.verdict;
   if (v.kind === 'verdict') return chipHtml(v.verdict, config, isStoryRow(r) ? 'story' : v.era === null ? 'quiet' : v.era === 'before FCC rule' ? 'early' : null);
   if (v.kind === 'unmarked bones') return esc(TABLE.bones(r.status));
@@ -79,10 +83,12 @@ export function rowHtml(r: SatRecord, config: Config): string {
     `</tr>`
   );
 }
+/** The order of the rows: the default order, or the reader's sort. The HTML table and the grid both use it. */
+export const orderRows = (shown: readonly SatRecord[], sort: Sort, byDefault: boolean): SatRecord[] => (byDefault ? defaultOrder(shown) : sortRecords(shown, sort));
 /** The table for an already filtered set. Sorting happens here. */
 export function tableHtml(shown: readonly SatRecord[], config: Config, sort: Sort, byDefault = false): string {
   const key = `<span class="col-key"> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</span>`;
-  const rows = (byDefault ? defaultOrder(shown) : sortRecords(shown, sort)).map((r) => rowHtml(r, config)).join('');
+  const rows = orderRows(shown, sort, byDefault).map((r) => rowHtml(r, config)).join('');
   return (
     `<div class="table-wrap" role="region" aria-label="${esc(TABLE.scrollLabel)}" tabindex="0">` +
     `<table class="register-table" role="table"><caption>${esc(TABLE.caption)}${key}</caption>` +
@@ -132,11 +138,18 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
     ], undefined, true) +
     `<div class="sortbar"><label for="sort-by">${esc(TABLE.sortBy)}</label><select id="sort-by"><option value="default"${isDefaultOrder ? ' selected' : ''}>${esc(TABLE.sortDefault)}</option>${PHONE_SORTS.map((k) => `<option value="${k}"${!isDefaultOrder && state.sort.key === k ? ' selected' : ''}>${esc(TABLE.columns[k])}</option>`).join('')}</select></div>` +
     `<details class="guide guide--table"><summary>${esc(TABLE.verdictKeySummary)}</summary><div class="guide-body">${verdictKeyHtml(config)}</div></details>` +
+    `<p class="grid-caption" id="grid-caption" tabindex="-1" hidden>${esc(TABLE.caption)}</p>` +
+    `<div class="grid-host" id="grid-host" hidden></div>` +
+    `<p class="grid-foot" id="grid-foot" hidden><span class="mono" id="grid-count"></span> \u00B7 ${esc(TABLE.colKey(config.uncertaintyKm))}</p>` +
     `<div id="table-host"></div>`;
   const form = root.querySelector<HTMLFormElement>('#filters')!;
   const status = root.querySelector<HTMLElement>('#table-status')!;
   const host = root.querySelector<HTMLElement>('#table-host')!;
   const showAll = root.querySelector<HTMLButtonElement>('#show-all')!;
+  const gridHost = root.querySelector<HTMLElement>('#grid-host')!;
+  const gridCount = root.querySelector<HTMLElement>('#grid-count')!;
+  let grid: GridHandle | null = null;
+  let stopped = false;
   // With no filter at all the table opens on the default view. Any filter, including "Show unmarked bones", leaves it,
   // and a link with a filter in it shows exactly what it showed before. A column the reader picks overrides the default order.
   let sorted = query.has('sort');
@@ -147,15 +160,57 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
       ? [TABLE.defaultNote(shown.length), sortNote].filter((s) => s !== '').join(' ')
       : [shown.length === 0 ? FILTERS.none : '', sortNote].filter((s) => s !== '').join(' ');
     host.innerHTML = tableHtml(shown, reg.config, state.sort, byDefault && !sorted);
+    gridCount.textContent = TABLE.gridRows(shown.length);
+    grid?.update(gridRows(shown, config, state.sort, byDefault && !sorted), byDefault && !sorted ? null : state.sort);
   };
+  /** The sort a reader picked from a grid header: the same path as the HTML header buttons. */
+  const onGridSort = (sort: Sort): void => {
+    state = { ...state, sort };
+    sorted = true;
+    replaceQuery(toQuery(state));
+    sortBy.value = PHONE_SORTS.includes(sort.key) ? sort.key : 'default';
+    draw(TABLE.sortedBy(TABLE.columns[sort.key], sort.dir));
+  };
+  // The grid loads only on a screen wider than a phone. If it fails to load, the HTML table simply stays.
+  const wide = window.matchMedia(GRID_MEDIA);
+  let loading = false;
+  const ensureGrid = (): void => {
+    if (!wide.matches || grid !== null || loading) return;
+    loading = true;
+    import('./grid.ts')
+      .then((m) => {
+        if (stopped) return;
+        const { byDefault, shown } = viewOf(reg.records, state.filters);
+        const plain = byDefault && !sorted;
+        grid = m.mountGrid(gridHost, {
+          rows: gridRows(shown, config, state.sort, plain),
+          sort: plain ? null : state.sort,
+          onSort: onGridSort,
+          onOpen: (norad) => {
+            window.location.hash = `#/sat/${norad}`;
+          },
+        });
+        // The grid is named by the caption above it, as the HTML table is by its <caption>.
+        gridHost.querySelector('[role="grid"], [role="treegrid"]')?.setAttribute('aria-labelledby', 'grid-caption');
+        for (const el of [gridHost, root.querySelector<HTMLElement>('#grid-caption')!, root.querySelector<HTMLElement>('#grid-foot')!]) el.hidden = false;
+        root.classList.add('grid-on');
+      })
+      .catch(() => {
+        loading = false;
+      });
+  };
+  wide.addEventListener('change', ensureGrid);
   const onShowAll = (): void => {
     // The same path as ticking the box: the form reads it, the address takes bones=1, the table redraws.
     const box = form.querySelector<HTMLButtonElement>('#f-bones')!;
     if (box.getAttribute('aria-checked') !== 'true') box.click();
-    host.querySelector<HTMLElement>('.table-wrap')?.focus();
+    // The button hides itself, so focus moves to what it opened: the grid's caption, or the HTML table.
+    if (grid !== null) root.querySelector<HTMLElement>('#grid-caption')?.focus();
+    else host.querySelector<HTMLElement>('.table-wrap')?.focus();
   };
   showAll.addEventListener('click', onShowAll);
   draw('');
+  ensureGrid();
   const unwire = wireFilters(
     form,
     () => state,
@@ -196,6 +251,9 @@ export function mountTable(root: HTMLElement, reg: { records: SatRecord[]; confi
   };
   host.addEventListener('click', onClick);
   return () => {
+    stopped = true;
+    wide.removeEventListener('change', ensureGrid);
+    grid?.destroy();
     unwire();
     showAll.removeEventListener('click', onShowAll);
     sortBy.removeEventListener('change', onSortBy);
