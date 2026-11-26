@@ -516,6 +516,15 @@
   fill: url(#halo-fade);
   pointer-events: none;
 }
+/* The opening (intro.ts): until a story stone is lit it is drawn like a quiet one, with no halo. Its flicker is
+   held in the motion block below; the lantern comes back through the opacity transition, only where motion is welcome. */
+.plot[data-intro] .stone-pos--story:not(.is-lit) {
+  --mark: var(--bone-muted);
+  opacity: 0.6;
+}
+.plot[data-intro] .stone-pos--story:not(.is-lit) .story-halo {
+  opacity: 0;
+}
 .halo-stop-in {
   stop-color: var(--lantern-halo);
 }
@@ -619,6 +628,13 @@
   /* A selected stone holds still. */
   .stone-link.selected .stone-pos--story {
     animation: none;
+  }
+  /* A story stone not yet lit in the opening holds still, then fades in. */
+  .plot[data-intro] .stone-pos--story:not(.is-lit) {
+    animation: none;
+  }
+  .story-halo {
+    transition: opacity 0.4s;
   }
   .fog-layer--a {
     animation: fog-drift 40s linear infinite;

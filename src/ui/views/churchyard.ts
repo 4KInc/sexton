@@ -35,9 +35,11 @@ import { applyFilters, drawnInChurchyard, hasFilters, hashFor, NO_FILTERS, parse
 import type { ViewState } from '../state.ts';
 import { badgeHtml, glyphSvg } from './badge.ts';
 import { fineHtml } from './fine.ts';
-import { moveStep, rememberSkip, tourHtml, tourSkipped, tourSteps } from './tour.ts';
+import { ECHOSTAR_7, moveStep, rememberSkip, tourHtml, tourSkipped, tourSteps } from './tour.ts';
 import { filtersHtml, wireFilters } from './filters.ts';
 import { emptyFiltersHtml } from '../messages.ts';
+import { introPlayed, lanternOrder, rememberIntro, runIntro, shouldAnimate } from '../intro.ts';
+import type { IntroHandle } from '../intro.ts';
 import { axisText, zoneNames } from '../svg/axis.ts';
 import type { AxisText } from '../svg/axis.ts';
 import { bandsOf } from '../svg/bands.ts';
@@ -493,6 +495,14 @@ export function introHtml(reg: UiRegister): string {
   );
 }
 
+/** sessionStorage, or null where it is blocked. */
+function sessionStore(): Storage | null {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
 /** The selected stone survives a redraw (for example when the screen crosses the phone width). */
 let remembered: number | null = null;
 /**
@@ -627,13 +637,15 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   const steps = tourSteps(reg);
   const tourHost = root.querySelector<HTMLElement>('#tour-host');
   const tourStartHost = root.querySelector<HTMLElement>('#tour-start-host');
-  let tourStep: number | null = steps.length === 0 || tourSkipped() ? null : 0;
+  // `?demo=1` (K1): the opening plays every time, the tour stays out of the way, and EchoStar 7 is selected at the end.
+  const demo = query.get('demo') === '1' && !cover;
+  let tourStep: number | null = demo || steps.length === 0 || tourSkipped() ? null : 0;
   const showTour = (focus: string | null): void => {
     if (tourHost === null) return;
     // In free mode the single "Take the tour" button sits in the toolbar, beside the filters, so no row holds
     // only that link. The step bar (count, text, actions) still stands above the caption, full width.
     tourHost.innerHTML = tourStep === null ? '' : tourHtml(tourStep, steps);
-    if (tourStartHost !== null) tourStartHost.innerHTML = tourStep === null ? tourHtml(null, steps) : '';
+    if (tourStartHost !== null) tourStartHost.innerHTML = tourStep === null && !demo ? tourHtml(null, steps) : '';
     if (plot !== null) {
       if (tourStep === null) delete plot.dataset['tour'];
       else plot.dataset['tour'] = String(tourStep + 1);
@@ -649,6 +661,61 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
     showTour(focus);
   };
   showTour(null);
+  // The opening (C1): the story lanterns light one by one in launch order while the headline counts up. Any key,
+  // click or scroll skips to the end. Reduced motion shows the end at once. Screen readers get only the final headline:
+  // the counting figure is hidden from them, and a hidden copy of the final figure stands beside it.
+  let intro: IntroHandle | null = null;
+  const skipEvents = ['keydown', 'pointerdown', 'wheel', 'touchstart', 'scroll'] as const;
+  const onSkip = (): void => intro?.skip();
+  const afterIntro = (): void => {
+    if (demo && byId.has(ECHOSTAR_7)) select(ECHOSTAR_7);
+  };
+  const startIntro = (): void => {
+    if (cover || host === null || plot === null) return;
+    const storage = sessionStore();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!shouldAnimate({ reduced, demo, played: introPlayed(storage) })) {
+      afterIntro();
+      return;
+    }
+    rememberIntro(storage);
+    const order = lanternOrder(reg.records).filter((n) => host.querySelector(`a[data-norad="${n}"] .stone-pos--story`) !== null);
+    const s = postRuleSummary(reg.records);
+    const figure = root.querySelector<HTMLElement>('.headline-figure');
+    const final = figure?.textContent ?? '';
+    const spoken = document.createElement('span');
+    spoken.className = 'visually-hidden';
+    spoken.textContent = final;
+    if (figure !== null) {
+      figure.setAttribute('aria-hidden', 'true');
+      figure.after(spoken);
+      figure.textContent = HERO.headlineFigure(0, s.postRule);
+    }
+    plot.dataset['intro'] = '';
+    const stoneOf = (n: number): Element | null => host.querySelector(`a[data-norad="${n}"] .stone-pos--story`);
+    let lit = 0;
+    intro = runIntro(
+      order.length,
+      { now: () => performance.now(), frame: (cb) => window.requestAnimationFrame(cb), cancel: (id) => window.cancelAnimationFrame(id) },
+      (k) => {
+        for (; lit < k; lit++) stoneOf(order[lit]!)?.classList.add('is-lit');
+        if (figure !== null) figure.textContent = HERO.headlineFigure(Math.round((k * s.inOrNearZone) / Math.max(order.length, 1)), s.postRule);
+      },
+      () => {
+        for (const e of skipEvents) window.removeEventListener(e, onSkip, true);
+        delete plot.dataset['intro'];
+        for (const el of host.querySelectorAll('.is-lit')) el.classList.remove('is-lit');
+        if (figure !== null) {
+          figure.textContent = final;
+          figure.removeAttribute('aria-hidden');
+        }
+        spoken.remove();
+        intro = null;
+        afterIntro();
+      },
+    );
+    if (intro !== null) for (const e of skipEvents) window.addEventListener(e, onSkip, { capture: true, passive: true });
+  };
   // A click or tap on a stone selects it and shows its card. A double-click, Enter on the selected stone, or the
   // card's button opens the ledger. A click with a modifier key keeps the link's own behaviour.
   const openLedger = (norad: number): void => {
@@ -777,7 +844,10 @@ export function mountChurchyard(root: HTMLElement, reg: UiRegister, narrow: bool
   root.addEventListener('keydown', onKeydown);
   root.addEventListener('pointerover', onOver);
   root.addEventListener('pointerout', onOut);
+  startIntro();
   return () => {
+    intro?.stop();
+    for (const e of skipEvents) window.removeEventListener(e, onSkip, true);
     hideTip();
     root.removeEventListener('focusout', onFocusOut);
     root.removeEventListener('pointerover', onOver);
