@@ -58,7 +58,21 @@ Direct dependencies (from `package.json`):
 | @types/node | 24.19.2 | MIT | Types | No |
 | happy-dom | 21.0.4 (exact) | MIT | A DOM for the grid smoke test | No |
 
-Transitive dependencies: `package-lock.json` lists 199 packages in all (the 11 above and 188 others, counting each platform build of a package; recounted 2026-11-26 after adding ag-grid-community and happy-dom). By licence, as read from the lock file: MIT 149, Apache-2.0 23, MPL-2.0 12, ISC 9, BSD-3-Clause 3, BSD-2-Clause 2, 0BSD 1. The 12 MPL-2.0 packages are all builds of `lightningcss`, a build-time tool that Vite uses. It is not part of the shipped site. Each package's own licence file is in `node_modules/<name>` after `npm install`.
+Transitive dependencies: `package-lock.json` lists 346 packages in all (the 16 direct ones and 330 others, counting each platform build of a package; recounted 2026-11-27 after adding the five development-only packages below, which brought 147 of them). By licence, as read from the lock file: MIT 262, Apache-2.0 41, ISC 15, MPL-2.0 14, 0BSD 5, BSD-3-Clause 5, BSD-2-Clause 2, CC-BY-4.0 1, BlueOak-1.0.0 1. Twelve of the 14 MPL-2.0 packages are builds of `lightningcss`, a build-time tool that Vite uses. The other two are `axe-core` and `@axe-core/playwright`, below. None of the 14 is part of the shipped site. Each package's own licence file is in `node_modules/<name>` after `npm install`.
+
+## Development only (not in dist/)
+
+Added 2026-11-27 for requirements R15 and R16. All five are `devDependencies`, pinned to an exact version. Versions and licences were read from the npm registry and from the installed packages. No test or script in `src/` imports them, so the Vite build never bundles them. `npm run build` was run after installing them, and `dist/` holds no `axe-core`, `@axe-core`, `playwright` or `stryker` text (searched with grep). The one match for "lightningcss" is the CSS variable name `--lightningcss-light` that the build tool writes into the minified stylesheet. It is not that tool's code.
+
+| Package | Version | Licence | Used for |
+| --- | --- | --- | --- |
+| @playwright/test | 1.65.1 | Apache-2.0 | End-to-end tests in Chromium, Firefox and WebKit (R15). Started by `npm run test:e2e`, never by `npm test` |
+| @axe-core/playwright | 4.14.1 | MPL-2.0 | Runs axe-core inside the Playwright pages (R15) |
+| axe-core | 4.14.1 | MPL-2.0 | The accessibility rules (R15). Its WCAG 2.2 AA tag `wcag22aa` is in the installed `axe.js` and in axe-core's API documentation |
+| @stryker-mutator/core | 10.1.1 | Apache-2.0 | Mutation testing of `src/engine/` (R16). Started by `npm run mutate`, never by `npm test` |
+| @stryker-mutator/vitest-runner | 10.1.1 | Apache-2.0 | Lets Stryker run the Vitest tests (R16) |
+
+MPL-2.0 is a file-level licence. The two axe packages are used unmodified as test tools and are neither copied into this repository nor shipped. New licences in the lock file from these five: `caniuse-lite` (CC-BY-4.0, browser-support data, comes with Stryker's Babel), `minimatch` (BlueOak-1.0.0, comes with Stryker) and `tslib` (0BSD, four copies inside Stryker). They are also development only. The two Playwright packages' browsers are downloaded by `npx playwright install` on the developer's machine or the runner. They are not in the repository.
 
 ## GitHub Actions
 

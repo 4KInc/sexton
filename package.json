@@ -17,7 +17,12 @@
     "census": "node scripts/census.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.1",
+    "@playwright/test": "1.65.1",
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
     "@types/node": "^24.19.2",
+    "axe-core": "4.14.1",
     "fast-check": "^4.10.3",
     "happy-dom": "21.0.4",
     "typescript": "^7.0.2",
