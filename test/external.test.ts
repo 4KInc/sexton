@@ -11,6 +11,8 @@ const ROOT = process.cwd();
 const read = (f: string): string => readFileSync(join(ROOT, f), 'utf8');
 const real = JSON.parse(read('data/register.json')) as UiRegister;
 const text = (html: string): string => html.replace(/<[^>]*>/g, '').replace(/&#39;/g, "'");
+// Short names of the cause sources the owner approved on 2026-11-27 (docs/source-review.md). They quote a cause, not an orbit.
+const APPROVED_CAUSE_SOURCES = ['JAXA', 'SatNews/AP', 'SpaceNews', 'Spaceflight Now', 'DatacenterDynamics', 'Via Satellite', 'Seoul Economic Daily', 'CelesTrak SATCAT operational status codes'];
 describe('EchoStar 7 (NORAD 27378)', () => {
   const html = ledgerPageHtml(real, 27378);
   const r = real.records.find((x) => x.norad === 27378)!;
@@ -60,7 +62,7 @@ describe('every outside figure', () => {
       const norad = Number(f.replace('.md', ''));
       if (EXTERNAL.has(norad)) continue;
       const lines = read(`data/cases/${f}`).split('\n').filter((l) => /\d km/.test(l));
-      for (const l of lines) for (const m of l.matchAll(/\[([^\]:]+):/g)) expect(['register', 'docs/methodology.md', 'IADC-02-01 Revision 2', '47 CFR § 25.283'], `${f}: ${m[1]}`).toContain(m[1]);
+      for (const l of lines) for (const m of l.matchAll(/\[([^\]:]+):/g)) expect(['register', 'docs/methodology.md', 'IADC-02-01 Revision 2', '47 CFR § 25.283', ...APPROVED_CAUSE_SOURCES], `${f}: ${m[1]}`).toContain(m[1]);
     }
   });
 });

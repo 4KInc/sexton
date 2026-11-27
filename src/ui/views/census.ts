@@ -1,13 +1,11 @@
 // The census page (design 5.7, R5.3-R5.5). Pure string builders plus mountCensus.
 // Every number comes from register.census, except the GPZ-table status count, which is counted from
 // the records (the census has no field for it, design 2.8). Every share shows its denominator.
-import { CONFIG } from '../../engine/config.ts';
 import type { Config } from '../../engine/config.ts';
 import type { Census, SatRecord, VerdictName } from '../../engine/types.ts';
-import { CENSUS, CENSUS_TILES, HERO, CHURCHYARD_INTRO, HEADLINE, METHOD_SECTIONS, NOTES, snapshotLabel, VALIDATION, COMPARISONS, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
-import type { Comparison } from '../copy.ts';
-import { disposalRate, postRuleSummary } from '../../engine/headline.ts';
-import type { DisposalRate } from '../../engine/headline.ts';
+import { CENSUS, CENSUS_TILES, HERO, CHURCHYARD_INTRO, HEADLINE, METHOD_SECTIONS, NOTES, snapshotLabel, CAUSES, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
+import { postRuleSummary } from '../../engine/headline.ts';
+import { CAUSE_CATEGORIES, causeCounts, causeGroup } from '../../engine/causes.ts';
 import { formatCount, formatShare } from '../format.ts';
 import { esc } from '../html.ts';
 import type { UiRegister } from '../register.ts';
@@ -95,18 +93,6 @@ const th = (text: string, numeric = false): string => `<th scope="col"${numeric 
 /** Retired payloads whose status came from the GPZ table. Counted from the records. */
 export function gpzStatusCount(records: readonly SatRecord[]): number {
   return records.filter((r) => r.verdict.kind === 'verdict' && r.statusSource === 'GPZ table').length;
-}
-
-/** The comparison list: only figures found in a source that was opened. An unchecked source is not named. */
-export function comparisonHtml(comparisons: readonly Comparison[] = COMPARISONS): string {
-  const items = comparisons
-    .map((c) =>
-      c.verified && c.where !== null
-        ? `<li data-published>${esc(c.figure)} ${esc(CENSUS.comparison.verified(c.source, c.where))} <a href="${esc(c.url)}">${esc(c.source)}</a></li>`
-        : '',
-    )
-    .join('');
-  return `<p>${esc(CENSUS.comparison.intro)}</p><ul>${items}</ul>`;
 }
 
 function populationHtml(c: Census): string {
@@ -216,57 +202,25 @@ function ownerHtml(c: Census, config: Config, date: string): string {
     noteHtml([O.note, NOTES.owner, NOTES.source(date)], METHOD_SECTIONS.sources)
   );
 }
-const pctOf = (n: number, of: number): string => String(Math.round((10000 * n) / of) / 100);
+const causeCell = (key: string, value: number): string => `<td class="num-cell" data-cause="${esc(key)}">${esc(formatCount(value))}</td>`;
 /**
- * Sexton's band and its central share on one axis from 0 to 100, with the published range above it.
- * The marks carry counts ("27 of 45"). The only percent signs are inside the published range, which is marked
- * data-published, because every Sexton share on this page shows "n of N" before its percentage.
+ * The cause line and the table of five categories (R14.7). Every number comes from the group in the register and
+ * from the case files' `Cause category:` lines, so the text changes when either does.
  */
-export function validationChartHtml(r: DisposalRate, published: { source: string; range: readonly [number, number] } | null): string {
-  const C = VALIDATION.chart;
-  const rangeText = published === null ? null : `${published.range[0]}% to ${published.range[1]}%`;
-  const esa =
-    published === null
-      ? ''
-      : `<div class="vplot-row"><span class="vplot-name">${esc(C.esa)}</span><div class="vplot-track">` +
-        `<span class="vplot-esa" data-published style="left:${published.range[0]}%;width:${published.range[1] - published.range[0]}%">${esc(rangeText!)}</span></div></div>`;
-  const sexton =
-    `<div class="vplot-row"><span class="vplot-name">${esc(C.sexton)}</span><div class="vplot-track">` +
-    `<span class="vplot-band" style="left:${pctOf(r.lower, r.n)}%;width:${pctOf(r.upper - r.lower, r.n)}%"></span>` +
-    `<span class="vplot-point" style="left:${pctOf(r.central, r.n)}%"></span>` +
-    `<span class="vplot-label" style="left:${pctOf(r.central, r.n)}%">${esc(C.point(r.central, r.n))}</span>` +
-    `<span class="vplot-band-label" style="left:${pctOf(r.lower, r.n)}%">${esc(C.band(r.lower, r.upper, r.n))}</span></div></div>`;
-  const ticks = [0, 25, 50, 75, 100].map((t) => `<span style="left:${t}%">${t}</span>`).join('');
+export function causesHtml(reg: Pick<UiRegister, 'records' | 'config' | 'causes'>): string {
+  const config = reg.config;
+  const group = causeGroup(reg.records, config);
+  if (group.length === 0) return `<p>${esc(CAUSES.noGroup(config.validation.afterLaunchYear))}</p>`;
+  // The counts are written into the register by build-register. Without them (a fixture or an old file) no case file is known.
+  const k = reg.causes ?? causeCounts(group, new Map());
+  const rows = CAUSE_CATEGORIES.map((c) => `<tr><th scope="row">${esc(c)}</th>${causeCell(c, k.byCategory[c])}</tr>`).join('');
+  const missing = k.noCase > 0 ? `<tr><th scope="row">${esc(CAUSES.noCase)}</th>${causeCell('noCase', k.noCase)}</tr>` : '';
   return (
-    `<figure class="vplot" role="img" aria-label="${esc([C.axis, VALIDATION.sextonValue(r.central, r.n), VALIDATION.bandValue(r.lower, r.upper, r.n), rangeText].filter(Boolean).join('. '))}">` +
-    `<div class="vplot-rows" aria-hidden="true">${esa}${sexton}</div>` +
-    `<div class="vplot-axis" aria-hidden="true">${ticks}</div><figcaption class="vplot-caption">${esc(C.axis)}</figcaption></figure>`
+    `<p data-causes="line"><strong>${esc(CAUSES.line(k.n, k.byCategory['failed in orbit or broke up before disposal']))}</strong></p>` +
+    `<p>${esc(CAUSES.intro(config.validation.afterLaunchYear))}</p>` +
+    table(CAUSES.caption(k.n), th(CAUSES.columns.category) + th(CAUSES.columns.count, true), rows + missing) +
+    `<p>${esc(CAUSES.limits)}</p>`
   );
-}
-/** Sexton's buried share next to a published range, only for a range that was checked in its source. */
-export function validationHtml(records: readonly SatRecord[], comparisons: readonly Comparison[] = COMPARISONS, config: Config = CONFIG): string {
-  const r = disposalRate(records, config);
-  if (r.n === 0) return `<p>${esc(VALIDATION.noGroup(r.afterLaunchYear))}</p>`;
-  const found = comparisons.find((c) => c.verified && c.where !== null && c.range !== null);
-  const head = `<aside class="vnote"><h3>${esc(VALIDATION.groupsTitle)}</h3><p>${esc(VALIDATION.intro(r.afterLaunchYear))}</p></aside>`;
-  const row = (k: string, v: string, attr: string): string =>
-    `<div><dt>${esc(k)}</dt><dd data-validation="${attr}"${attr === 'published' ? ' data-published' : ''}>${esc(v)}</dd></div>`;
-  let rows =
-    row(VALIDATION.sexton, VALIDATION.sextonValue(r.central, r.n), 'sexton') +
-    row(VALIDATION.band(config.uncertaintyKm), VALIDATION.bandValue(r.lower, r.upper, r.n), 'band');
-  let verdict: string = VALIDATION.noPublished;
-  let published: { source: string; range: readonly [number, number] } | null = null;
-  if (found !== undefined && found.range !== null) {
-    const [lo, hi] = found.range;
-    published = { source: found.source, range: found.range };
-    rows += row(VALIDATION.published(found.source), VALIDATION.rangeValue(lo, hi), 'published');
-    const pct = (n: number): number => (100 * n) / r.n;
-    const centre = pct(r.central);
-    if (centre >= lo && centre <= hi) verdict = VALIDATION.inside;
-    else if (centre > hi) verdict = VALIDATION.above;
-    else verdict = pct(r.upper) >= lo ? VALIDATION.partly : VALIDATION.below;
-  }
-  return `<div class="vgrid"><div class="vmain">${validationChartHtml(r, published)}${noteHtml([NOTES.validation(config.uncertaintyKm)], METHOD_SECTIONS.validation)}<dl class="ledger-data census-data">${rows}</dl><p data-validation="verdict"><strong>${esc(verdict)}</strong></p><p data-validation="breakdown">${esc(VALIDATION.breakdown(r, config.uncertaintyKm))}</p></div>${head}</div>`;
 }
 /** The first thing on the census page: the group launched on or after the rule date, with the older group as context. */
 export function headlineHtml(records: readonly SatRecord[], config: Config, date = ''): string {
@@ -287,7 +241,7 @@ export function headlineHtml(records: readonly SatRecord[], config: Config, date
   );
 }
 /** The whole census page body. */
-export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'>, comparisons: readonly Comparison[] = COMPARISONS): string {
+export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config' | 'causes'>): string {
   const c = reg.census;
   const config = reg.config;
   const near = config.nearGeo;
@@ -325,7 +279,6 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
     section('status', H.status, statusHtml(c, reg.records)) +
     gaps +
     blind +
-    section('comparison', H.comparison, comparisonHtml(comparisons)) +
     caveat;
   return (
     `<div class="census">` +
@@ -333,7 +286,7 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
     verdictLegendHtml(config) +
     statsHtml(reg) +
     section('headline', HEADLINE.heading, headlineHtml(reg.records, config, date), true) +
-    section('validation', VALIDATION.heading, validationHtml(reg.records, comparisons), true) +
+    section('causes', H.causes, causesHtml(reg), true) +
     `<div class="census-cols">${cols}</div>` +
     section('owner', H.owner, ownerHtml(c, config, date), true) +
     rest +

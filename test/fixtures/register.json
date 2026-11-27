@@ -63,6 +63,13 @@
     "validation": {
       "afterLaunchYear": 2007
     },
+    "chart": {
+      "labelledNorads": [
+        15873,
+        27378,
+        40258
+      ]
+    },
     "satcatTypes": {
       "payload": "PAY",
       "rocketBody": "R/B",
@@ -1310,5 +1317,16 @@
         "living payload | retired payload": 1
       }
     }
+  },
+  "causes": {
+    "n": 6,
+    "byCategory": {
+      "failed in orbit or broke up before disposal": 0,
+      "disposal reported by operator": 0,
+      "disposal attempted, perigee short": 0,
+      "no disposal reported": 0,
+      "No cause in the sources opened": 0
+    },
+    "noCase": 6
   }
 }

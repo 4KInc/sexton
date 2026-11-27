@@ -1,15 +1,15 @@
-// The census page (Task 13, design 5.7): comparison figures, numbers equal register.census, language.
+// The census page (Task 13, design 5.7): cause section, numbers equal register.census, language.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
 import { findHits } from '../scripts/check-language.ts';
-import { COMPARISONS, verdictCopy, VERDICT_ORDER } from '../src/ui/copy.ts';
-import type { Comparison } from '../src/ui/copy.ts';
+import { verdictCopy, VERDICT_ORDER } from '../src/ui/copy.ts';
+import { CAUSE_CATEGORIES, causeCounts, causeGroup } from '../src/engine/causes.ts';
 import { formatCount, formatShare } from '../src/ui/format.ts';
 import type { UiRegister } from '../src/ui/register.ts';
-import { censusHtml, comparisonHtml, gpzStatusCount } from '../src/ui/views/census.ts';
+import { causesHtml, censusHtml, gpzStatusCount } from '../src/ui/views/census.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const read = (p: string): string => readFileSync(join(ROOT, p), 'utf8');
@@ -25,46 +25,42 @@ const textOf = (html: string): string =>
     .replace(/&gt;/g, '>')
     .replace(/\s+/g, ' ');
 
-describe('comparison figures', () => {
-  it('an unverified figure is not rendered, and its source is not named', () => {
-    const html = comparisonHtml(COMPARISONS.map((c) => ({ ...c, verified: false })));
-    for (const c of COMPARISONS) {
-      expect(html).not.toContain(c.figure);
-      expect(html).not.toContain(c.source);
-      expect(html).not.toContain(c.url);
-    }
-    expect(html).not.toMatch(/70\D{1,3}95|73\s?%/);
+describe('the cause section (R14.7)', () => {
+  const group = causeGroup(real.records, real.config);
+  const k = real.causes!;
+  it('the group is the 18 retired payloads launched after 2007 that are not buried, from the register', () => {
+    const direct = real.records.filter((r) => r.verdict.kind === 'verdict' && r.launchYear !== null && r.launchYear > real.config.validation.afterLaunchYear && r.verdict.verdict !== 'buried');
+    expect(group.map((r) => r.norad)).toEqual(direct.map((r) => r.norad).sort((a, b) => a - b));
+    expect(k.n).toBe(group.length);
   });
-  it('the whole page, as shipped, shows the checked ESA range and no Roberts figure', () => {
+  it('every payload in the group has a case file with a valid cause line, and the counts add up', () => {
+    expect(k.noCase).toBe(0);
+    expect(Object.values(k.byCategory).reduce((a, b) => a + b, 0)).toBe(k.n);
+  });
+  it('shows the line "Of the n not buried, k failed in orbit or broke up before they could be moved." with both numbers read back', () => {
+    const html = causesHtml(real);
+    const failed = k.byCategory['failed in orbit or broke up before disposal'];
+    expect(textOf(html)).toContain(`Of the ${k.n} not buried, ${failed} failed in orbit or broke up before they could be moved.`);
+    for (const c of CAUSE_CATEGORIES) {
+      const key = `data-cause="${c}">`;
+      const at = html.indexOf(key);
+      expect(at, c).toBeGreaterThan(-1);
+      expect(Number(html.slice(at + key.length, html.indexOf('<', at + key.length))), c).toBe(k.byCategory[c]);
+    }
+  });
+  it('changes when the case files change', () => {
+    const none = { ...real, causes: causeCounts(group, new Map()) };
+    expect(textOf(causesHtml(none))).toContain(`Of the ${k.n} not buried, 0 failed`);
+    expect(causesHtml(none)).toContain('data-cause="noCase">' + k.n + '<');
+  });
+  it('the ESA range is not on the census page (R14.6)', () => {
     const text = textOf(censusHtml(real));
-    expect(text).toMatch(/70\D{1,3}95\s?%/);
-    expect(text).toContain('Executive summary, page 7 of 146');
+    expect(text).not.toMatch(/Space Environment Report|ESA Annual|plausibility check/);
+    expect(text).not.toMatch(/70\D{1,3}95\s?%/);
     expect(text).not.toMatch(/\b73\s?%/);
-    expect(text).not.toMatch(/Roberts|pending a checked source/);
-  });
-  it('a verified figure is rendered with its source and link, and only that one', () => {
-    const list: Comparison[] = COMPARISONS.map((c, i) => (i === 0 ? { ...c, verified: true, where: 'page 12' } : { ...c }));
-    const html = comparisonHtml(list);
-    expect(html).toContain(list[0]!.figure);
-    expect(html).toContain(`href="${list[0]!.url}"`);
-  });
-  it('a figure marked verified without a recorded place is still not rendered', () => {
-    const html = comparisonHtml(COMPARISONS.map((c) => ({ ...c, verified: true, where: null })));
-    for (const c of COMPARISONS) expect(html).not.toContain(c.figure);
-  });
-  it('the list agrees with design.md section 6', () => {
-    const design = read('.kiro/specs/sexton-core/design.md');
-    const section = design.slice(design.indexOf('## 6. Sources'), design.indexOf('## 7. Testing'));
-    for (const c of COMPARISONS) {
-      const row = section.split('\n').find((l) => l.startsWith('| ') && l.includes('ESA: 70'));
-      expect(row, c.id).toBeDefined();
-      const designVerified = /\|\s*verified\s*\|/.test(row!);
-      expect(c.verified, `${c.id} in copy.ts against design.md section 6`).toBe(designVerified);
-      if (c.verified) expect(c.where, c.id).not.toBeNull();
-    }
+    expect(text).not.toMatch(/Roberts/);
   });
 });
-
 describe('census numbers equal register.census', () => {
   const lookup = (obj: unknown, path: string[]): unknown => path.reduce<unknown>((o, k) => (o as Record<string, unknown>)[k], obj);
   const expectedPaths = (reg: UiRegister): string[][] => {
@@ -168,13 +164,8 @@ describe('share formatting', () => {
 });
 
 describe('the census page passes the language check', () => {
-  it('has no banned stem, as shipped or with both figures verified', () => {
-    const verified = COMPARISONS.map((c) => ({ ...c, verified: true, where: 'page 1' }));
-    for (const reg of [real, fixture]) {
-      for (const list of [COMPARISONS, verified]) {
-        expect(findHits(textOf(censusHtml(reg, list)), 'census.html')).toEqual([]);
-      }
-    }
+  it('has no banned stem', () => {
+    for (const reg of [real, fixture]) expect(findHits(textOf(censusHtml(reg)), 'census.html')).toEqual([]);
   });
   it('states no retirement date', () => {
     const blocks = [...censusHtml(real).matchAll(/<(?:p|li)\b[^>]*>([\s\S]*?)<\/(?:p|li)>/g)].map((m) => textOf(m[1]!));

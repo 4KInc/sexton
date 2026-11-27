@@ -98,6 +98,15 @@ describe('methodology.md sources', () => {
     'https://raw.githubusercontent.com/google/fonts/main/ofl/imfellenglish/OFL.txt',
     // Opened 2026-11-24: the IBM Plex licence file.
     'https://raw.githubusercontent.com/IBM/plex/master/LICENSE.txt',
+    // Opened 2026-11-27 and approved by the owner (docs/source-review.md): the cause sources for the case notes.
+    'https://www.jaxa.jp/press/2019/03/20190301a_j.html',
+    'https://satnews.com/2020/03/31/venezuelas-only-telecoms-satellite-is-lost-in-space/',
+    'https://spacenews.com/spacecom-stock-tumbles-following-amos-5-failure/',
+    'https://spaceflightnow.com/2019/04/22/intelsat-declares-drifting-satellite-total-loss/',
+    'https://www.datacenterdynamics.com/en/news/intelsats-33e-geo-satellite-breaks-up-in-orbit/',
+    'https://www.satellitetoday.com/connectivity/2024/10/21/intelsats-is-33e-satellite-is-a-total-loss/',
+    'https://spacenews.com/angola-eyes-new-satellite-as-african-space-race-accelerates/',
+    'https://en.sedaily.com/finance/2026/06/08/koreas-first-geostationary-satellite-chollian-1-ends-16',
   ]);
   const links = [...doc.matchAll(/https?:\/\/[^\s|)]+/g)].map((m) => m[0]);
   it('cites only links that were opened', () => {

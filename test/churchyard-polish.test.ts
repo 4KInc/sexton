@@ -73,7 +73,9 @@ describe('ring, faint stones and names on the real register', () => {
   });
   it('the stones with a case file carry their name', () => {
     const withFile = retired.filter((r) => r.caseFile);
-    expect(withFile.length).toBe(3);
+    // More stones have a case file (R14), but only the three on the list in config.chart.labelledNorads carry a name.
+    expect(withFile.length).toBeGreaterThanOrEqual(21);
+    expect(real.config.chart.labelledNorads).toEqual([15873, 27378, 40258]);
     expect(svg.match(/class="stone-name"/g)?.length).toBe(3);
     expect(svg).toContain('>ECHOSTAR 7</text>');
   });

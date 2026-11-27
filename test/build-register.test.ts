@@ -182,7 +182,7 @@ describe('the register', () => {
     setUp();
     expect(run([]).code).toBe(0);
     const reg = JSON.parse(readFileSync(registerPath(), 'utf8'));
-    expect(Object.keys(reg)).toEqual(['schema', 'sample', 'snapshot', 'config', 'records', 'rejections', 'noOrbitDataCount', 'census']);
+    expect(Object.keys(reg)).toEqual(['schema', 'sample', 'snapshot', 'config', 'records', 'rejections', 'noOrbitDataCount', 'census', 'causes']);
     expect(reg.schema).toBe(1);
     expect(reg.sample).toBe(false);
     const manifest = JSON.parse(readFileSync(join(FIXTURE_SET, 'manifest.json'), 'utf8'));

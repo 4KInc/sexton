@@ -22,6 +22,8 @@ export const CONFIG = {
   uncertaintyKm: 25,
   fccRuleDate: '2002-03-18',
   validation: { afterLaunchYear: 2007 }, // the validation panel counts retired payloads launched after this year
+  // The case-file stones that carry a name on the churchyard. Every other case file shows in its ledger. An explicit list, not the case-file flag.
+  chart: { labelledNorads: [15873, 27378, 40258] as readonly number[] },
   satcatTypes: { payload: 'PAY', rocketBody: 'R/B', debris: 'DEB' },
   status: { retired: ['-'], living: ['+', 'P', 'B', 'S', 'X'] },
   gpzTableStatus: { 'PAY-': 'retired', 'PAY+': 'living', 'R/B': 'rocket body', 'DEB': 'debris' },

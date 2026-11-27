@@ -205,6 +205,7 @@ A real SATCAT status is never overridden. No operational payload in SATCAT was l
 - **Moss** is years since launch, in four steps: under 10, 10 to 19, 20 to 29 and 30 or more. Lantern stones carry no moss, so they draw in lantern alone. Their years are on the card.
 - **Sway** marks eccentricity above 0.003.
 - **Dotted bar** marks a borderline verdict.
+- **Names** are drawn for three stones that have case files: NORAD 15873, 27378 and 40258. The list is in the config. Every other case file is in its ledger, not on the chart.
 
 ## The group launched on or after 18 March 2002
 The census opens with the retired payloads launched on or after 18 March 2002. That is the date from which 47 CFR § 25.283 can apply, and it is the date Sexton uses for "before FCC rule" (`fccRuleDate`). Earlier launches are shown as context: "565 of 696 retired payloads predate any guideline", counted at snapshot 2026-11-22. That is not a failure. Nobody asked those satellites to meet a rule that did not exist when they launched.
@@ -226,7 +227,7 @@ How the groups differ:
 - **Threshold.** ESA's page 131 uses the IADC formulation, as Sexton does. Sexton calls a payload buried only above 280 km, the top of the band. The sections read do not say which C_R·A/m ESA uses. Here that moves at most 1 payload.
 - **Date.** ESA counts by end-of-life. Sexton has no retirement dates, so it uses launch year. It reads each orbit at the snapshot date.
 
-One satellite is 2.2 percentage points of 45. The data do not say why the 16 are unquiet.
+One satellite is 2.2 percentage points of 45. The data do not say why the 16 are unquiet. Nothing was tuned to close the gap, no verdict changes, and no cause of the gap is established. This comparison is on this page only. The census page counts what the sources say about each of the 18 payloads that are not buried (16 unquiet, 1 shallow grave, 1 uncertain). Each has a case file with its cause, quoted from a source that was opened, or the words "No cause in the sources opened".
 ## Font
 IM FELL English (Igino Marini, 2010), IBM Plex Sans and IBM Plex Mono (IBM Corp., 2017), all under the SIL Open Font License 1.1 and self-hosted, so the site loads no font from another server. The licence is `src/ui/fonts/OFL.txt`. `docs/credits.md` records where the files came from.
 ## Credits
@@ -236,7 +237,7 @@ IM FELL English (Igino Marini, 2010), IBM Plex Sans and IBM Plex Mono (IBM Corp.
 
 ## Sources
 
-A link is listed only if it was opened on 2026-11-23. A link that could not be opened is shown as "LINK NEEDED".
+A link is listed only if it was opened, on 2026-11-23 or on the date in its "What was checked" cell. A link that could not be opened is shown as "LINK NEEDED".
 
 | Source | Link | What was checked |
 | --- | --- | --- |
@@ -249,7 +250,15 @@ A link is listed only if it was opened on 2026-11-23. A link that could not be o
 | ESA's Annual Space Environment Report, Issue 10, 8 September 2026 | https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I10R1_20260908.pdf | Opened 2026-11-24. Page 7 of 152: the same sentence gives 70% to 90%. |
 | Roberts, "Assessing Compliance with Post-mission Disposal Guidelines in Geosynchronous Orbit", IAA Space Traffic Management Conference, March 2025 | https://iac.gatech.edu/publications/pub/8089 | Opened: a listing page (title, date, author), not the paper. Not used. |
 | CelesTrak SATCAT format | https://celestrak.org/satcat/satcat-format.php | Opened. Field list, with altitudes in kilometres. |
-| CelesTrak SATCAT operational status codes | https://celestrak.org/satcat/status.php | Opened. Gives the meaning of `+`, `-`, `P`, `B`, `S`, `X`, `D` and `?`. |
+| CelesTrak SATCAT operational status codes | https://celestrak.org/satcat/status.php | Opened (again 2026-11-27). Gives the meaning of `+`, `-`, `P`, `B`, `S`, `X`, `D` and `?`. The page lists `-` as "Nonoperational", which is why a SATCAT payload with that code is a retired payload in the register. |
+| JAXA, press release on the end of operation of Kizuna (WINDS), in Japanese | https://www.jaxa.jp/press/2019/03/20190301a_j.html | Opened 2026-11-27. Agency statement, in Japanese. It says that communication with Kizuna was not restored after a communication fault and that operation from the ground was judged impossible: 「きずな」との通信が復旧しないことから、地上からの運用不可能と判断し. (The English reading is ours, not the page's: communication was not restored, so operation from the ground was judged impossible.) The page also gives dates, which Sexton does not use. Approved by the owner 2026-11-27 for 32500. |
+| SatNews, "Venezuela's Only Telecoms Satellite is Lost in Space" (AP story) | https://satnews.com/2020/03/31/venezuelas-only-telecoms-satellite-is-lost-in-space/ | Opened 2026-11-27. News outlet. "Venezuela’s only telecommunications satellite has veered off its orbit and stopped working, creating a logistical headache for the cash-strapped nation." It says tumbling and does not say contact was lost. Approved by the owner 2026-11-27 for 33414. |
+| SpaceNews, "Spacecom Stock Tumbles Following Amos-5 Failure" | https://spacenews.com/spacecom-stock-tumbles-following-amos-5-failure/ | Opened 2026-11-27. News outlet, reporting the operator's statement. "Satellite fleet operator Spacecom of Israel on Nov. 22 said its Amos-5 telecommunications satellite had abruptly ceased functioning Nov. 21 and that attempts to restore service had failed." The page also says Amos-5 "is not responding to commands". The page's dates are not used. Approved by the owner 2026-11-27 for 37950. |
+| Spaceflight Now, "Intelsat declares drifting satellite total loss" | https://spaceflightnow.com/2019/04/22/intelsat-declares-drifting-satellite-total-loss/ | Opened 2026-11-27. News outlet, printing an Intelsat statement. Two quotes, each verbatim: "Late on April 7, the Intelsat 29e propulsion system experienced damage that caused a leak of the propellant on board the satellite resulting in a service disruption to customers on the satellite." and "While working to recover the satellite, a second anomaly occurred, after which all efforts to recover the satellite were unsuccessful." The page prints "Intelsat said in a statement," between them. The date in the first quote is not used. Approved by the owner 2026-11-27 for 41308. The Business Wire release of the statement timed out and was not opened. |
+| DatacenterDynamics, "Intelsat’s 33e GEO satellite breaks up in orbit" | https://www.datacenterdynamics.com/en/news/intelsats-33e-geo-satellite-breaks-up-in-orbit/ | Opened 2026-11-27. News outlet, quoting Intelsat. "The satellite experienced an anomaly on October 19, resulting in a loss of power and service to customers". The date in the quote is not used. Approved by the owner 2026-11-27 for 41748. |
+| Via Satellite, "Intelsat’s IS-33e Satellite is a ‘Total Loss’" | https://www.satellitetoday.com/connectivity/2024/10/21/intelsats-is-33e-satellite-is-a-total-loss/ | Opened 2026-11-27. News outlet. "U.S. Space Forces-Space (S4S) on Saturday confirmed the satellite broke up in orbit." The page says Intelsat started a failure review board, so it gives no cause of the breakup. Approved by the owner 2026-11-27 for 41748. |
+| SpaceNews, "Angola eyes new satellite as African space race accelerates" | https://spacenews.com/angola-eyes-new-satellite-as-african-space-race-accelerates/ | Opened 2026-11-27. News outlet. "Eventually, the satellite stopped sending data and Energia confirmed it was inoperable." Approved by the owner 2026-11-27 for 43087. |
+| Seoul Economic Daily, "Korea's First Geostationary Satellite Chollian-1 Ends 16-Year Mission, Reaches Graveyard Orbit" | https://en.sedaily.com/finance/2026/06/08/koreas-first-geostationary-satellite-chollian-1-ends-16 | Opened 2026-11-27. News outlet, reporting a statement by the Korea Aerospace Research Institute (KARI). The page says it is AI-translated from Korean, so the English is a machine translation. "The disposal was carried out by shutting off power to all of the satellite's payloads to end its mission, then moving the satellite to a disposal orbit, or graveyard orbit, about 300 kilometers higher than its existing geostationary orbit (at an altitude of approximately 35,786 kilometers)." The page's dates are not used. Approved by the owner 2026-11-27 for 36744, as "disposal reported by operator". No KARI page was found. |
 | CelesTrak GP data formats | https://celestrak.org/NORAD/documentation/gp-data-formats.php | Opened. GP data are Brouwer mean elements fitted with SGP4. It lists the GPZ and GPZ-PLUS data sets. |
 | CelesTrak | https://celestrak.org/ | Opened. |
 | SIL Open Font License 1.1 | https://openfontlicense.org/open-font-license-official-text/ | Opened. |
@@ -257,7 +266,7 @@ A link is listed only if it was opened on 2026-11-23. A link that could not be o
 | IBM Plex licence file | https://raw.githubusercontent.com/IBM/plex/master/LICENSE.txt | Opened 2026-11-24. Copyright 2017 IBM Corp., Reserved Font Name "Plex", SIL Open Font License 1.1. |
 | WGS-72 constants (Earth radius and μ) | LINK NEEDED | No source has been opened. |
 
-The ESA range is shown, because it was found in the report itself (above). The census page shows a figure only after it has been found in its source.
+The ESA range is used in the Validation section only, because it was found in the report itself (above).
 
 ## What we do not say
 

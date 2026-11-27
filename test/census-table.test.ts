@@ -4,10 +4,10 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { disposalRate, postRuleSummary } from '../src/engine/headline.ts';
-import { COMPARISONS, TABLE, verdictCopy, VERDICT_ORDER } from '../src/ui/copy.ts';
+import { TABLE, verdictCopy, VERDICT_ORDER } from '../src/ui/copy.ts';
 import type { UiRegister } from '../src/ui/register.ts';
 import { applyFilters, NO_FILTERS, parseFilters, sortRecords } from '../src/ui/state.ts';
-import { censusHtml, statsHtml, validationHtml } from '../src/ui/views/census.ts';
+import { censusHtml, statsHtml } from '../src/ui/views/census.ts';
 import { filtersHtml } from '../src/ui/views/filters.ts';
 import { defaultOrder, defaultSet, rowHtml, tableHtml, viewOf } from '../src/ui/views/table.ts';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -29,41 +29,8 @@ describe('census tiles', () => {
   it('come before the headline section and the tables', () => {
     const page = censusHtml(real);
     expect(page.indexOf('class="stats"')).toBeLessThan(page.indexOf('id="census-headline"'));
-    expect(page.indexOf('id="census-headline"')).toBeLessThan(page.indexOf('id="census-validation"'));
-    expect(page.indexOf('id="census-validation"')).toBeLessThan(page.indexOf('id="census-population"'));
-  });
-});
-describe('the validation picture', () => {
-  const html = validationHtml(real.records);
-  const d = disposalRate(real.records, config);
-  const pc = (n: number): number => Math.round((10000 * n) / d.n) / 100;
-  it('puts Sexton\'s band and central share and the published range on one axis from 0 to 100', () => {
-    expect(d.n).toBe(45);
-    expect([d.lower, d.central, d.upper]).toEqual([24, 27, 29]);
-    expect(html).toContain(`class="vplot-band" style="left:${pc(24)}%;width:${pc(5)}%"`);
-    expect(html).toContain(`class="vplot-point" style="left:${pc(27)}%"`);
-    expect(html).toContain('class="vplot-esa" data-published style="left:70%;width:25%">70% to 95%</span>');
-    expect(html).toContain('<span style="left:0%">0</span>');
-    expect(html).toContain('<span style="left:100%">100</span>');
-    // One figure, so one axis: the two rows are in the same box.
-    expect(html.match(/<figure class="vplot"/g)).toHaveLength(1);
-  });
-  it('shows the counts, and the "different groups" note beside the picture', () => {
-    expect(html).toContain('>27 of 45</span>');
-    expect(html).toContain('>24 to 29 of 45</span>');
-    const grid = html.slice(html.indexOf('<div class="vgrid">'));
-    expect(grid.indexOf('class="vplot"')).toBeLessThan(grid.indexOf('<aside class="vnote">'));
-    expect(grid).toContain('<h3>Different groups</h3>');
-    expect(grid).toContain('plausibility check, not a test of one against the other');
-    expect(css('census.css')).toMatch(/\.vgrid\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1\.7fr\) minmax\(15rem, 1fr\)/);
-  });
-  it('is described in words for screen readers, with the drawing hidden from them', () => {
-    expect(html).toContain('role="img" aria-label="Share of payloads that are buried, per cent. 27 of 45 (60.0%). 24 of 45 (53.3%) to 29 of 45 (64.4%). 70% to 95%"');
-    expect(html).toContain('<div class="vplot-rows" aria-hidden="true">');
-  });
-  it('shows no range when none has been checked in its source', () => {
-    const unchecked = COMPARISONS.map((c) => ({ ...c, verified: false, where: null }));
-    expect(validationHtml(real.records, unchecked)).not.toContain('vplot-esa');
+    expect(page.indexOf('id="census-headline"')).toBeLessThan(page.indexOf('id="census-causes"'));
+    expect(page.indexOf('id="census-causes"')).toBeLessThan(page.indexOf('id="census-population"'));
   });
 });
 describe('the table', () => {

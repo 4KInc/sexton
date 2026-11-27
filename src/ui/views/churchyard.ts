@@ -12,7 +12,6 @@ import {
   chartDescription,
   countLine,
   dataAge,
-  COMPARISONS,
   FILTERS,
   HERO,
   LEGEND,
@@ -21,13 +20,12 @@ import {
   PAGE_TITLES,
   SITE,
   snapshotLabel,
-  VALIDATION,
   stoneLabel,
   TERMS,
   VERDICT_ORDER,
   verdictCopy,
 } from '../copy.ts';
-import { disposalRate, postRuleSummary } from '../../engine/headline.ts';
+import { postRuleSummary } from '../../engine/headline.ts';
 import { formatCount, formatP, formatSigned, MINUS, spokenKm } from '../format.ts';
 import { esc, withSansDigits } from '../html.ts';
 import type { UiRegister } from '../register.ts';
@@ -297,7 +295,8 @@ export function chartModel(reg: UiRegister, narrow: boolean, shown: readonly Sat
     const p = placed.get(r.norad);
     if (col !== undefined && p !== undefined) nav.push({ id: r.norad, col: cols.list.indexOf(col), y: p.y, dx: p.dx });
   }
-  const named = stones.filter((r) => r.caseFile).map((r) => ({ id: r.norad, name: r.name, x: pos.get(r.norad)!.x, y: pos.get(r.norad)!.y }));
+  const labelled = reg.config.chart?.labelledNorads ?? [];
+  const named = stones.filter((r) => r.caseFile && labelled.includes(r.norad)).map((r) => ({ id: r.norad, name: r.name, x: pos.get(r.norad)!.x, y: pos.get(r.norad)!.y }));
   const plot = { x0: cols.gutter, y0: LAYOUT.top, x1: cols.width - LAYOUT.right, y1: LAYOUT.top + plotHeight() };
   const labels = placeLabels(named, [...pos.values()], plot).placements;
   return { cols, stones, bones, pos, nav: navSort(nav), placed, labels };
@@ -403,39 +402,9 @@ export function cardHtml(r: RetiredRecord | undefined, config: Config): string {
 
 /** What Enter does on a focused stone: select it, or open its ledger when it is already selected. */
 export const enterAction = (selected: number | null, norad: number): 'select' | 'open' => (selected === norad ? 'open' : 'select');
-export interface HeroStat {
-  id: 'post-rule' | 'zone' | 'validation';
-  /** The big figure. */
-  value: string;
-  /** Said after the figure, on the same line. */
-  of: string | null;
-  label: string;
-  sub: string;
-}
-/**
- * The three tiles. Every figure comes from the engine's own summaries (the same ones the census page
- * shows), so a tile can never differ from the census. The ESA range appears only when it was checked in its source.
- */
-export function heroStats(reg: Pick<UiRegister, 'records' | 'config'>, comparisons = COMPARISONS): HeroStat[] {
-  const s = postRuleSummary(reg.records);
-  const d = disposalRate(reg.records, reg.config);
-  const esa = comparisons.find((c) => c.id === 'esa' && c.verified && c.where !== null && c.range !== null);
-  const range = esa?.range ?? null;
-  return [
-    { id: 'post-rule', value: formatCount(s.postRule), of: null, label: HERO.postRule.label, sub: HERO.postRule.sub },
-    { id: 'zone', value: formatCount(s.inOrNearZone), of: HERO.zone.of(s.postRule), label: HERO.zone.label, sub: HERO.zone.sub },
-    {
-      id: 'validation',
-      value: d.n === 0 ? '\u2013' : `${Math.round((100 * d.central) / d.n)}%`,
-      of: null,
-      label: HERO.validation.label(range),
-      sub: HERO.validation.sub(d.afterLaunchYear),
-    },
-  ];
-}
 /**
  * The churchyard's hero: a kicker, one headline sentence with the two post-rule figures (the only place the
- * churchyard says "131"; the full tile grid, including the ESA comparison, moved to the census so the number
+ * churchyard says "131"; the full tile grid moved to the census so the number
  * is said once per figure, not duplicated across views), and a one-line reading with the rest of the
  * disclosures one click away behind "Limits". The headline is a link to the census, where both figures are
  * broken down further.

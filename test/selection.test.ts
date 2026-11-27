@@ -109,9 +109,9 @@ describe('the chart atmosphere', () => {
 });
 describe('case-file labels', () => {
   const model = chartModel(real, false);
-  const named = model.stones.filter((r) => r.caseFile);
+  const named = model.stones.filter((r) => r.caseFile && real.config.chart.labelledNorads.includes(r.norad));
   const all = [...model.pos.values()].map((p) => stoneBox(p.x, p.y));
-  it('there are three, and every one has a place', () => {
+  it('there are three, from the explicit list in config, and every one has a place', () => {
     expect(named.map((r) => r.norad).sort((a, b) => a - b)).toEqual([15873, 27378, 40258]);
     for (const r of named) expect(model.labels.has(r.norad), r.name).toBe(true);
   });

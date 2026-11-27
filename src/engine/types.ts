@@ -1,4 +1,5 @@
 // Shared types for the engine and the register (design 2.3, 2.7, 2.8, 3.1).
+import type { CauseCounts } from './causes.ts';
 
 export type VerdictName = 'fallen' | 'unquiet' | 'shallow grave' | 'restless' | 'uncertain' | 'buried';
 
@@ -123,4 +124,6 @@ export interface Register {
   rejections: Rejection[];
   noOrbitDataCount: number;
   census: Census;
+  /** Cause counts for the group in R14, from the case files. Written by build-register. Absent in old files and fixtures. */
+  causes?: CauseCounts;
 }

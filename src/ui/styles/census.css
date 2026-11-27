@@ -232,116 +232,6 @@
   text-underline-offset: 0.2em;
 }
 /* The validation picture: the published range above Sexton's band and its central share, on one axis from 0 to 100. */
-.vgrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(15rem, 1fr);
-  gap: var(--space-2) var(--space-5);
-  align-items: start;
-}
-.vmain,
-.vnote {
-  min-width: 0;
-}
-.vnote {
-  padding: 0 0 0 var(--space-2);
-  border-left: 1px solid var(--rule-strong);
-}
-.vnote h3 {
-  margin-top: 0;
-}
-.vnote p {
-  max-width: 60ch;
-  font-size: var(--fs-14);
-}
-.vplot {
-  margin: 0 0 var(--space-1);
-}
-.vplot-rows {
-  position: relative;
-}
-.vplot-row {
-  display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-1);
-}
-.vplot-name {
-  font-family: var(--font-display);
-  font-size: var(--fs-20);
-}
-.vplot-track {
-  position: relative;
-  height: 4.1rem;
-  background-image: repeating-linear-gradient(90deg, var(--rule) 0 1px, transparent 1px 25%);
-  background-size: calc(100% + 1px) 100%;
-  border-right: 1px solid var(--rule);
-}
-.vplot-esa {
-  position: absolute;
-  top: 1.1rem;
-  height: 1.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--moss-deep);
-  border-bottom: 2px solid var(--moss);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  font-weight: 500;
-  text-wrap: nowrap;
-}
-.vplot-band {
-  position: absolute;
-  top: 1.45rem;
-  height: 1.1rem;
-  background: var(--surface-3);
-  border-top: 1px solid var(--bone);
-  border-bottom: 1px solid var(--bone);
-}
-.vplot-point {
-  position: absolute;
-  top: 1.15rem;
-  height: 1.8rem;
-  width: 3px;
-  margin-left: -1.5px;
-  background: var(--bone);
-}
-.vplot-label,
-.vplot-band-label {
-  position: absolute;
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  text-wrap: nowrap;
-}
-.vplot-label {
-  top: 0;
-  transform: translateX(-50%);
-  font-weight: 500;
-}
-.vplot-band-label {
-  bottom: 0;
-  color: var(--bone-muted);
-}
-.vplot-axis {
-  position: relative;
-  height: 1.4rem;
-  margin-left: calc(4.5rem + var(--space-1));
-  color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-}
-.vplot-axis span {
-  position: absolute;
-  top: 0.15rem;
-  transform: translateX(-50%);
-}
-.vplot-caption {
-  margin: 0;
-  padding-left: calc(4.5rem + var(--space-1));
-  color: var(--bone-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-}
 .fold {
   margin: var(--space-3) 0 0;
   border-top: 1px solid var(--rule);
@@ -424,12 +314,8 @@
   .stat-figure {
     font-size: var(--fs-28);
   }
-  .headline,
-  .vgrid {
+  .headline {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .vnote {
-    padding-left: var(--space-1);
   }
   .census-cols {
     columns: 1;

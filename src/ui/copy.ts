@@ -102,10 +102,6 @@ export const HERO = {
   /** The headline's second line. It is the one place GEO and perigee are explained on the churchyard. */
   headlineSub:
     "Below the IADC disposal threshold, under the stated assumptions. GEO is the 35,786 km belt; perigee is an orbit's lowest point.",
-  validation: {
-    label: (range: readonly [number, number] | null): string => `Sexton${range === null ? ': buried share' : ` vs ESA ${range[0]}\u2013${range[1]}%`}`,
-    sub: (year: number): string => `Launched after ${year}. Different groups: a plausibility check.`,
-  },
   /** The one-line fine print under the tiles. The full text is behind "Limits". */
   fine: (snapshot: string, config: Config): string[] => [
     snapshot,
@@ -449,36 +445,6 @@ export const offScaleEdgeText = (side: 'above' | 'below', count: number, limitKm
   `${OFF_SCALE_ARROW[side]} ${count} more ${side} ${formatSigned(limitKm, 0)} km`;
 export { MINUS };
 
-/**
- * The comparison figures (design 5.7 and 6). A figure is shown only when `verified` is true, and it is
- * true only when design.md section 6 marks the figure verified and records where it was found.
- * test/census-page.test.ts checks this list against section 6.
- */
-export interface Comparison {
-  id: 'esa';
-  /** Name of the source, as design.md section 6 lists it. */
-  source: string;
-  /** What the source says. Never rendered while `verified` is false. */
-  figure: string;
-  /** The checked link. Rendered only with a verified figure. */
-  url: string;
-  verified: boolean;
-  /** Where in the source the figure was found. Required once `verified` is true. */
-  where: string | null;
-  /** The published range in percent, for the validation panel. Null when the source gives no range. */
-  range: readonly [number, number] | null;
-}
-export const COMPARISONS: readonly Comparison[] = [
-  {
-    id: 'esa',
-    source: 'ESA Annual Space Environment Report, Issue 9.1',
-    figure: 'ESA: 70\u201395% of payloads reaching end of life in the last decade clear the GEO protected region successfully. It is a range over the years, not one rate.',
-    url: 'https://www.sdo.esoc.esa.int/environment_report/Space_Environment_Report_I9R1_20251021.pdf',
-    verified: true,
-    where: 'Executive summary, page 7 of 146 (21 October 2025). Issue 10 of 8 September 2026 gives 70\u201390% in the same sentence',
-    range: [70, 95],
-  },
-];
 /** Method sections that a chart's caveat links to. Each is the id of a heading on the method page (tested against docs/methodology.md). */
 export const METHOD_SECTIONS = {
   verdicts: 'm-verdicts',
@@ -498,7 +464,6 @@ export const NOTES = {
   source: (date: string): string => `CelesTrak, ${date}`,
   era: 'Launch date from SATCAT. The FCC rule covers only satellites the FCC authorizes',
   owner: 'Owner codes as SATCAT gives them. One operator can hold several',
-  validation: (u: number): string => `Band: every perigee moved \u00B1${u} km. Different groups, so a plausibility check`,
   method: 'Method',
   link: (section: string): string => `Method, section ${section}`,
 } as const;
@@ -509,36 +474,20 @@ export const CENSUS_TILES = {
   postRule: 'launched on or after the FCC rule date, 18 March 2002',
   zone: 'of those in or near the protected zone',
 } as const;
-export const VALIDATION = {
-  heading: 'Validation against a published range',
-  /** The side note beside the picture. */
-  groupsTitle: 'Different groups',
-  chart: {
-    axis: 'Share of payloads that are buried, per cent',
-    sexton: 'Sexton',
-    esa: 'ESA',
-    point: (c: number, n: number): string => `${c} of ${n}`,
-    band: (lo: number, hi: number, n: number): string => `${lo} to ${hi} of ${n}`,
-  },
+/** The cause section of the census page (R14.7). Numbers are arguments; none is typed here. */
+export const CAUSES = {
+  line: (n: number, failed: number): string => `Of the ${formatCount(n)} not buried, ${formatCount(failed)} failed in orbit or broke up before they could be moved.`,
   intro: (year: number): string =>
-    `Sexton's own share of buried payloads, among retired payloads launched after ${year}, next to a published range. Sexton has no retirement dates, so launch year stands in for them. The two numbers count different groups, so they are a plausibility check, not a test of one against the other.`,
-  sexton: 'Sexton: buried',
-  band: (u: number): string => `Band if every perigee is ${u} km lower or higher`,
-  published: (source: string): string => `Published: ${source}`,
-  sextonValue: (n: number, of: number): string => `${formatCount(n)} of ${formatCount(of)} (${((100 * n) / of).toFixed(1)}%)`,
-  bandValue: (lo: number, hi: number, of: number): string => `${VALIDATION.sextonValue(lo, of)} to ${VALIDATION.sextonValue(hi, of)}`,
-  rangeValue: (lo: number, hi: number): string => `${lo}% to ${hi}%`,
-  below: 'Sexton\u2019s share, and its whole band, are below the published range. Sexton has not adjusted its method to match.',
-  /** What the 45 are, from the data alone. `ok` counts uncertain as a success. */
-  breakdown: (d: { n: number; byVerdict: Record<string, number>; borderline: number; upper: number }, u: number): string => {
-    const b = d.byVerdict;
-    return `Of ${d.n}: ${b['buried']} buried, ${b['uncertain']} uncertain, ${b['shallow grave']} shallow grave, ${b['unquiet']} unquiet. Counting uncertain as a success: ${b['buried']} to ${b['buried']! + b['uncertain']!}. ${d.borderline} are within ${u} km of a band edge; moving every perigee ${u} km gives at most ${d.upper}. The ${b['unquiet']} unquiet payloads are inside the protected zone, none near its edge.`;
-  },
-  inside: 'Sexton\u2019s share is inside the published range. Sexton has not adjusted its method to match.',
-  partly: 'Sexton\u2019s band overlaps the published range, but its share is outside it. Sexton has not adjusted its method to match.',
-  above: 'Sexton\u2019s share is above the published range. Sexton has not adjusted its method to match.',
+    `The group is the retired payloads launched after ${year} whose verdict is not buried. Sexton has no retirement dates, so launch year stands in for them. Each payload has a case file. Its cause line is a quote from a source that was opened and approved, or it says that no cause was found.`,
+  /** The README sentence after the counts. */
+  readme: (year: number): string =>
+    `The group is the retired payloads launched after ${year} whose verdict is not buried. Each has a case file with its cause, quoted from a source that was opened, or the words "No cause in the sources opened".`,
+  caption: (n: number): string => `Cause category of the ${formatCount(n)} payloads that are not buried`,
+  columns: { category: 'Cause category', count: 'Payloads' },
+  noCase: 'No case file yet',
   noGroup: (year: number): string => `No retired payload in the register was launched after ${year}.`,
-  noPublished: 'No published range has been checked against its source yet.',
+  limits:
+    'A cause is shown only where an opened source states one. A shorter life, or a launch problem, is not a cause of a missing disposal. The register only sees objects still near GEO, so these counts are not all payloads from that period. No verdict depends on them.',
 } as const;
 export const HEADLINE = {
   heading: 'Launched on or after 18 March 2002',
@@ -574,7 +523,7 @@ export const CENSUS = {
     owner: 'By owner',
     gaps: 'Rows left out',
     blind: 'What the register cannot see',
-    comparison: 'Comparison with other studies',
+    causes: 'Why the payloads that are not buried were not buried',
     caveat: 'Read the shares with care',
   },
   population: {
@@ -642,10 +591,6 @@ export const CENSUS = {
       `The register keeps SATCAT objects with no decay date, orbit centre ${centre}, and both apogee and perigee within ${formatCount(highKm)} km of GEO altitude (from ${formatSigned(lowKm, 0)} to ${formatSigned(highKm, 0)} km), plus every object in the GPZ file.`,
     consequence:
       'Satellites sent much higher, or that left GEO, are not in the register. That includes retired satellites that were moved far above the graveyard orbit, and satellites that drift well below GEO.',
-  },
-  comparison: {
-    intro: 'Other studies give success rates for disposal in GEO. Each figure is shown only after someone has found it in the source itself.',
-    verified: (source: string, where: string): string => `Source: ${source}, ${where}.`,
   },
   caveat: {
     intro: 'These shares are not directly comparable to figures from other studies.',

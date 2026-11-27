@@ -70,17 +70,16 @@ describe('the legend at the top', () => {
 describe('caveats where they apply', () => {
   const notes = [...html.matchAll(/<p class="chart-note-mono">([^]*?)<\/p>/g)].map((m) => m[1]!);
   it('puts one short mono note under each chart, with a link to its method section', () => {
-    expect(notes).toHaveLength(5);
+    expect(notes).toHaveLength(4);
     for (const n of notes) {
       expect(n).toMatch(/Method <a href="#\/method\?s=m-[a-z0-9-]+" aria-label="Method, section m-[a-z0-9-]+">§<\/a>$/);
       expect(n).not.toContain('%');
     }
-    // In page order: the headline chart, the validation picture, the verdict chart, the era chart, the owner table.
-    for (const i of [0, 2]) {
+    // In page order: the headline chart, the verdict chart, the era chart, the owner table.
+    for (const i of [0, 1]) {
       expect(notes[i]).toContain('Perigee from GP mean elements or SATCAT altitudes, ±25 km');
       expect(notes[i]).toContain('CelesTrak, 22 Nov 2026');
     }
-    expect(notes[1]).toContain('Band: every perigee moved ±25 km');
   });
   it('links only to headings that exist on the method page', () => {
     const ids = new Set(headingsOf(methodHtml()).map((e) => e.id));

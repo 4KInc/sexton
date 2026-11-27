@@ -63,6 +63,13 @@
     "validation": {
       "afterLaunchYear": 2007
     },
+    "chart": {
+      "labelledNorads": [
+        15873,
+        27378,
+        40258
+      ]
+    },
     "satcatTypes": {
       "payload": "PAY",
       "rocketBody": "R/B",
@@ -33668,7 +33675,7 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 32479,
@@ -33761,7 +33768,7 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 32708,
@@ -34123,7 +34130,7 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 33111,
@@ -34440,7 +34447,7 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 33436,
@@ -35074,7 +35081,7 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 34265,
@@ -36197,7 +36204,7 @@
         "era": null,
         "yearsSinceLaunch": 16
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 36745,
@@ -36407,7 +36414,7 @@
         "era": null,
         "yearsSinceLaunch": 16
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 37185,
@@ -36824,7 +36831,7 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 37345,
@@ -37369,7 +37376,7 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 37804,
@@ -37406,7 +37413,7 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 37806,
@@ -37443,7 +37450,7 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 37809,
@@ -37740,7 +37747,7 @@
         "era": null,
         "yearsSinceLaunch": 14
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 37951,
@@ -38042,7 +38049,7 @@
         "era": null,
         "yearsSinceLaunch": 14
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 38104,
@@ -42784,7 +42791,7 @@
         "era": null,
         "yearsSinceLaunch": 10
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 41310,
@@ -43535,7 +43542,7 @@
         "era": null,
         "yearsSinceLaunch": 10
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 41752,
@@ -44442,7 +44449,7 @@
         "era": null,
         "yearsSinceLaunch": 9
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 42801,
@@ -44912,7 +44919,7 @@
         "era": null,
         "yearsSinceLaunch": 8
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 43088,
@@ -50017,7 +50024,7 @@
         "era": null,
         "yearsSinceLaunch": 4
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 55180,
@@ -56100,5 +56107,16 @@
         "unknown | retired payload": 48
       }
     }
+  },
+  "causes": {
+    "n": 18,
+    "byCategory": {
+      "failed in orbit or broke up before disposal": 6,
+      "disposal reported by operator": 1,
+      "disposal attempted, perigee short": 0,
+      "no disposal reported": 0,
+      "No cause in the sources opened": 11
+    },
+    "noCase": 0
   }
 }

@@ -6,6 +6,8 @@
 //   --out    write here instead of data/register.json
 //   --cases  folder of <norad>.md case files (default data/cases)
 // Exit codes: 0 done, 1 the snapshot is not usable (nothing is written), 2 bad arguments.
+import { causeCounts, causeGroup, causeOf } from '../src/engine/causes.ts';
+import type { CauseCategory } from '../src/engine/causes.ts';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -104,6 +106,16 @@ function caseNorads(casesDir: string): Set<number> {
   return out;
 }
 
+/** The cause category each case file in `casesDir` names, by NORAD id. Null when the file has no valid `Cause category:` line. */
+export function readCauses(casesDir: string): Map<number, CauseCategory | null> {
+  const out = new Map<number, CauseCategory | null>();
+  if (!existsSync(casesDir)) return out;
+  for (const name of readdirSync(casesDir)) {
+    const m = /^([1-9]\d*)\.md$/.exec(name);
+    if (m !== null) out.set(Number(m[1]), causeOf(readFileSync(join(casesDir, name), 'utf8')));
+  }
+  return out;
+}
 /** Builds the register text for one snapshot folder. Throws SnapshotError if the set is not usable. */
 export function buildRegisterText(setDir: string, casesDir: string): string {
   const manifest = readManifest(setDir);
@@ -153,6 +165,7 @@ export function buildRegisterText(setDir: string, casesDir: string): string {
     noOrbitDataCount: result.noOrbitDataCount,
     census: result.census,
   };
+  register.causes = causeCounts(causeGroup(register.records, CONFIG), readCauses(casesDir));
   return JSON.stringify(register, null, 2) + '\n';
 }
 

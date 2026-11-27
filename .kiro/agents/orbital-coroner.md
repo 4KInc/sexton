@@ -71,6 +71,15 @@ No other keys. The body has no raw HTML. Headings in the body start at `#` and t
 
 `provisional` is `true` only for Luch/Olymp (40258), until the owner has checked the SATCAT row in the committed snapshot and changed it. For every other case file, write `false`. The owner's SATCAT check for a provisional case is recorded in `docs/spike.md` (Task 21 section). Read it before flagging `provisional` in review mode. Do not change `provisional` in review mode.
 
+## The Cause section (added 2026-11-27, requirement R14)
+Case files for retired payloads launched after 2007 that are not buried carry a `# Cause` section, placed after `# What the sources say`. The task prompt gives you the category and the approved quotes. You do not choose either.
+- The first line of the section is exactly `Cause category: <category>`. The category is one of: `failed in orbit or broke up before disposal`, `disposal reported by operator`, `disposal attempted, perigee short`, `no disposal reported`, `No cause in the sources opened`.
+- After it, put each approved quote on its own bullet, in quotation marks, copied letter for letter from the task prompt, ending with a citation `[<short name>: <link>]` from the Sources table. Never paraphrase a quote. Never add a quote the prompt did not give.
+- If the prompt gives a quote in fragments, quote only those fragments. A fragment is a verbatim part of the source's sentence. Do not add the words around it. Do not state the date that the source's sentence carried.
+- If the category is `No cause in the sources opened`, write that line and one sentence saying that the Sources table has no page that states a cause for this object. Do not mention any page the prompt does not name, and do not mention the shorter life or launch problems of an object unless the prompt says so.
+- Say what the category means in one plain sentence of your own that carries no number and no date, for example "The sources report that the satellite stopped working in orbit, before it was moved."
+- If the prompt says a source is machine-translated, say so in one bullet.
+- Never state or imply a date of the end of operation or of the end of the mission, in the Cause section or anywhere else. Do not use the words "decommissioned", "retired in" or "end of life in".
 ## Write mode
 
 1. Read the record in `data/register.json` and `snapshot.set`. Read `config`.

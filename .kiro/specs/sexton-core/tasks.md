@@ -223,21 +223,22 @@ Task 22, the final audit, was written before these. Each new page (tasks 24 and 
   - Ask the owner which of the 131 payloads to source first and how. For each, open an operator site, FCC or ITU filing or agency notice, and add an entry to `data/operators.json` with the URL, title and date opened. Unsourced payloads stay null.
   - Record in the journal how many of 131 are sourced.
   - _Requirements: 13.2, 13.3_
-- [ ] 25. Case notes: the group and USA 340
-  - A pure function listing the retired payloads launched after `config.validation.afterLaunchYear` whose verdict is not buried (18 in the 2026-11-22 snapshot), and `causeCounts(cases)`.
-  - Check USA 340 (55138): compare SATCAT with any GP or GPZ-table row in `data/raw/`, record what each says and whether the verdict follows from the engine's rules, in its case file and the journal. Change no verdict by hand.
+- [x] 25. Case notes: the group and USA 340
+  - A pure function listing the retired payloads launched after `config.validation.afterLaunchYear` whose verdict is not buried (18 in the 2026-11-22 snapshot), and `causeOf` and `causeCounts` (design 11).
+  - Check USA 340 (55138): compare SATCAT with any GP or GPZ-table row in `data/raw/`, record what each says and whether the verdict follows from the engine's rules, in its case file and the journal. Change no verdict by hand. SATCAT's status code "-" means "Nonoperational" (CelesTrak status page), which is why it is a retired payload.
   - Tests: the group list equals a direct filter of the register (property); `causeCounts` adds up to the group size.
-  - Stop here and give the owner the list of 18 so sources can be opened (design 11).
+  - Sources proposed in `docs/source-review.md`; the owner approved, rejected or recategorised each row on 2026-11-27.
   - _Requirements: 14.1, 14.5, 14.7, 14.9_
-- [ ] 26. Case notes: sources and writing
-  - With the owner's opened sources added to the Sources table of `docs/methodology.md`, run the orbital-coroner in write mode, one payload at a time. Each case file gets a "Cause" line: the quoted source, or "No cause in the sources opened". No web search by the agent.
-  - Add the cause table to the case-file list page. Tests: the language check over `data/cases/`; every case file has a Cause line; every cause quotes a source that is in the Sources table; the counts read back.
+- [x] 26. Case notes: sources and writing
+  - The approved rows are in the Sources table of `docs/methodology.md`. Run the orbital-coroner in write mode, one payload at a time. Each case file gets a `# Cause` section: `Cause category:` line, then the verbatim quote or quotes with their link, or "No cause in the sources opened". No web search by the agent. No date of the end of operation or mission.
+  - Add the cause table to the case-file list page. Tests: the language check over `data/cases/`; every case file has a Cause category; every quote appears in `docs/source-review.md` as an approved row; the counts read back.
   - _Requirements: 14.1–14.4, 14.7, 14.9_
-- [ ] 26a. Move the ESA comparison
+- [x] 26a. Move the ESA comparison
   - Remove ESA's range from the README headline, the census validation panel and chart, and the ESA entry in `COMPARISONS`. Keep it in `docs/methodology.md`, Validation, with the line that nothing was tuned, no verdict changes and no cause of the gap is established.
+  - Add the cause-count line to the census page and the README (R14.7), built from `causeCounts`.
   - Update the tests that read those pieces. Add a test that "70%" and "ESA" appear in no `src/ui/` file text or README outside methodology.md.
   - Check the main chunk stays at 185 KB or less (it should shrink).
-  - _Requirements: 14.6, 14.8_
+  - _Requirements: 14.6, 14.7, 14.8_
 - [ ] 27. Browser checks: spike and dependency approval
   - The owner approved `@playwright/test`, `@axe-core/playwright` and `axe-core` on 2026-11-27, dev only (design 12). They are pinned exactly and recorded in THIRD_PARTY.md under "Development only (not in dist/)". Check that `npm run build` leaves no MPL-2.0 code in `dist/`.
   - Run one spec on `#/census` in all three browsers, with axe. Check axe-core's docs for the `wcag22aa` tag. If it is not supported, use `wcag21aa` and say so in the journal and README. Record GO or NO-GO and the run time in the journal.
