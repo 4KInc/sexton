@@ -12,6 +12,7 @@ import { esc, withSansDigits } from '../html.ts';
 import { eccentricityRoundingMatters, edgesOf, isRetired, marginsSentence, orbitNotes, statusLines, verdictSentence } from '../ledger-text.ts';
 import type { Retired } from '../ledger-text.ts';
 import { renderMarkdown } from '../markdown.ts';
+import { PARISH } from '../parish-copy.ts';
 import type { UiRegister } from '../register.ts';
 import { badgeHtml } from './badge.ts';
 import { noteHtml } from './note.ts';
@@ -27,6 +28,18 @@ export function caseFileSection(r: SatRecord, cases: ReadonlyMap<number, CaseFil
   if (file === undefined) return '';
   const notice = file.provisional ? `<p class="case-provisional" role="note"><strong>${esc(LEDGER.provisional)}</strong></p>` : '';
   return section('case', LEDGER.headings.caseFile, `${notice}<h3 class="case-title">${esc(file.title)}</h3><div class="case-body">${renderMarkdown(file.body)}</div>`);
+}
+/**
+ * The operator, how the source names it, and the link to the source (R13), for the retired payloads launched on or after the FCC rule date.
+ * "operator not sourced" where no source was opened. Nothing for a record that was never looked at (it has no operator field).
+ * The words come from parish-copy.ts, which loads with this view, so the first page does not carry them.
+ */
+function operatorRow(r: SatRecord): string {
+  if (r.operator === undefined) return '';
+  const R = PARISH.rows;
+  if (r.operator === null) return `<div><dt>${esc(R.operator)}</dt><dd data-operator="none">${esc(R.notSourced)}</dd></div>`;
+  const link = typeof r.operatorSource === 'string' ? ` <a href="${esc(r.operatorSource)}" rel="noopener noreferrer">${esc(R.source)}</a>` : '';
+  return `<div><dt>${esc(R.operator)}</dt><dd data-operator="sourced">${esc(PARISH.relation(r.operator, r.operatorRelation ?? 'operator'))}${link}</dd></div>`;
 }
 /** The whole ledger for one retired payload. `cases` is the loaded case files. */
 export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<number, CaseFile> = CASES): string {
@@ -45,7 +58,7 @@ export function ledgerHtml(r: Retired, reg: UiRegister, cases: ReadonlyMap<numbe
   const identity = section(
     'identity',
     H.identity,
-    `<dl class="ledger-data">${row(F.name, r.name)}${row(F.norad, String(r.norad))}${row(F.designator, r.intlDes ?? LEDGER.notGiven)}${row(F.owner, r.owner ?? LEDGER.notGiven)}${row(F.launch, r.launchDate ?? LEDGER.unknown)}</dl>${era}${fine}`,
+    `<dl class="ledger-data">${row(F.name, r.name)}${row(F.norad, String(r.norad))}${row(F.designator, r.intlDes ?? LEDGER.notGiven)}${row(F.owner, r.owner ?? LEDGER.notGiven)}${operatorRow(r)}${row(F.launch, r.launchDate ?? LEDGER.unknown)}</dl>${era}${fine}`,
   );
   // The header card's badge carries the churchyard word and its meaning once, so this section holds the sentence only.
   const verdict = section('verdict', H.verdict, paras([verdictSentence(r, config)]));
