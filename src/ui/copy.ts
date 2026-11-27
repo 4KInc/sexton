@@ -29,6 +29,7 @@ export const NAV = [
   { href: '#/', label: 'Churchyard', route: 'churchyard' },
   { href: '#/table', label: 'Table', route: 'table' },
   { href: '#/census', label: 'Census', route: 'census' },
+  { href: '#/parish', label: 'Parish', route: 'parish' },
   { href: '#/method', label: 'Method', route: 'method' },
 ] as const;
 
@@ -38,6 +39,7 @@ export const PAGE_TITLES = {
   sat: 'Ledger',
   census: 'Census',
   method: 'Method',
+  parish: 'Parish',
   notfound: 'Not found',
 } as const;
 /** The visible heading of a page, where it differs from the page title (the 404 says it in the churchyard's words). */
@@ -283,6 +285,7 @@ export const FILTERS = {
   bonesPill: 'Unmarked bones',
   searchPill: (q: string): string => `Search: ${q}`,
   ownerPill: (o: string): string => `Owner: ${o}`,
+  operatorPill: (o: string): string => `Operator: ${o}`,
   remove: (label: string): string => `Remove filter: ${label}`,
   showing: (shown: number, total: number): string => `Showing ${formatCount(shown)} of ${formatCount(total)}`,
   note: 'The churchyard and the table share these filters. They are saved in the address, so you can share a filtered view.',
@@ -488,16 +491,13 @@ export const CAUSES = {
       : `${formatCount(n)} were raised by their operators, as the operators report, and read inside the zone in the ${date} snapshot.`;
   },
   intro: (n: number): string =>
-    `The ${formatCount(n)} are the retired payloads launched on or after 18 March 2002 whose verdict is unquiet or shallow grave: the same stones as the headline. Sexton has no retirement dates. Each payload that has a case file shows its cause there, quoted from a source that was opened and approved, or it says that no cause was found.`,
-  /** The README sentence after the counts. */
-  readme: (n: number): string =>
-    `The ${formatCount(n)} are the retired payloads launched on or after 18 March 2002 whose verdict is unquiet or shallow grave. Each case file gives its cause, quoted from a source that was opened, or the words "No cause in the sources opened".`,
+    `The ${formatCount(n)} are the retired payloads launched on or after 18 March 2002 that are unquiet or shallow grave, the headline's stones. Each case file quotes its cause from a source that was opened, or says none was found.`,
   caption: (n: number): string => `Cause category of the ${formatCount(n)} payloads in or near the protected zone`,
   columns: { category: 'Cause category', count: 'Payloads' },
   noCase: 'No case file yet',
-  noGroup: 'No retired payload in the register is unquiet or shallow grave and launched on or after 18 March 2002.',
+  noGroup: 'No story stone in the register.',
   limits:
-    'A cause is shown only where an opened source states one. A shorter life, or a launch problem, is not a cause of a missing disposal. The register only sees objects still near GEO, so these counts are not all payloads from that period. No verdict depends on them.',
+    'A cause is shown only where an opened source states one. The register only sees objects still near GEO. No verdict depends on these counts.',
 } as const;
 export const HEADLINE = {
   heading: 'Launched on or after 18 March 2002',
@@ -512,6 +512,9 @@ export const HEADLINE = {
   none: 'No retired payload in the register was launched on or after 18 March 2002.',
 } as const;
 export const CENSUS = {
+  /** The parish register's coverage (R13.14). Both numbers come from the records. */
+  operatorCoverage: (sourced: number, of: number): string =>
+    `Operator sourced for ${formatCount(sourced)} of ${formatCount(of)} retired payloads launched on or after 18 March 2002. A SATCAT owner code is not an operator.`,
   intro: (date: string): string =>
     `${snapshotLabel(date)}. Every number here comes from the register, and every share shows what it is a share of.`,
   restTitle: 'What these numbers are, and what is voluntary',

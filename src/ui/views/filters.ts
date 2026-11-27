@@ -30,6 +30,7 @@ function pillsOf(filters: Filters, config: Config): [string, string][] {
   const pills: [string, string][] = [];
   if (filters.q !== '') pills.push(['q', FILTERS.searchPill(filters.q)]);
   if (filters.owner !== null) pills.push(['owner', FILTERS.ownerPill(filters.owner === OWNER_NONE ? FILTERS.noOwner : filters.owner)]);
+  if (filters.operator !== null) pills.push(['operator', FILTERS.operatorPill(filters.operator)]);
   for (const v of filters.verdicts) pills.push([`verdict:${v}`, verdictCopy(v, config).word]);
   if (filters.era !== null) pills.push(['era', ERA_LABEL[filters.era]]);
   if (filters.bones) pills.push(['bones', FILTERS.bonesPill]);
@@ -73,6 +74,7 @@ export function filtersHtml(records: readonly SatRecord[], filters: Filters, con
     `<button type="button" class="filter-toggle" aria-expanded="${open}" aria-controls="filter-panel" data-filter-toggle>${SLIDERS}<span>${esc(FILTERS.toggle)}</span><span class="filter-badge mono" data-filter-badge${badge === 0 ? ' hidden' : ''}>${badge}</span></button>` +
     `<div class="filter-panel" id="filter-panel" role="group" aria-label="${esc(FILTERS.panel)}">` +
     `<div class="filter-sheet-head"><h2 class="filter-sheet-title" id="filter-sheet-title">${esc(FILTERS.toggle)}</h2><button type="button" class="button button--primary" data-filter-done>${esc(FILTERS.done)}</button></div>` +
+    `<input type="hidden" name="operator" value="${esc(filters.operator ?? '')}">` +
     `<div class="select"><label for="f-owner">${esc(FILTERS.owner)}</label><select id="f-owner" name="owner">${owners}</select></div>` +
     `<div class="select"><label for="f-era">${esc(FILTERS.era)}</label><select id="f-era" name="era">${eras}</select></div>` +
     `<fieldset class="vchips"><legend class="visually-hidden">${esc(FILTERS.verdict)}</legend>${chips}</fieldset>` +
@@ -93,7 +95,7 @@ export function filtersHtml(records: readonly SatRecord[], filters: Filters, con
 export function readFilters(form: HTMLFormElement): Filters {
   const pairs: [string, string][] = [];
   const value = (name: string): string => form.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${name}"]`)?.value ?? '';
-  pairs.push(['q', value('q')], ['owner', value('owner')], ['era', value('era')]);
+  pairs.push(['q', value('q')], ['owner', value('owner')], ['operator', value('operator')], ['era', value('era')]);
   for (const chip of form.querySelectorAll<HTMLElement>('[data-verdict][aria-pressed="true"]')) pairs.push(['verdict', chip.dataset['verdict'] ?? '']);
   if (form.querySelector('[data-bones]')?.getAttribute('aria-checked') === 'true') pairs.push(['bones', '1']);
   return parseFilters(new URLSearchParams(pairs));
@@ -188,6 +190,7 @@ export function wireFilters(
   const remove = (key: string): void => {
     if (key === 'q') q.value = '';
     else if (key === 'owner' || key === 'era') form.querySelector<HTMLSelectElement>(`[name="${key}"]`)!.value = '';
+    else if (key === 'operator') form.querySelector<HTMLInputElement>('[name="operator"]')!.value = '';
     else if (key === 'bones') form.querySelector('[data-bones]')!.setAttribute('aria-checked', 'false');
     else form.querySelector(`[data-verdict="${key.slice('verdict:'.length)}"]`)?.setAttribute('aria-pressed', 'false');
   };
@@ -208,7 +211,7 @@ export function wireFilters(
       sync(readFilters(form));
       (form.querySelector<HTMLElement>('.pill') ?? q).focus();
     } else if (target.closest('[data-clear-filters]') !== null) {
-      for (const key of ['q', 'owner', 'era', 'bones', ...VERDICT_ORDER.map((v) => `verdict:${v}`)]) remove(key);
+      for (const key of ['q', 'owner', 'operator', 'era', 'bones', ...VERDICT_ORDER.map((v) => `verdict:${v}`)]) remove(key);
       sync(readFilters(form));
       q.focus();
     } else if (target.closest('[data-clear-search]') !== null) {

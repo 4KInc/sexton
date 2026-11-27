@@ -85,3 +85,31 @@ describe('data/operators.json', () => {
     );
   });
 });
+
+describe('the join into the register (task 23)', () => {
+  it('the 131 retired payloads launched on or after the FCC rule date carry operator fields, and no other record does', () => {
+    const withField = register.records.filter((r) => r.operator !== undefined);
+    expect(withField.map((r) => r.norad).sort((a, b) => a - b)).toEqual([...postRule].sort((a, b) => a - b));
+    expect(withField).toHaveLength(131);
+    for (const r of register.records) {
+      if (postRule.has(r.norad)) continue;
+      expect(r.operatorRelation, String(r.norad)).toBeUndefined();
+      expect(r.operatorSource, String(r.norad)).toBeUndefined();
+    }
+  });
+  it('every non-null operator comes with its relation and its source, and equals the entry in operators.json', () => {
+    const byNorad = new Map(file.entries.map((e) => [e.norad, e]));
+    for (const r of register.records) {
+      if (typeof r.operator !== 'string') continue;
+      const e = byNorad.get(r.norad)!;
+      expect([r.operator, r.operatorRelation, r.operatorSource]).toEqual([e.operator, e.relation, e.sourceUrl]);
+    }
+    expect(register.records.filter((r) => typeof r.operator === 'string')).toHaveLength(file.entries.length);
+  });
+  it('a record with no operator has all three fields null ("operator not sourced"), not a guess', () => {
+    for (const r of register.records) {
+      if (!postRule.has(r.norad) || typeof r.operator === 'string') continue;
+      expect([r.operator, r.operatorRelation, r.operatorSource]).toEqual([null, null, null]);
+    }
+  });
+});

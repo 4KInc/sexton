@@ -393,7 +393,10 @@
         "era": null,
         "yearsSinceLaunch": 16
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90003,
@@ -429,7 +432,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90004,
@@ -465,7 +471,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90005,
@@ -501,7 +510,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90006,
@@ -537,7 +549,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90007,
@@ -573,7 +588,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90008,
@@ -609,7 +627,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90009,
@@ -645,7 +666,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90010,
@@ -681,7 +705,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90011,
@@ -717,7 +744,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90014,
@@ -753,7 +783,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90016,
@@ -789,7 +822,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90020,
@@ -1113,7 +1149,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 90033,
@@ -1185,7 +1224,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     }
   ],
   "rejections": [

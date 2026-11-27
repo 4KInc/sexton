@@ -5,6 +5,7 @@
 //   --set    use this snapshot folder instead of the newest complete one
 //   --out    write here instead of data/register.json
 //   --cases  folder of <norad>.md case files (default data/cases)
+//   The operators come from operators.json in the folder that holds the cases folder (data/operators.json). No file means no operator is sourced.
 // Exit codes: 0 done, 1 the snapshot is not usable (nothing is written), 2 bad arguments.
 import { causeCounts, causeGroup, causeOf } from '../src/engine/causes.ts';
 import type { CauseCategory } from '../src/engine/causes.ts';
@@ -116,8 +117,43 @@ export function readCauses(casesDir: string): Map<number, CauseCategory | null> 
   }
   return out;
 }
+interface OperatorEntry {
+  norad: number;
+  operator: string;
+  relation: string;
+  sourceUrl: string;
+  openedOn: string;
+}
+/**
+ * Reads operators.json. An operator is recorded only with a source that was opened (R13.2, R13.3), so a bad entry stops the build:
+ * no name, no relation label, no http(s) URL, no date opened, or a NORAD id given twice.
+ */
+export function readOperators(path: string): Map<number, OperatorEntry> {
+  const out = new Map<number, OperatorEntry>();
+  if (!existsSync(path)) return out;
+  let data: { entries?: unknown };
+  try {
+    data = JSON.parse(readFileSync(path, 'utf8')) as { entries?: unknown };
+  } catch (e) {
+    throw new SnapshotError(`${path} is not valid JSON: ${(e as Error).message}`);
+  }
+  if (!Array.isArray(data.entries)) throw new SnapshotError(`${path} has no "entries" list.`);
+  for (const raw of data.entries as Partial<OperatorEntry>[]) {
+    const bad = (problem: string): never => {
+      throw new SnapshotError(`${path}: entry for NORAD ${String(raw.norad)}: ${problem}`);
+    };
+    if (!Number.isSafeInteger(raw.norad)) bad('norad is not a whole number');
+    if (typeof raw.operator !== 'string' || raw.operator.trim() === '') bad('no operator name');
+    if (typeof raw.relation !== 'string' || raw.relation.trim() === '') bad('no relation label');
+    if (typeof raw.sourceUrl !== 'string' || !/^https?:\/\/\S+$/.test(raw.sourceUrl)) bad('no http(s) source URL');
+    if (typeof raw.openedOn !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw.openedOn)) bad('no date opened');
+    if (out.has(raw.norad as number)) bad('given twice');
+    out.set(raw.norad as number, raw as OperatorEntry);
+  }
+  return out;
+}
 /** Builds the register text for one snapshot folder. Throws SnapshotError if the set is not usable. */
-export function buildRegisterText(setDir: string, casesDir: string): string {
+export function buildRegisterText(setDir: string, casesDir: string, operatorsPath: string = join(dirname(casesDir), 'operators.json')): string {
   const manifest = readManifest(setDir);
   if (manifest === null) throw new SnapshotError(`${setDir} has no readable manifest.json. This script never downloads.`);
   if (manifest.complete !== true) throw noCompleteSet(setDir);
@@ -155,12 +191,23 @@ export function buildRegisterText(setDir: string, casesDir: string): string {
     snapshotDate,
   });
   const withCase = caseNorads(casesDir);
+  const operators = readOperators(operatorsPath);
+  // Only a retired payload launched on or after the FCC rule date can carry an operator. Every other record gets none of these fields.
+  const postRule = new Set(result.records.filter((r) => r.verdict.kind === 'verdict' && r.verdict.era === null).map((r) => r.norad));
+  for (const norad of operators.keys()) {
+    if (!postRule.has(norad)) throw new SnapshotError(`${operatorsPath}: NORAD ${norad} is not a retired payload launched on or after the FCC rule date, so it cannot have an operator here.`);
+  }
   const register: Register = {
     schema: 1,
     sample: false,
     snapshot: { set: snapshotDate, sources },
     config: CONFIG,
-    records: result.records.map((r) => ({ ...r, caseFile: withCase.has(r.norad) })),
+    records: result.records.map((r) => {
+      const base = { ...r, caseFile: withCase.has(r.norad) };
+      if (!postRule.has(r.norad)) return base;
+      const op = operators.get(r.norad);
+      return op === undefined ? { ...base, operator: null, operatorRelation: null, operatorSource: null } : { ...base, operator: op.operator, operatorRelation: op.relation, operatorSource: op.sourceUrl };
+    }),
     rejections: result.rejections,
     noOrbitDataCount: result.noOrbitDataCount,
     census: result.census,

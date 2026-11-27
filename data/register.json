@@ -28466,7 +28466,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27400,
@@ -28502,7 +28505,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27403,
@@ -28538,7 +28544,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27414,
@@ -28574,7 +28583,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27426,
@@ -28668,7 +28680,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27444,
@@ -28760,7 +28775,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27461,
@@ -28796,7 +28814,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27499,
@@ -28832,7 +28853,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27501,
@@ -28868,7 +28892,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27508,
@@ -28904,7 +28931,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27509,
@@ -28940,7 +28970,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27513,
@@ -29005,7 +29038,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27525,
@@ -29041,7 +29077,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27528,
@@ -29077,7 +29116,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "Hispasat",
+      "operatorRelation": "by implication",
+      "operatorSource": "https://www.hispasat.com/es/flota-e-infraestructura/flota-de-satelites/hispasat-30w-6"
     },
     {
       "norad": 27554,
@@ -29114,7 +29156,10 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27566,
@@ -29150,7 +29195,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27603,
@@ -29186,7 +29234,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27632,
@@ -29251,7 +29302,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27691,
@@ -29400,7 +29454,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "ISRO",
+      "operatorRelation": "listed as owner",
+      "operatorSource": "https://new1.isro.gov.in/INSAT_3A.html"
     },
     {
       "norad": 27715,
@@ -29436,7 +29493,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27718,
@@ -29501,7 +29561,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27780,
@@ -29566,7 +29629,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "ISRO",
+      "operatorRelation": "listed as owner",
+      "operatorSource": "https://www.isro.gov.in/GSAT_2.html"
     },
     {
       "norad": 27811,
@@ -29631,7 +29697,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27820,
@@ -29667,7 +29736,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27825,
@@ -29732,7 +29804,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27831,
@@ -29797,7 +29872,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27854,
@@ -29833,7 +29911,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27875,
@@ -29981,7 +30062,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 27951,
@@ -30017,7 +30101,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "ISRO",
+      "operatorRelation": "listed as owner",
+      "operatorSource": "https://www.isro.gov.in/INSAT_3E.html"
     },
     {
       "norad": 27954,
@@ -30082,7 +30169,10 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28089,
@@ -30148,7 +30238,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "Gazprom Space Systems",
+      "operatorRelation": "listed as owner",
+      "operatorSource": "https://satnews.com/2014/07/16/russia-the-seasoned-yamal-201-goes-nowhere-satellite/"
     },
     {
       "norad": 28117,
@@ -30240,7 +30333,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "Spacecom",
+      "operatorRelation": "operator",
+      "operatorSource": "https://www.timesofisrael.com/after-loss-of-satellite-in-spacex-blast-israeli-company-brings-in-replacement/"
     },
     {
       "norad": 28134,
@@ -30276,7 +30372,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "RSCC (Russian Satellite Communications Company)",
+      "operatorRelation": "operator",
+      "operatorSource": "https://www.satellitetoday.com/technology/2015/07/14/rscc-transfers-traffic-from-express-am22-to-express-am6-satellite/"
     },
     {
       "norad": 28137,
@@ -30312,7 +30411,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28139,
@@ -30376,7 +30478,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28156,
@@ -30524,7 +30629,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28194,
@@ -30561,7 +30669,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28218,
@@ -30597,7 +30708,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28234,
@@ -30633,7 +30747,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28238,
@@ -30669,7 +30786,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28240,
@@ -30733,7 +30853,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28256,
@@ -30826,7 +30949,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28378,
@@ -30891,7 +31017,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28417,
@@ -30927,7 +31056,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28446,
@@ -30992,7 +31124,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28463,
@@ -31028,7 +31163,10 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28466,
@@ -31092,7 +31230,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28491,
@@ -31184,7 +31325,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28622,
@@ -31220,7 +31364,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28626,
@@ -31256,7 +31403,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28628,
@@ -31321,7 +31471,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28634,
@@ -31385,7 +31538,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28644,
@@ -31421,7 +31577,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28659,
@@ -31543,7 +31702,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28786,
@@ -31607,7 +31769,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28868,
@@ -31672,7 +31837,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28885,
@@ -31765,7 +31933,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28903,
@@ -31801,7 +31972,10 @@
         "era": null,
         "yearsSinceLaunch": 21
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28911,
@@ -31837,7 +32011,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28912,
@@ -31959,7 +32136,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 28945,
@@ -32024,7 +32204,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29014,
@@ -32173,7 +32356,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "NOAA",
+      "operatorRelation": "operates it; U.S. Space Force mission",
+      "operatorSource": "https://cimss.ssec.wisc.edu/satellite-blog/archives/55455"
     },
     {
       "norad": 29162,
@@ -32209,7 +32395,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29163,
@@ -32245,7 +32434,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29230,
@@ -32281,7 +32473,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29233,
@@ -32431,7 +32626,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29349,
@@ -32496,7 +32694,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29494,
@@ -32589,7 +32790,10 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29526,
@@ -32654,7 +32858,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29642,
@@ -32717,7 +32924,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29644,
@@ -32753,7 +32963,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29648,
@@ -32790,7 +33003,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "MEASAT Global Berhad",
+      "operatorRelation": "operator",
+      "operatorSource": "https://www.satelliteevolution.com/post/measat-to-retire-measat-3"
     },
     {
       "norad": 29656,
@@ -32826,7 +33042,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 29676,
@@ -32916,7 +33135,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 30793,
@@ -32952,7 +33174,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 30794,
@@ -33105,7 +33330,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "Nigerian Communications Satellite Ltd (NigComSat)",
+      "operatorRelation": "operator",
+      "operatorSource": "https://www.satellitetoday.com/connectivity/2008/11/20/report-nigcomsat-1-declared-total-loss/"
     },
     {
       "norad": 31577,
@@ -33141,7 +33369,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 31800,
@@ -33177,7 +33408,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 31862,
@@ -33213,7 +33447,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32018,
@@ -33249,7 +33486,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32019,
@@ -33285,7 +33525,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32050,
@@ -33321,7 +33564,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32252,
@@ -33357,7 +33603,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32253,
@@ -33450,7 +33699,10 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32294,
@@ -33544,7 +33796,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32387,
@@ -33580,7 +33835,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32388,
@@ -33675,7 +33933,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "RSCC (Russian Satellite Communications Company)",
+      "operatorRelation": "operator",
+      "operatorSource": "https://satnews.com/2021/08/17/rscc-alters-the-express-am33-satellites-orbital-slot/"
     },
     {
       "norad": 32479,
@@ -33768,7 +34029,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "JAXA",
+      "operatorRelation": "operator",
+      "operatorSource": "https://www.jaxa.jp/press/2019/03/20190301a_j.html"
     },
     {
       "norad": 32708,
@@ -33949,7 +34213,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 32794,
@@ -34130,7 +34397,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 33111,
@@ -34194,7 +34464,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 33154,
@@ -34230,7 +34503,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 33207,
@@ -34324,7 +34600,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 33278,
@@ -34447,7 +34726,10 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "ABAE (Agencia Bolivariana para Actividades Espaciales)",
+      "operatorRelation": "operator",
+      "operatorSource": "https://abae.gob.ve/venezuela-celebra-17-aniversario-lanzamiento-satelite-simon-bolivar/"
     },
     {
       "norad": 33436,
@@ -34512,7 +34794,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 33458,
@@ -34605,7 +34890,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 33463,
@@ -34641,7 +34929,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 33465,
@@ -34923,7 +35214,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 33598,
@@ -35015,7 +35309,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 34111,
@@ -35081,7 +35378,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 34265,
@@ -35145,7 +35445,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 34713,
@@ -35497,7 +35800,10 @@
         "era": null,
         "yearsSinceLaunch": 17
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 35815,
@@ -35880,7 +36186,10 @@
         "era": null,
         "yearsSinceLaunch": 16
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 36359,
@@ -36204,7 +36513,10 @@
         "era": null,
         "yearsSinceLaunch": 16
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 36745,
@@ -36414,7 +36726,10 @@
         "era": null,
         "yearsSinceLaunch": 16
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "China Satellite Communications Corp",
+      "operatorRelation": "listed as owner",
+      "operatorSource": "https://www.space.com/9110-chinese-satellite-suffers-life-shortening-leak.html"
     },
     {
       "norad": 37185,
@@ -36621,7 +36936,10 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 37237,
@@ -36831,7 +37149,10 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 37345,
@@ -37038,7 +37359,10 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 37605,
@@ -37160,7 +37484,10 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 37746,
@@ -37196,7 +37523,10 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 37748,
@@ -37376,7 +37706,10 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "SUPARCO",
+      "operatorRelation": "customer (delivered in orbit to SUPARCO)",
+      "operatorSource": "https://cgwic.com/CommunicationsSatellite/project.html"
     },
     {
       "norad": 37804,
@@ -37413,7 +37746,10 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 37806,
@@ -37450,7 +37786,10 @@
         "era": null,
         "yearsSinceLaunch": 15
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 37809,
@@ -37747,7 +38086,10 @@
         "era": null,
         "yearsSinceLaunch": 14
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "Spacecom",
+      "operatorRelation": "operator",
+      "operatorSource": "https://spacenews.com/spacecom-stock-tumbles-following-amos-5-failure/"
     },
     {
       "norad": 37951,
@@ -37841,7 +38183,10 @@
         "era": null,
         "yearsSinceLaunch": 14
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 38070,
@@ -38049,7 +38394,10 @@
         "era": null,
         "yearsSinceLaunch": 14
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 38104,
@@ -38812,7 +39160,10 @@
         "era": null,
         "yearsSinceLaunch": 14
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 38740,
@@ -40799,7 +41150,10 @@
         "era": null,
         "yearsSinceLaunch": 12
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 40100,
@@ -40835,7 +41189,10 @@
         "era": null,
         "yearsSinceLaunch": 12
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 40101,
@@ -40871,7 +41228,10 @@
         "era": null,
         "yearsSinceLaunch": 12
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 40102,
@@ -41078,7 +41438,10 @@
         "era": null,
         "yearsSinceLaunch": 12
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 40267,
@@ -41575,7 +41938,10 @@
         "era": null,
         "yearsSinceLaunch": 11
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 40549,
@@ -42553,7 +42919,10 @@
         "era": null,
         "yearsSinceLaunch": 10
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 41105,
@@ -42791,7 +43160,10 @@
         "era": null,
         "yearsSinceLaunch": 10
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "Intelsat",
+      "operatorRelation": "operator",
+      "operatorSource": "https://spaceflightnow.com/2019/04/22/intelsat-declares-drifting-satellite-total-loss/"
     },
     {
       "norad": 41310,
@@ -43542,7 +43914,10 @@
         "era": null,
         "yearsSinceLaunch": 10
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "Intelsat",
+      "operatorRelation": "operator",
+      "operatorSource": "https://www.datacenterdynamics.com/en/news/intelsats-33e-geo-satellite-breaks-up-in-orbit/"
     },
     {
       "norad": 41752,
@@ -44449,7 +44824,10 @@
         "era": null,
         "yearsSinceLaunch": 9
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": "China Satcom",
+      "operatorRelation": "owner and operator",
+      "operatorSource": "https://spaceflightnow.com/2017/07/13/chinese-tv-broadcasting-satellite-reaches-operational-orbit-after-off-target-launch/"
     },
     {
       "norad": 42801,
@@ -44919,7 +45297,10 @@
         "era": null,
         "yearsSinceLaunch": 8
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 43088,
@@ -46365,7 +46746,10 @@
         "era": null,
         "yearsSinceLaunch": 7
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 43920,
@@ -48615,7 +48999,10 @@
         "era": null,
         "yearsSinceLaunch": 4
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 50001,
@@ -50024,7 +50411,10 @@
         "era": null,
         "yearsSinceLaunch": 4
       },
-      "caseFile": true
+      "caseFile": true,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 55180,
@@ -50201,7 +50591,10 @@
         "era": null,
         "yearsSinceLaunch": 3
       },
-      "caseFile": false
+      "caseFile": false,
+      "operator": null,
+      "operatorRelation": null,
+      "operatorSource": null
     },
     {
       "norad": 55265,

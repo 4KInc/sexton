@@ -6,6 +6,7 @@ import './styles/filters.css';
 import './styles/table.css';
 import './styles/ledger.css';
 import './styles/census.css';
+import './styles/parish.css';
 import './styles/method.css';
 import './styles/print.css';
 import { NAV, PAGE_HEADINGS, PAGE_TITLES, SITE } from './copy.ts';
@@ -47,6 +48,7 @@ function renderNav(route: Route): void {
 
 function heading(route: Route): string {
   if (route.name === 'sat') return `${PAGE_TITLES.sat}: NORAD ${route.norad}`;
+  if (route.name === 'parish' && route.scope !== 'index') return `${PAGE_TITLES.parish}: ${route.key}`;
   return PAGE_TITLES[route.name];
 }
 /** The h1. The same as the page title, except where PAGE_HEADINGS says it in the churchyard's words (the 404: "An empty plot"; its <title> stays "Not found · Sexton"). */
@@ -118,6 +120,10 @@ function renderRoute(reg: UiRegister, route: Route, isFirst: boolean): void {
     lazyView(view, id, () => import('./views/ledger.ts').then((m) => () => m.mountLedger(view, reg, norad)));
   } else if (route.name === 'census') {
     stopView = mountCensus(view, reg);
+  } else if (route.name === 'parish') {
+    // The parish pages carry their own text, so they load when first opened.
+    const { scope, key } = route;
+    lazyView(view, id, () => import('./views/parish.ts').then((m) => () => m.mountParish(view, reg, scope, key)));
   } else if (route.name === 'method') {
     const { query } = route;
     lazyView(view, id, () => import('./views/method.ts').then((m) => () => m.mountMethod(view, query)));

@@ -1,11 +1,14 @@
 // Hash routes (design 5.1). Work on GitHub Pages with no server.
 
+/** The parish register: the list, one sourced operator, or one SATCAT owner code (design 10). */
+export type ParishScope = 'index' | 'operator' | 'owner';
 export type Route =
   | { name: 'churchyard'; query: URLSearchParams }
   | { name: 'table'; query: URLSearchParams }
   | { name: 'sat'; norad: number; query: URLSearchParams }
   | { name: 'census'; query: URLSearchParams }
   | { name: 'method'; query: URLSearchParams }
+  | { name: 'parish'; scope: ParishScope; key: string; query: URLSearchParams }
   | { name: 'notfound'; query: URLSearchParams };
 
 /** Reads a location hash such as "#/sat/27378" or "#/?verdict=buried". Never throws. */
@@ -29,8 +32,20 @@ export function parseHash(hash: string): Route {
     const norad = Number(second);
     if (Number.isSafeInteger(norad) && norad > 0) return { name: 'sat', norad, query };
   }
+  if (first === 'parish') {
+    if (parts.length === 1) return { name: 'parish', scope: 'index', key: '', query };
+    const key = parts.length === 3 ? decode(parts[2]!) : null;
+    if (key !== null && key !== '' && (second === 'op' || second === 'owner')) return { name: 'parish', scope: second === 'op' ? 'operator' : 'owner', key, query };
+  }
   return { name: 'notfound', query };
 }
+const decode = (part: string): string | null => {
+  try {
+    return decodeURIComponent(part);
+  } catch {
+    return null;
+  }
+};
 
 /** The nav item a route belongs to. A ledger belongs to none: it has a link back to where you came from. */
 export const navRouteOf = (route: Route): string => (route.name === 'sat' ? '' : route.name);

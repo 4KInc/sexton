@@ -82,6 +82,15 @@ export interface MergedRecord {
 export interface SatRecord extends MergedRecord {
   verdict: Classification;
   caseFile: boolean;
+  /**
+   * The operator, only on retired payloads launched on or after the FCC rule date (R13.2), and only where a source that was
+   * opened names one. `null` there means "operator not sourced". Absent on every other record. Never inferred.
+   */
+  operator?: string | null;
+  /** How the source names the operator: "operator", "listed as owner", "customer (delivered in orbit to SUPARCO)", ... Null when `operator` is null. */
+  operatorRelation?: string | null;
+  /** The URL of the opened source. Null when `operator` is null. */
+  operatorSource?: string | null;
 }
 export type VerdictCounts = Record<VerdictName, number>;
 

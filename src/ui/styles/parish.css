@@ -1,0 +1,52 @@
+/* The parish register (R13). Calm and plain: counts and tables, no ranking marks. */
+.parish {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 76rem;
+}
+.parish-block {
+  display: grid;
+  gap: var(--space-2);
+}
+.parish-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.parish-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--rule);
+  padding: var(--space-1) 0;
+}
+.parish-count {
+  color: var(--bone-muted);
+  white-space: nowrap;
+}
+.parish-assumptions,
+.parish-caveats,
+.parish-note {
+  max-width: 60rem;
+  color: var(--bone-soft);
+}
+.parish-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.parish-rows th[scope='row'] {
+  white-space: nowrap;
+}
+@media print {
+  .parish-actions {
+    display: none;
+  }
+  .parish-list {
+    display: block;
+    columns: 2;
+  }
+}

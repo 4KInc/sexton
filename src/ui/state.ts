@@ -11,6 +11,8 @@ export const OWNER_NONE = '(not given)';
 export interface Filters {
   /** An owner code, OWNER_NONE, or null for any. */
   owner: string | null;
+  /** A sourced operator's name (exact), or null for any. Only retired payloads launched on or after the FCC rule date can have one. */
+  operator: string | null;
   /** In VERDICT_ORDER order. Empty means any. */
   verdicts: VerdictName[];
   era: EraFilter | null;
@@ -45,17 +47,19 @@ export interface ViewState {
   paging?: Paging;
 }
 
-export const NO_FILTERS: Filters = { owner: null, verdicts: [], era: null, bones: false, q: '' };
+export const NO_FILTERS: Filters = { owner: null, operator: null, verdicts: [], era: null, bones: false, q: '' };
 
 export const normalizeQ = (text: string): string => text.trim().replace(/\s+/g, ' ');
 
 /** Reads filters from a hash query. Unknown keys and bad values are ignored. Never throws. */
 export function parseFilters(query: URLSearchParams): Filters {
   const owner = query.get('owner');
+  const operator = query.get('operator');
   const asked = new Set(query.getAll('verdict'));
   const era = query.get('era');
   return {
     owner: owner === null || owner === '' ? null : owner,
+    operator: operator === null || operator === '' ? null : operator,
     verdicts: VERDICT_ORDER.filter((v) => asked.has(v)),
     era: ERA_FILTERS.find((e) => e === era) ?? null,
     bones: query.get('bones') === '1',
@@ -108,6 +112,7 @@ export function toQuery(state: ViewState): URLSearchParams {
   const { filters: f, sort } = state;
   const out = new URLSearchParams();
   if (f.owner !== null) out.set('owner', f.owner);
+  if (f.operator !== null) out.set('operator', f.operator);
   for (const v of f.verdicts) out.append('verdict', v);
   if (f.era !== null) out.set('era', f.era);
   if (f.bones) out.set('bones', '1');
@@ -132,7 +137,7 @@ export function hashFor(path: '' | 'table', state: ViewState): string {
 }
 
 export const hasFilters = (f: Filters): boolean =>
-  f.owner !== null || f.verdicts.length > 0 || f.era !== null || f.bones || normalizeQ(f.q) !== '';
+  f.owner !== null || f.operator !== null || f.verdicts.length > 0 || f.era !== null || f.bones || normalizeQ(f.q) !== '';
 
 const ERA_OF: Record<EraFilter, 'before FCC rule' | null | 'unknown'> = { before: 'before FCC rule', after: null, unknown: 'unknown' };
 
@@ -148,6 +153,7 @@ export function applyFilters(records: readonly SatRecord[], f: Filters): SatReco
   return records.filter((r) => {
     if (r.verdict.kind === 'unmarked bones' && !f.bones) return false;
     if (f.owner !== null && (f.owner === OWNER_NONE ? r.owner !== null : r.owner !== f.owner)) return false;
+    if (f.operator !== null && r.operator !== f.operator) return false;
     if (f.verdicts.length > 0 && !(r.verdict.kind === 'verdict' && f.verdicts.includes(r.verdict.verdict))) return false;
     if (f.era !== null && !(r.verdict.kind === 'verdict' && r.verdict.era === ERA_OF[f.era])) return false;
     if (q !== '' && !(r.name.toLowerCase().includes(q) || String(r.norad).startsWith(q))) return false;

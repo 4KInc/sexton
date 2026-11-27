@@ -5,6 +5,7 @@ import type { Config } from '../../engine/config.ts';
 import type { Census, SatRecord, VerdictName } from '../../engine/types.ts';
 import { CENSUS, CENSUS_TILES, HERO, CHURCHYARD_INTRO, HEADLINE, METHOD_SECTIONS, NOTES, snapshotLabel, CAUSES, assumptionsLine, TERMS, VERDICT_ORDER, verdictCopy } from '../copy.ts';
 import { postRuleSummary } from '../../engine/headline.ts';
+import { operatorCoverage } from '../../engine/operator-coverage.ts';
 import { CAUSE_CATEGORIES, causeCounts, causeGroup } from '../../engine/causes.ts';
 import { formatCount, formatShare } from '../format.ts';
 import { esc } from '../html.ts';
@@ -223,6 +224,11 @@ export function causesHtml(reg: Pick<UiRegister, 'records' | 'config' | 'causes'
     `<p>${esc(CAUSES.limits)}</p>`
   );
 }
+/** "Operator sourced for n of 131", with both numbers counted from the records, and a link to the parish register. */
+export function operatorCoverageHtml(records: readonly SatRecord[]): string {
+  const k = operatorCoverage(records);
+  return `<p data-operators="coverage">${esc(CENSUS.operatorCoverage(k.sourced, k.of))} <a href="#/parish">The parish register</a></p>`;
+}
 /** The first thing on the census page: the group launched on or after the rule date, with the older group as context. */
 export function headlineHtml(records: readonly SatRecord[], config: Config, date = ''): string {
   const s = postRuleSummary(records);
@@ -289,7 +295,7 @@ export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config'
     section('headline', HEADLINE.heading, headlineHtml(reg.records, config, date), true) +
     section('causes', H.causes, causesHtml(reg), true) +
     `<div class="census-cols">${cols}</div>` +
-    section('owner', H.owner, ownerHtml(c, config, date), true) +
+    section('owner', H.owner, ownerHtml(c, config, date) + operatorCoverageHtml(reg.records), true) +
     rest +
     `</div>`
   ).replace(/\u00A7 03\.#/g, () => `\u00A7 03.${++entry}`);

@@ -20,12 +20,15 @@ export const END = '<!-- census:end -->';
 /** The cause line in the README headline (R14.7). Optional: a README without these markers keeps no cause line. */
 export const CAUSE_START = '<!-- causes:start -->';
 export const CAUSE_END = '<!-- causes:end -->';
+/** The README sentence after the counts. It is not shown on the site. */
+export const readmeSentence = (n: number): string =>
+  `The ${n} are the retired payloads launched on or after 18 March 2002 whose verdict is unquiet or shallow grave. Each case file gives its cause, quoted from a source that was opened, or the words "No cause in the sources opened".`;
 /** The README's cause line: counts only, from the register and the case files. */
 export function renderCauseLine(register: Register): string {
   const k = register.causes;
   if (k === undefined || k.n === 0) return CAUSES.noGroup;
   const reported = k.reportedUnquiet > 0 ? ` ${CAUSES.reported(k.reportedUnquiet, register.snapshot.set)}` : '';
-  return `${CAUSES.line(k.n, k.byCategory['failed in orbit or broke up before disposal'])}${reported} ${CAUSES.readme(k.n)}`;
+  return `${CAUSES.line(k.n, k.byCategory['failed in orbit or broke up before disposal'])}${reported} ${readmeSentence(k.n)}`;
 }
 
 export interface Io {

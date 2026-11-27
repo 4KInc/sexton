@@ -198,7 +198,7 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
 
 Task 22, the final audit, was written before these. Each new page (tasks 24 and 26) adds its links and figures to the audit list, and task 37 repeats the audit on them. The dependencies for tasks 27 and 30 were approved on 2026-11-27 (dev only).
 
-- [ ] 23. Parish counts (engine)
+- [x] 23. Parish counts (engine)
   - Schema 2: `data/operators.json` (may start empty), the join in `scripts/build-register.ts`, and `operator` and `operatorSource` on the retired payloads launched on or after 18 March 2002 only (design 10).
   - `src/engine/parish.ts` with `parishOf`, `operatorCoverage` and the list of groups.
   - Tests:
@@ -207,7 +207,7 @@ Task 22, the final audit, was written before these. Each new page (tasks 24 and 
     - operator counts equal a direct count; a null operator is never grouped by name;
     - the "unknown" owner; a group with no retired payloads; the result does not depend on record order.
   - _Requirements: 13.2, 13.3, 13.5, 13.11, 13.13_
-- [ ] 24. Parish pages
+- [x] 24. Parish pages
   - `views/parish.ts`, the `#/parish`, `#/parish/op/<name>` and `#/parish/owner/<code>` routes, the nav item, an `operator` query key in `state.ts`, text in `copy.ts`, CSV and JSON downloads, print CSS, and the census line "operator sourced for n of 131" (design 10).
   - Owner-code groups are labelled "SATCAT owner (country or organisation)", operator groups "Operator (sourced)". Counts link to the filtered table. The assumptions line, snapshot date and data age sit beside every count.
   - Tests:
@@ -219,7 +219,7 @@ Task 22, the final audit, was written before these. Each new page (tasks 24 and 
     - the census coverage line reads back from the register.
   - Do not map codes to names. Do not infer an operator.
   - _Requirements: 13.1, 13.4–13.14_
-- [ ] 24a. Operator sources (owner). Batch A, the 36 story stones, is proposed in `docs/source-review.md`; batch B (the other 95) waits for the review.
+- [ ] 24a. Operator sources (owner). Batch A (the 36 story stones) is approved and in `data/operators.json` (19 sourced); batch B (the other 95) has not been started.
   - Ask the owner which of the 131 payloads to source first and how. For each, open an operator site, FCC or ITU filing or agency notice, and add an entry to `data/operators.json` with the URL, title and date opened. Unsourced payloads stay null.
   - Record in the journal how many of 131 are sourced.
   - _Requirements: 13.2, 13.3_

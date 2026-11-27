@@ -357,6 +357,8 @@ describe('labels and landmarks', () => {
       });
       it('every form control has a label', () => {
         for (const m of html.matchAll(/<(input|select|textarea)\b[^>]*>/g)) {
+          // A hidden input carries a value, not a control the reader can reach (the operator filter, set from the parish pages).
+          if (attr(m[0], 'type') === 'hidden') continue;
           const id = attr(m[0], 'id');
           const labelled = id !== null && new RegExp(`<label\\b[^>]*\\sfor="${id}"`).test(html);
           expect(labelled || attr(m[0], 'aria-label') !== null, m[0]).toBe(true);

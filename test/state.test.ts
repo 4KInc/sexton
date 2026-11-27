@@ -38,6 +38,7 @@ const stateOf = (filters: Filters, sort: Sort = DEFAULT_SORT): ViewState => ({ f
 
 const arbFilters: fc.Arbitrary<Filters> = fc.record({
   owner: fc.option(fc.string({ unit: 'grapheme', minLength: 1 }), { nil: null }),
+  operator: fc.option(fc.string({ unit: 'grapheme', minLength: 1 }), { nil: null }),
   verdicts: fc.subarray([...VERDICT_ORDER]),
   era: fc.constantFrom(null, ...ERA_FILTERS),
   bones: fc.boolean(),
