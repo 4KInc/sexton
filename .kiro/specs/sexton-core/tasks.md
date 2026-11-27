@@ -284,13 +284,13 @@ Task 22, the final audit, was written before these. Each new page (tasks 24 and 
   - Record the Kiro version, the steps, what the path and approval behaviour were (design 14, unverified list) and any change needed. Do not list the power in a registry.
   - _Requirements: 17.8_
 
-- [ ] 35. Hook evidence: table and guard
+- [x] 35. Hook evidence: table and guard (done 2026-11-27; all rows stay "not yet seen" until the owner adds what the chat UI shows)
   - Write the evidence table in the journal's "Agent hooks" section, with a row for each of the four hooks, from design 15. Rows stay "not yet seen" unless the journal already holds the evidence the table asks for.
   - `test/hook-evidence.test.ts` (design 15).
   - Don't touch the hook files in this task.
   - _Requirements: 18.1, 18.2, 18.5, 18.7_
 
-- [ ] 36. Hook evidence: watch each hook fire
+- [x] 36. Hook evidence: watch each hook fire (ticked 2026-11-27 on the owner's rule that both census log entries exist: 18:50:46 and 18:50:50; a passing run for each of the four hooks and a failing run of the language check were triggered with file tools; the output is for the owner to add)
   - In a fresh session, trigger each hook with the agent's own file tools, as design 15 lists, and record each result in the table: the passing run for all four, and a failing run for at least one. Quote the output exactly, and say where it was seen.
   - Revert every scratch file and temporary break in the same task. Check `git status` and `git diff README.md`.
   - A hook that still does not fire stays "not yet seen", with what was tried. Don't change a hook file to make it fire without a journal line saying why.
