@@ -618,3 +618,139 @@ UI checks are manual, done in each UI task: keyboard path, VoiceOver on macOS, c
 | R10 Language check | 4 |
 | R11 Refresh | 8.2 |
 | R12 Tests | 7 |
+| R13 Parish register (owners and sourced operators) | 10 |
+| R14 Causes of the post-2007 non-buried payloads | 11 |
+| R15 Cross-browser and accessibility checks | 12 |
+| R16 Mutation testing | 13 |
+| R17 Kiro power | 14 |
+| R18 Hook evidence | 15 |
+
+Sections 10 to 15 were written before any of their tasks started. What they say about outside tools was checked against the sources named in each section, or is marked **unverified**.
+
+## 10. Parish register (R13)
+**Two kinds of group.** The 131 retired payloads launched on or after 18 March 2002 may carry an operator. Every other record, and every one of the 131 without a sourced operator, is grouped by its SATCAT owner code. SATCAT owner codes are mostly countries or organisations (US, CIS, PRC), so they do not name an operator, and the page never treats them as one.
+**Operator data.** One committed file, `data/operators.json`: `{ "schema": 1, "entries": [ { "norad", "operator", "sourceUrl", "sourceTitle", "openedOn" } ] }`, sorted by NORAD id. `scripts/build-register.ts` joins it by NORAD id and adds `operator` (string or `null`) and `operatorSource` (URL or `null`) to each retired payload on or after 18 March 2002, and nothing to any other record. Without an entry, `operator` is `null` and the page says "operator not sourced". The operator name is the one in the source, not a guess. No inference from the satellite's name, the owner code or the launch site. A source counts only if someone opened it and wrote the date. Accepted sources: an operator's own site, an FCC or ITU filing, an agency notice. Filling the file is a separate task, done with the owner (task 24a), and the file may start empty. The register `schema` goes to 2 when the fields are added, and the loader is checked for both.
+**Guard test.** `test/operators.test.ts` reads `data/operators.json` and the register: every non-null operator has an http(s) `sourceUrl` and an `openedOn` date; every entry's NORAD id is a retired payload on or after 18 March 2002; no entry is a duplicate; no record outside the 131 has an operator. A fast-check property builds registers with random entries and checks the same rule on the join.
+**Route.** `#/parish` lists the groups in two blocks, "Operator (sourced)" and "SATCAT owner (country or organisation)", each in alphabetical order, each with its retired-payload count. `#/parish/op/<name>` is an operator and `#/parish/owner/<code>` an owner code (both through `encodeURIComponent`). The nav gets one item, "Parish". Hash routes follow 5.1. A payload with a sourced operator appears on the operator page and, because its SATCAT owner is still its owner, on its owner-code page as well. The two kinds are never merged, and the owner-code page says how many of its payloads have a sourced operator.
+**Pure part.** `src/engine/parish.ts` exports `parishOf(records, group, config)` where `group` is `{ kind: 'operator' | 'owner', key }`. It returns counts by verdict (all six, zeros kept), borderline, era, orbit source, the group's retired payloads sorted by NORAD id, and the GP epoch range. It also exports `operatorCoverage(records, config)`, `{ sourced, of }`, for the census line. A property test checks the owner counts against `census.byOwner[code]` for every code in a generated register (R13.13) and the operator counts against a direct count. The owner "unknown" is the code with no SATCAT owner.
+**Census line.** The census page gets "operator sourced for n of 131", from `operatorCoverage`, with 131 computed (retired payloads launched on or after 18 March 2002), never typed.
+**Page.** Built like the ledger and census: pure string builders in `src/ui/views/parish.ts`, text in `copy.ts`. Section order: what the group is (the "Operator (sourced)" label with each payload's source link, or the "SATCAT owner (country or organisation)" label with the code exactly as given), the counts with the assumptions line beside them (reusing `assumptionsLine`), the rows, what the register cannot see, the voluntary-guidelines and FCC-scope sentences, downloads. Counts link to `#/table?owner=<code>&verdict=<v>`, which `state.ts` already parses (5.5). The table has no operator filter today. Operator-page counts link to `#/table?operator=<name>&verdict=<v>`, so task 24 adds an `operator` query key to `state.ts` (5.5) and its round-trip test.
+**Wording.** No ranking, no score, no "most" or "least", no share column on the index. The index shows counts only, so it cannot be read as a league table. Verdicts use `verdictCopy` and the language.md phrase. Years are labelled "since launch".
+**Downloads.** CSV and JSON built in the browser from the register, as the ledger's JSON is. The CSV carries the snapshot date, the C_R·A/m range and ±25 km as columns on every row, plus `data_age`, `operator` and `operator_source`. Print uses `print.css`.
+**Unverified.**
+- That SATCAT owner codes name the operator. They are SATCAT's owner field and are mostly countries, so the design does not use them as operators. The CelesTrak SATCAT documentation was opened on 2026-11-23 for status codes only. Its owner-code list was not read, so no code-to-name mapping is allowed yet.
+- How many of the 131 will get a sourced operator. It depends on the sources the owner opens. The census line says the number.
+- That insurers and regulators want these outputs. Nobody from those groups has been asked. The CSV and print layout are guesses at what they need.
+- Which characters can appear in an owner code or an operator name. `encodeURIComponent` covers any of them, and a test runs every key in the real register.
+## 11. Why the post-2007 payloads that are not buried were not buried (R14)
+**What exists.** The census page already has the validation panel (`validationHtml` and `validationChartHtml` in `views/census.ts`), fed by `disposalRate` in `src/engine/headline.ts` and `config.validation.afterLaunchYear` (2007). The README headline paragraph names ESA's range. `docs/methodology.md` has the "Validation against published figures" section with the 2026-11-22 numbers typed in.
+**What R14 changes.** The question moves from "explain the ESA gap" to "what caused each non-buried payload". The ESA comparison leaves the README and the census page and stays in `docs/methodology.md`, Validation, only.
+- **Case notes.** One file per payload in `data/cases/<norad>.md`, written by the orbital-coroner agent in write mode, each with a "Cause" line (R14.2). The group is read from the register: retired payloads with `launchYear > config.validation.afterLaunchYear` and a verdict other than buried. In the 2026-11-22 snapshot that is 18 (16 unquiet, 1 shallow grave, 1 uncertain). The three case files that exist today (27378, 15873 and 40258) are for other payloads, so all 18 are new.
+- **Sources first.** The coroner may use only sources in the Sources table of `docs/methodology.md` whose link was opened. The agent has no web tool. So for each payload, the owner or a task opens a source (operator notice, agency or regulator document, a published orbit-disposal statement) and adds it to the Sources table with "What was checked". If none is found, the cause line reads "No cause in the sources opened". The task stops and asks the owner before the coroner runs, with the list of the 18.
+- **USA 340 (55138).** SATCAT altitudes only: perigee 35,351 km, apogee 36,420 km, so p = −435 km and q = +634 km above GEO, verdict unquiet, launched 2022-11-01, owner US. Its apogee is above the zone's lower edge, so the whole orbit is not below the zone, which is why the engine does not say fallen. The check compares SATCAT with any GP or GPZ-table row for 55138 in the committed raw files, records what each says, and says whether the verdict follows from the engine's rules. It changes no verdict by hand. A disagreement goes to the owner.
+- **Cause table.** On the case-file list page (`#/` cases), a small table: payloads in the group, with a cause stated in a source, with no cause in the sources opened. Counts computed from the case files by a pure function `causeCounts(cases)`; a test reads them back.
+- **Validation in methodology.** `docs/methodology.md`, Validation: kept as is (numbers, quote and page, differences). It gets the line "Nothing was tuned to close the gap, no verdict changes, and no cause of the gap is established." and a link to the cause table. Its typed numbers stay, because a test (task 26) compares them to the register.
+- **Removed.** The README sentence naming ESA, the census validation panel, chart and `COMPARISONS` ESA entry (the Roberts entry stays and stays omitted while unverified). The tests that read them are updated in the same task.
+**Wording.** The notes report what a source says. They name the cause only as the source words it. They do not say Sexton or ESA is wrong and do not judge an operator.
+**Verified (the methodology page cites these).**
+- ESA Issue 9.1, page 7: the 70–95% sentence, and "payloads reaching end-of-life during the last decade in the GEO protected region". Section 6.2, page 131: success is clearing the GEO protected region in line with the IADC formulation.
+**Unverified.**
+- Which C_R·A/m ESA uses. The sections read do not say. The methodology page says the effect on Sexton's count is at most 1 payload. That is Sexton's own calculation, not ESA's.
+- Whether any of the 18 is still operated, or retired before 2008. SATCAT gives no such date.
+- Whether sources exist for each of the 18. Not known until they are searched.
+- Roberts' figure. The paper was not opened (section 6).
+## 12. Cross-browser and accessibility checks (R15)
+
+**Tools.** Playwright for Chromium, Firefox and WebKit, and `@axe-core/playwright` with `axe-core` for the rules. From the npm registry on 2026-11-27: `@playwright/test` 1.65.1 is Apache-2.0, `@axe-core/playwright` 4.14.1 and `axe-core` are MPL-2.0. The owner approved them on 2026-11-27 as dev dependencies only. They are pinned in `package.json` and listed in THIRD_PARTY.md under "Development only (not in dist/)". MPL-2.0 is a new licence for the repo (the lock file also has `lightningcss`, build only), so the build is checked: no axe code may be in `dist/`.
+
+**Layout.** `e2e/*.spec.ts` and `playwright.config.ts`. The config runs `vite build` then `vite preview` on the `/sexton/` base, so the tests use the built files and test what ships. `npm run test:e2e` is separate from `npm test`. `vitest.config.ts` includes only `test/**/*.test.ts`, so it never picks the specs up.
+
+**Checks.**
+- Axe with tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, on every route and viewport in R15.2, also after a stone is selected and with the filter panel open.
+- Layout: `document.documentElement.scrollWidth <= innerWidth` at 390 px, and the chart or the key numbers inside the first screen at 1440×900 and 390×844.
+- Keyboard and reduced motion: the path in R15.5. For motion, `page.emulateMedia({ reducedMotion: 'reduce' })`, then `document.getAnimations()` is empty.
+- Network: `page.on('request')` collects URLs. Only the page's own origin and path prefix pass.
+
+**Workflow.** `.github/workflows/e2e.yml`, `workflow_dispatch` only, third-party actions pinned by SHA, `contents: read`. It installs the browsers with Playwright, runs the suite, and uploads the report as an artifact on failure.
+
+**Honest limits.** Axe finds only the rules it can test automatically. It does not replace VoiceOver, a real phone or Safari. WebKit in Playwright is the WebKit engine, not the Safari app. The docs say so (R15.8). The contrast script over `tokens.css` (task 17) stays. Axe checks contrast in the rendered page, which can differ.
+
+**Unverified.**
+- (Verified 2026-11-27.) axe-core's API documentation (doc/API.md, "Axe-core Tags") lists `wcag22aa` as WCAG 2.2 Level AA, and the installed `axe.js` contains it. If a run rejects it, use `wcag21aa` and say so.
+- That `ag-grid-community` 36.3.0, which `#/table` loads on wider screens, passes axe. It is the part most likely to fail, and the first run will show.
+- That all three browsers install on the runner image the other workflows use.
+- The run time.
+
+## 13. Mutation testing (R16)
+
+**Tool.** Stryker Mutator: `@stryker-mutator/core` 10.1.1 and `@stryker-mutator/vitest-runner` 10.1.1, both Apache-2.0, from the npm registry on 2026-11-27. The runner's peer range is `vitest >=2.0.0`, which includes the 5.1.1 in `package.json`. Neither is installed.
+
+**Scope.** `src/engine/**` only. It is pure, has no DOM and no clock, and is where the property tests are. `src/engine/config.ts` is included, since changing a threshold should break a test.
+
+**Splitting the tests.** The property tests sit in the same files as the examples (for example `test/classify.test.ts`). R16.6 needs a rule. Two options:
+1. **Name rule.** Property tests move to `<thing>.props.test.ts` files. This is the clearest rule, but it moves tests and changes what `test:engine` runs.
+2. **Switch in a setup file.** An environment variable makes `fc.assert` do nothing, so the property tests pass without checking and kill no mutants. The files stay as they are.
+
+Option 2 changes no test. It cannot switch off a property that reaches fast-check by another route than `fc.assert`. Task 30 tries option 2 first and counts the property tests it did not switch off. If any remain, task 31 does option 1. **Unverified:** that every property test calls `fc.assert` directly.
+
+**Timebox (owner, 2026-11-27).** The owner approved both packages, dev only. If Stryker does not run against `src/engine/` with this TypeScript and Vitest after one attempt plus one fix (for example dropping the TypeScript checker plugin), the work stops. The journal records exactly what failed and task 30 is marked "attempted, not working". Nothing is patched around it.
+**Three runs.** Stryker builds the mutant list from the code, not the tests, so the three runs see the same mutants. The report compares kill sets: examples only, properties only, all. "Killed only by properties" is the set killed by the properties run and not by the examples run.
+
+**Report.** `docs/mutation-report.md` is written by a script from Stryker's JSON report, so the numbers are not typed by hand. `reports/` goes in `.gitignore`. The report adds a triage table for the survivors, which a person fills in.
+
+**What it will not show.** A mutation score is about these tests on this code at this commit. It does not say the code is right. Mutants in dead code show up as survivors and need triage.
+
+**Unverified.**
+- That Stryker 10.1.1 works with TypeScript 7.0.2 and `erasableSyntaxOnly`. If mutants are not type-checked, invalid ones show up as errors, not as compile-error results.
+- That the vitest runner works with Vitest 5.1.1. The peer range says yes. No run was made.
+- Run time. Per-test coverage should let each mutant run only the tests that reach it.
+
+## 14. Kiro power (R17)
+
+**Format, checked on 2026-11-27** at https://kiro.dev/docs/powers/ and https://kiro.dev/docs/powers/create/ (both opened). A power is a directory with a required `plugin.json` (`$schema`, `name`, `version`, `description`, `author.name`, `keywords`; optional `homepage`, `repository`, `license`), optional `skills/<name>/SKILL.md` (front matter `name` and `description`; optional `scripts/` and `references/`) and an optional `mcp.json` (`mcpServers` with `type`, `command`, `args`, `env`). Kiro namespaces the MCP server names on install. A power can be imported from a folder or a GitHub URL, and can live in a folder of a repository.
+
+**Layout.** `power/sexton/` with:
+- `plugin.json`: name `sexton`, keywords such as `geostationary`, `GEO graveyard`, `IADC`, `satellite disposal` and `space debris`. Task 32 settles the list.
+- `skills/read-a-verdict/`, `skills/write-in-sextons-words/` and `skills/refresh-the-snapshot/`. The first two hold the rules of language.md and the verdict table (2.7) as references. The third tells a person how to run `scripts/snapshot.ts`. It does not run it.
+- `mcp.json` that starts the server, and `server/` with the bundled server and a copy of `register.json`.
+
+**The server is the hard part.** The MCP server imports `src/engine`, `src/ui` and `scripts/` files, and needs `@modelcontextprotocol/sdk` and `zod`. An installed power has none of those. Options:
+1. **Bundle** the server to one `.mjs` file with Vite's SSR build. Vite is already a dependency, so nothing new.
+2. **Point at the repository** (`node scripts/mcp/server.ts` from a clone). It works only inside a clone.
+
+Option 1 is the plan. `scripts/build-power.ts` writes `power/sexton/server/server.mjs` and `register.json`. A test fails if either is out of date (R17.5).
+
+**Unverified.**
+- That Vite SSR can bundle the MCP SDK into one file that runs under `node` on its own.
+- How `command` and `args` paths resolve for an installed power (against the power directory or the workspace). The docs page shows `npx` only.
+- Whether `autoApprove`, used in `.kiro/settings/mcp.json` today, is allowed in a power's `mcp.json`. The docs page does not list it. Without it, each tool call asks for approval.
+- Whether a power can carry steering or hooks. The docs list manifest, skills and MCP only, so R17.9 leaves them out.
+- Whether the installer has Node 24, which the server needs (`engines.node >= 24`). The power's description says so.
+- Which Kiro versions install powers. The docs page's version table is unclear, so the install test records the version used.
+
+## 15. Hook evidence (R18)
+
+**Where things stand** (from `docs/kiro-journal.md`: "Agent hooks" and the 2026-11-23 line for S1). The repository has three hook files with four hooks:
+
+| File | Hook | State in the journal |
+| --- | --- | --- |
+| `census-on-raw-data.json` | Census on raw data created | Not seen. The files under `data/raw/` were made with shell commands. |
+| `census-on-raw-data.json` | Census on raw data changed | Not seen. |
+| `engine-tests-on-save.json` | Engine tests on save | Not seen. No recorded save in `src/engine/` after the hooks were enabled. |
+| `language-check-on-save.json` | Language check on save | Seen on 2026-11-23: the chat UI showed "Run Command Hook — Language check on save", and Kiro's log has two `ContextualHookInvoked` entries. The result did not reach the agent, so its output was not quoted. |
+
+This is the starting point for task 35. The journal's existing table (trigger, matcher and command of each hook) stays. The evidence table goes next to it.
+
+**Evidence table.** Columns: file, hook, date, Kiro client and version, the action that triggered it, where it was seen, the output quoted exactly, and the state ("seen" or "not yet seen"). A failing run gets its own row.
+
+**How to trigger each hook.** With the agent's file-save and file-create tools, never a shell command. The journal records that shell writes did not fire the hooks, and the hooks docs (opened 2026-11-27, https://kiro.dev/docs/hooks/) describe agent saves.
+- Language check: for the failing run, save a scratch file in `docs/` that holds a banned stem, then delete it in the same task.
+- Engine tests: a no-change save in `src/engine/` for the passing run. For the failing run, a temporary change that a test catches, then revert it in the same task. Neither is committed.
+- Census: create and save a scratch file under `data/raw/`. The hook runs `npm run census`, which rewrites the README block, so check `git diff README.md` afterwards and restore it if it changed.
+
+**The guard.** `test/hook-evidence.test.ts` reads `.kiro/hooks/*.json` and the evidence table and applies R18.5. It runs no hook, so it needs no Kiro.
+
+**Unverified.**
+- Whether a hook's output reaches the agent. On 2026-11-23 it did not. The hooks docs say a command hook receives session context on STDIN and say nothing about output returning. "Seen" may have to rest on the chat UI and the Kiro log. R18.2 allows that.
+- Whether a file saved by the person in the editor fires a `PostFileSave` hook. The docs example describes saves by the agent. Not tested.
+- Whether the log entry names the hook that fired. The journal does not record it.

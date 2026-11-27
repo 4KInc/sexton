@@ -194,6 +194,112 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Write an audit note in the journal.
   - _Requirements: 5.3, 5.4, 9.1, 10, 6.10_
 
+## Parish, validation gap, checks and packaging (R13 to R18)
+
+Task 22, the final audit, was written before these. Each new page (tasks 24 and 26) adds its links and figures to the audit list, and task 37 repeats the audit on them. The dependencies for tasks 27 and 30 were approved on 2026-11-27 (dev only).
+
+- [ ] 23. Parish counts (engine)
+  - Schema 2: `data/operators.json` (may start empty), the join in `scripts/build-register.ts`, and `operator` and `operatorSource` on the retired payloads launched on or after 18 March 2002 only (design 10).
+  - `src/engine/parish.ts` with `parishOf`, `operatorCoverage` and the list of groups.
+  - Tests:
+    - guard (`test/operators.test.ts`): every non-null operator has an http(s) source and an opened date; every entry is a retired payload on or after 18 March 2002; no duplicates; nothing outside the 131 has an operator;
+    - property: for every owner code in a generated register, the verdict counts equal `census.byOwner[code]`, and every grouping adds up to the group's retired payloads;
+    - operator counts equal a direct count; a null operator is never grouped by name;
+    - the "unknown" owner; a group with no retired payloads; the result does not depend on record order.
+  - _Requirements: 13.2, 13.3, 13.5, 13.11, 13.13_
+- [ ] 24. Parish pages
+  - `views/parish.ts`, the `#/parish`, `#/parish/op/<name>` and `#/parish/owner/<code>` routes, the nav item, an `operator` query key in `state.ts`, text in `copy.ts`, CSV and JSON downloads, print CSS, and the census line "operator sourced for n of 131" (design 10).
+  - Owner-code groups are labelled "SATCAT owner (country or organisation)", operator groups "Operator (sourced)". Counts link to the filtered table. The assumptions line, snapshot date and data age sit beside every count.
+  - Tests:
+    - a link from every count lands on a table with that count of rows;
+    - no ranking or score wording (the page text passes the language check, and a test looks for rank, score, grade, best and worst);
+    - no retirement date in any of the real pages;
+    - every owner code and operator name in the real register round-trips through the address;
+    - the CSV carries the assumptions, operator and source on every row;
+    - the census coverage line reads back from the register.
+  - Do not map codes to names. Do not infer an operator.
+  - _Requirements: 13.1, 13.4–13.14_
+- [ ] 24a. Operator sources (owner)
+  - Ask the owner which of the 131 payloads to source first and how. For each, open an operator site, FCC or ITU filing or agency notice, and add an entry to `data/operators.json` with the URL, title and date opened. Unsourced payloads stay null.
+  - Record in the journal how many of 131 are sourced.
+  - _Requirements: 13.2, 13.3_
+- [ ] 25. Case notes: the group and USA 340
+  - A pure function listing the retired payloads launched after `config.validation.afterLaunchYear` whose verdict is not buried (18 in the 2026-11-22 snapshot), and `causeCounts(cases)`.
+  - Check USA 340 (55138): compare SATCAT with any GP or GPZ-table row in `data/raw/`, record what each says and whether the verdict follows from the engine's rules, in its case file and the journal. Change no verdict by hand.
+  - Tests: the group list equals a direct filter of the register (property); `causeCounts` adds up to the group size.
+  - Stop here and give the owner the list of 18 so sources can be opened (design 11).
+  - _Requirements: 14.1, 14.5, 14.7, 14.9_
+- [ ] 26. Case notes: sources and writing
+  - With the owner's opened sources added to the Sources table of `docs/methodology.md`, run the orbital-coroner in write mode, one payload at a time. Each case file gets a "Cause" line: the quoted source, or "No cause in the sources opened". No web search by the agent.
+  - Add the cause table to the case-file list page. Tests: the language check over `data/cases/`; every case file has a Cause line; every cause quotes a source that is in the Sources table; the counts read back.
+  - _Requirements: 14.1–14.4, 14.7, 14.9_
+- [ ] 26a. Move the ESA comparison
+  - Remove ESA's range from the README headline, the census validation panel and chart, and the ESA entry in `COMPARISONS`. Keep it in `docs/methodology.md`, Validation, with the line that nothing was tuned, no verdict changes and no cause of the gap is established.
+  - Update the tests that read those pieces. Add a test that "70%" and "ESA" appear in no `src/ui/` file text or README outside methodology.md.
+  - Check the main chunk stays at 185 KB or less (it should shrink).
+  - _Requirements: 14.6, 14.8_
+- [ ] 27. Browser checks: spike and dependency approval
+  - The owner approved `@playwright/test`, `@axe-core/playwright` and `axe-core` on 2026-11-27, dev only (design 12). They are pinned exactly and recorded in THIRD_PARTY.md under "Development only (not in dist/)". Check that `npm run build` leaves no MPL-2.0 code in `dist/`.
+  - Run one spec on `#/census` in all three browsers, with axe. Check axe-core's docs for the `wcag22aa` tag. If it is not supported, use `wcag21aa` and say so in the journal and README. Record GO or NO-GO and the run time in the journal.
+  - _Requirements: 15.1, 15.3, 15.9_
+
+- [ ] 28. Browser checks: the suite
+  - `playwright.config.ts` and `e2e/`, with `npm run test:e2e` (design 12): every route and width, axe on each, the keyboard path, reduced motion, no sideways scroll at 390 px, the first-screen check and the network check.
+  - Fix any real failure it finds in the site, one fix per journal line. Do not switch an axe rule off to pass. A rule that is a false positive is excluded by id, with the reason in the spec file and the journal.
+  - _Requirements: 15.2–15.6_
+
+- [ ] 29. Browser checks: workflow and docs
+  - `.github/workflows/e2e.yml`, `workflow_dispatch` only, actions pinned by SHA (design 12). Don't run it in this task.
+  - README and `docs/` say what the checks do not cover (screen readers, a real phone, Safari). Keep the manual items open in task 8, 11 and 22 where they still are.
+  - Test: the workflow has no push or pull_request trigger (as for the refresh workflow's test).
+  - _Requirements: 15.7, 15.8_
+
+- [ ] 30. Mutation testing: spike
+  - The owner approved `@stryker-mutator/core` and `@stryker-mutator/vitest-runner` on 2026-11-27, dev only (design 13). They are pinned and in THIRD_PARTY.md.
+  - Timebox: one attempt plus one fix (for example dropping the TypeScript checker plugin). If Stryker does not run against `src/engine/` with this TypeScript and Vitest after that, stop, record exactly what failed in the journal, and mark this task "attempted, not working". Do not patch around it.
+  - Run Stryker on `src/engine/classify.ts` alone with the vitest runner. Try the `fc.assert` switch (design 13, option 2) and count property tests it does not switch off.
+  - Record GO or NO-GO in the journal, with the first error if NO-GO. On NO-GO stop here and leave R16 open (R16.8).
+  - _Requirements: 16.1, 16.6, 16.8_
+
+- [ ] 31. Mutation testing: run and report
+  - `npm run mutate`: the three runs over `src/engine/` (design 13). Split the tests by the rule chosen in task 30, with a test that checks the rule.
+  - `scripts/mutation-report.ts` writes `docs/mutation-report.md` from Stryker's JSON. `reports/` goes in `.gitignore`. The run is in neither `npm test` nor the deploy workflow.
+  - Fill the survivor triage. For each real gap, add a test or leave it listed as open. Count each new test in the journal, and say which survivor it kills.
+  - _Requirements: 16.1–16.7_
+
+- [ ] 32. Power: format check and layout
+  - Open https://kiro.dev/docs/powers/create/ again and note anything that changed since 2026-11-27. Create `power/sexton/` with `plugin.json`, the three skills and `mcp.json` (design 14). Settle the keywords.
+  - The skills carry language.md's rules and the verdict table, and tell the agent to give assumptions and data age with every count and never a retirement date.
+  - Test: the offline manifest and skill checks (R17.7), and the language check over `power/`.
+  - _Requirements: 17.1–17.3, 17.6, 17.7, 17.9_
+
+- [ ] 33. Power: bundled server and register
+  - `scripts/build-power.ts`: bundle the MCP server with Vite's SSR build and copy `data/register.json` (design 14). Check that the bundle runs under plain `node` from another folder.
+  - Test: the bundle and the copy are up to date, and the server's four tools answer from the copy with the snapshot date. If the bundle cannot run, record it in the journal and stop for the owner's decision.
+  - _Requirements: 17.4, 17.5_
+
+- [ ] 34. Power: install check (owner)
+  - Install the power from the folder in Kiro (Powers panel, Add Custom Power), ask one question that its keywords should trigger, and check the answer gives the snapshot date and assumptions.
+  - Record the Kiro version, the steps, what the path and approval behaviour were (design 14, unverified list) and any change needed. Do not list the power in a registry.
+  - _Requirements: 17.8_
+
+- [ ] 35. Hook evidence: table and guard
+  - Write the evidence table in the journal's "Agent hooks" section, with a row for each of the four hooks, from design 15. Rows stay "not yet seen" unless the journal already holds the evidence the table asks for.
+  - `test/hook-evidence.test.ts` (design 15).
+  - Don't touch the hook files in this task.
+  - _Requirements: 18.1, 18.2, 18.5, 18.7_
+
+- [ ] 36. Hook evidence: watch each hook fire
+  - In a fresh session, trigger each hook with the agent's own file tools, as design 15 lists, and record each result in the table: the passing run for all four, and a failing run for at least one. Quote the output exactly, and say where it was seen.
+  - Revert every scratch file and temporary break in the same task. Check `git status` and `git diff README.md`.
+  - A hook that still does not fire stays "not yet seen", with what was tried. Don't change a hook file to make it fire without a journal line saying why.
+  - _Requirements: 18.2–18.4, 18.6, 18.7_
+
+- [ ] 37. Audit addendum for R13 to R18
+  - Open every link added by tasks 24, 26, 29 and 34. Run the language and contrast checks, and the browser suite once by hand.
+  - Check each new "unverified" item in design 10 to 15 and update it to verified, or leave it, with the date. Note the result in the journal.
+  - _Requirements: 13.5, 14.4, 15.8, 17.8, 18.2_
+
 ## Stretch (only after all tasks above)
 
 - [x] S1. MCP server
@@ -201,6 +307,4 @@ Rough budget: tasks 1–8 on day 1–2, 9–11 on day 2–3, 12–18 on day 3–
   - Outputs follow language.md.
   - Tests use the fixture register.
 
-- [ ] S2. Owner report card
-  - `#/owner/<code>`: an owner's retired payloads by verdict, with the borderline count, era split and the census caveats.
-  - It has no ranking or score language, and passes the language check.
+- S2. Moved to R13.
