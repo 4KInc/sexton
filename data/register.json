@@ -29005,7 +29005,7 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27525,
@@ -29077,7 +29077,7 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27554,
@@ -29114,7 +29114,7 @@
         "era": null,
         "yearsSinceLaunch": 24
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27566,
@@ -29400,7 +29400,7 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27715,
@@ -29501,7 +29501,7 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27780,
@@ -29566,7 +29566,7 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27811,
@@ -29631,7 +29631,7 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27820,
@@ -30017,7 +30017,7 @@
         "era": null,
         "yearsSinceLaunch": 23
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 27954,
@@ -30148,7 +30148,7 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 28117,
@@ -30240,7 +30240,7 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 28134,
@@ -30276,7 +30276,7 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 28137,
@@ -30561,7 +30561,7 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 28218,
@@ -30597,7 +30597,7 @@
         "era": null,
         "yearsSinceLaunch": 22
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 28234,
@@ -32173,7 +32173,7 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 29162,
@@ -32496,7 +32496,7 @@
         "era": null,
         "yearsSinceLaunch": 20
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 29494,
@@ -32790,7 +32790,7 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 29656,
@@ -32916,7 +32916,7 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 30793,
@@ -33105,7 +33105,7 @@
         "era": null,
         "yearsSinceLaunch": 19
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 31577,
@@ -33544,7 +33544,7 @@
         "era": null,
         "yearsSinceLaunch": 18
       },
-      "caseFile": false
+      "caseFile": true
     },
     {
       "norad": 32387,
@@ -56109,14 +56109,15 @@
     }
   },
   "causes": {
-    "n": 18,
+    "n": 36,
     "byCategory": {
-      "failed in orbit or broke up before disposal": 6,
+      "failed in orbit or broke up before disposal": 10,
       "disposal reported by operator": 1,
       "disposal attempted, perigee short": 0,
       "no disposal reported": 0,
-      "No cause in the sources opened": 11
+      "No cause in the sources opened": 25
     },
-    "noCase": 0
+    "noCase": 0,
+    "reportedUnquiet": 1
   }
 }

@@ -17,7 +17,7 @@ Sexton is built for the Kiroween 2026 Costume Contest: the churchyard is the dat
 CelesTrak snapshot, 22 Nov 2026. 131 of the 696 retired payloads in the register were launched on or after 18 March 2002, the date of the FCC minimum-perigee rule. 36 of those 131 (27.5%) sit in or near the protected zone: their perigee is below the IADC disposal threshold under the stated assumptions (C_R·A/m from 0.012 to 0.045 m²/kg, mean elements ±25 km). 565 of 696 retired payloads predate any guideline. That is context, not a failure.
 
 <!-- causes:start -->
-Of the 18 not buried, 6 failed in orbit or broke up before they could be moved. The group is the retired payloads launched after 2007 whose verdict is not buried. Each has a case file with its cause, quoted from a source that was opened, or the words "No cause in the sources opened".
+Of the 36, 10 failed in orbit or broke up before they could be moved. 1 was raised by its operator, as the operator reports, and reads inside the zone in the 22 Nov 2026 snapshot. The 36 are the retired payloads launched on or after 18 March 2002 whose verdict is unquiet or shallow grave. Each case file gives its cause, quoted from a source that was opened, or the words "No cause in the sources opened".
 <!-- causes:end -->
 The IADC guidelines are voluntary. The FCC rule (47 CFR § 25.283) applies only to satellites the FCC authorizes. The register only sees objects still near GEO.
 

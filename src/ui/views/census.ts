@@ -207,17 +207,18 @@ const causeCell = (key: string, value: number): string => `<td class="num-cell" 
  * The cause line and the table of five categories (R14.7). Every number comes from the group in the register and
  * from the case files' `Cause category:` lines, so the text changes when either does.
  */
-export function causesHtml(reg: Pick<UiRegister, 'records' | 'config' | 'causes'>): string {
+export function causesHtml(reg: Pick<UiRegister, 'records' | 'config' | 'causes' | 'snapshot'>): string {
   const config = reg.config;
-  const group = causeGroup(reg.records, config);
-  if (group.length === 0) return `<p>${esc(CAUSES.noGroup(config.validation.afterLaunchYear))}</p>`;
+  const group = causeGroup(reg.records);
+  if (group.length === 0) return `<p>${esc(CAUSES.noGroup)}</p>`;
   // The counts are written into the register by build-register. Without them (a fixture or an old file) no case file is known.
   const k = reg.causes ?? causeCounts(group, new Map());
   const rows = CAUSE_CATEGORIES.map((c) => `<tr><th scope="row">${esc(c)}</th>${causeCell(c, k.byCategory[c])}</tr>`).join('');
   const missing = k.noCase > 0 ? `<tr><th scope="row">${esc(CAUSES.noCase)}</th>${causeCell('noCase', k.noCase)}</tr>` : '';
   return (
     `<p data-causes="line"><strong>${esc(CAUSES.line(k.n, k.byCategory['failed in orbit or broke up before disposal']))}</strong></p>` +
-    `<p>${esc(CAUSES.intro(config.validation.afterLaunchYear))}</p>` +
+    (k.reportedUnquiet > 0 ? `<p data-causes="reported"><strong>${esc(CAUSES.reported(k.reportedUnquiet, reg.snapshot.set))}</strong></p>` : '') +
+    `<p>${esc(CAUSES.intro(k.n))}</p>` +
     table(CAUSES.caption(k.n), th(CAUSES.columns.category) + th(CAUSES.columns.count, true), rows + missing) +
     `<p>${esc(CAUSES.limits)}</p>`
   );
@@ -241,7 +242,7 @@ export function headlineHtml(records: readonly SatRecord[], config: Config, date
   );
 }
 /** The whole census page body. */
-export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config' | 'causes'>): string {
+export function censusHtml(reg: Pick<UiRegister, 'census' | 'records' | 'config' | 'causes' | 'snapshot'>): string {
   const c = reg.census;
   const config = reg.config;
   const near = config.nearGeo;

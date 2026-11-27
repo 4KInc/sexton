@@ -23,8 +23,9 @@ export const CAUSE_END = '<!-- causes:end -->';
 /** The README's cause line: counts only, from the register and the case files. */
 export function renderCauseLine(register: Register): string {
   const k = register.causes;
-  if (k === undefined || k.n === 0) return CAUSES.noGroup(CONFIG.validation.afterLaunchYear);
-  return `${CAUSES.line(k.n, k.byCategory['failed in orbit or broke up before disposal'])} ${CAUSES.readme(CONFIG.validation.afterLaunchYear)}`;
+  if (k === undefined || k.n === 0) return CAUSES.noGroup;
+  const reported = k.reportedUnquiet > 0 ? ` ${CAUSES.reported(k.reportedUnquiet, register.snapshot.set)}` : '';
+  return `${CAUSES.line(k.n, k.byCategory['failed in orbit or broke up before disposal'])}${reported} ${CAUSES.readme(k.n)}`;
 }
 
 export interface Io {

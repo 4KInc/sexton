@@ -107,6 +107,26 @@ describe('methodology.md sources', () => {
     'https://www.satellitetoday.com/connectivity/2024/10/21/intelsats-is-33e-satellite-is-a-total-loss/',
     'https://spacenews.com/angola-eyes-new-satellite-as-african-space-race-accelerates/',
     'https://en.sedaily.com/finance/2026/06/08/koreas-first-geostationary-satellite-chollian-1-ends-16',
+    // Opened 2026-11-27 and approved by the owner (batch 3 and the operator sources in docs/source-review.md).
+    'https://www.mext.go.jp/b_menu/shingi/gijyutu/gijyutu2/059/shiryo/__icsFiles/afieldfile/2017/10/27/1397652_4.pdf',
+    'https://russianforces.org/blog/2003/11/problems_with_russian_military.shtml',
+    'https://satnews.com/2014/07/16/russia-the-seasoned-yamal-201-goes-nowhere-satellite/',
+    'https://www.measat.com/wp-content/uploads/2021/08/EXT-MEASAT-to-Retire-MEASAT-3-210806.pdf',
+    'https://www.satelliteevolution.com/post/measat-to-retire-measat-3',
+    'https://www.satellitetoday.com/connectivity/2008/11/20/report-nigcomsat-1-declared-total-loss/',
+    'https://cgwic.com/CommunicationsSatellite/project.html',
+    'https://www.hispasat.com/es/flota-e-infraestructura/flota-de-satelites/hispasat-30w-6',
+    'https://new1.isro.gov.in/INSAT_3A.html',
+    'https://www.isro.gov.in/GSAT_2.html',
+    'https://www.isro.gov.in/INSAT_3E.html',
+    'https://www.isro.gov.in/SpacecraftMissions.html',
+    'https://www.timesofisrael.com/after-loss-of-satellite-in-spacex-blast-israeli-company-brings-in-replacement/',
+    'https://www.satellitetoday.com/technology/2015/07/14/rscc-transfers-traffic-from-express-am22-to-express-am6-satellite/',
+    'https://satnews.com/2021/08/17/rscc-alters-the-express-am33-satellites-orbital-slot/',
+    'https://cimss.ssec.wisc.edu/satellite-blog/archives/55455',
+    'https://www.space.com/9110-chinese-satellite-suffers-life-shortening-leak.html',
+    'https://spaceflightnow.com/2017/07/13/chinese-tv-broadcasting-satellite-reaches-operational-orbit-after-off-target-launch/',
+    'https://abae.gob.ve/venezuela-celebra-17-aniversario-lanzamiento-satelite-simon-bolivar/',
   ]);
   const links = [...doc.matchAll(/https?:\/\/[^\s|)]+/g)].map((m) => m[0]);
   it('cites only links that were opened', () => {

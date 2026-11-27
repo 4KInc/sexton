@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "entries": [
+    {
+      "norad": 27528,
+      "operator": "Hispasat",
+      "relation": "by implication",
+      "sourceUrl": "https://www.hispasat.com/es/flota-e-infraestructura/flota-de-satelites/hispasat-30w-6",
+      "sourceTitle": "Hispasat, HispaSat 30W-6 (page in Spanish)",
+      "quote": "El HispaSat 30W-6, se ubica en 30º Oeste y servirá de reemplazo al HispaSat 30W-4, aportando a HispaSat capacidad adicional en banda Ku para las regiones andina y brasileña.",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 27714,
+      "operator": "ISRO",
+      "relation": "listed as owner",
+      "sourceUrl": "https://new1.isro.gov.in/INSAT_3A.html",
+      "sourceTitle": "ISRO, INSAT-3A",
+      "quote": "स्‍वामी / Owner: ISRO",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 27807,
+      "operator": "ISRO",
+      "relation": "listed as owner",
+      "sourceUrl": "https://www.isro.gov.in/GSAT_2.html",
+      "sourceTitle": "ISRO, GSAT-2",
+      "quote": "स्‍वामी / Owner: ISRO",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 27951,
+      "operator": "ISRO",
+      "relation": "listed as owner",
+      "sourceUrl": "https://www.isro.gov.in/INSAT_3E.html",
+      "sourceTitle": "ISRO, INSAT-3E",
+      "quote": "स्‍वामी / Owner: ISRO",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 28094,
+      "operator": "Gazprom Space Systems",
+      "relation": "listed as owner",
+      "sourceUrl": "https://satnews.com/2014/07/16/russia-the-seasoned-yamal-201-goes-nowhere-satellite/",
+      "sourceTitle": "SatNews, \"Russia—The Seasoned Yamal-201 Goes… Nowhere… (Satellite)\"",
+      "quote": "Gazprom Space Systems (GKS), which owns the satellite",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 28132,
+      "operator": "Spacecom",
+      "relation": "operator",
+      "sourceUrl": "https://www.timesofisrael.com/after-loss-of-satellite-in-spacex-blast-israeli-company-brings-in-replacement/",
+      "sourceTitle": "The Times of Israel, \"After loss of satellite in SpaceX blast, Israeli company brings in replacement\"",
+      "quote": "“Co-located with Amos-3, Amos-7 is replacing the Amos-2 satellite that is reaching the end of life after servicing customers for over 13 years,” the company announced.",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 28134,
+      "operator": "RSCC (Russian Satellite Communications Company)",
+      "relation": "operator",
+      "sourceUrl": "https://www.satellitetoday.com/technology/2015/07/14/rscc-transfers-traffic-from-express-am22-to-express-am6-satellite/",
+      "sourceTitle": "Via Satellite, \"RSCC Transfers Traffic from Express AM22 to Express AM6 Satellite\"",
+      "quote": "Russian Satellite Communications Company, the state satellite operator of Russia, has successfully completed the transferring of the traffic load from its Express АМ22 satellite",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 29155,
+      "operator": "NOAA",
+      "relation": "operates it; U.S. Space Force mission",
+      "sourceUrl": "https://cimss.ssec.wisc.edu/satellite-blog/archives/55455",
+      "sourceTitle": "University of Wisconsin CIMSS Satellite Blog, \"GOES-N to GOES-13, EWS-G1 and the Graveyard (Orbit)\"",
+      "quote": "As it currently does with EWS-G1, NOAA will operate EWS-G2 on behalf of the Space Force",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 29648,
+      "operator": "MEASAT Global Berhad",
+      "relation": "operator",
+      "sourceUrl": "https://www.satelliteevolution.com/post/measat-to-retire-measat-3",
+      "sourceTitle": "Satellite Evolution, \"MEASAT to retire MEASAT-3\"",
+      "quote": "MEASAT Global Berhad will retire its MEASAT-3 satellite",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 31395,
+      "operator": "Nigerian Communications Satellite Ltd (NigComSat)",
+      "relation": "operator",
+      "sourceUrl": "https://www.satellitetoday.com/connectivity/2008/11/20/report-nigcomsat-1-declared-total-loss/",
+      "sourceTitle": "Via Satellite, \"Report: Nigcomsat 1 Declared ‘Total Loss’\"",
+      "quote": "T. Ahmed Rufai, CEO of Nigerian Communications Satellite Ltd. (Nigcomsat)",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 32478,
+      "operator": "RSCC (Russian Satellite Communications Company)",
+      "relation": "operator",
+      "sourceUrl": "https://satnews.com/2021/08/17/rscc-alters-the-express-am33-satellites-orbital-slot/",
+      "sourceTitle": "SatNews, \"RSCC Alters The Express-AM33 Satellite’s Orbital Slot\"",
+      "quote": "Specialists of the Ops Dept of the Russian Satellite Communications Company (RSCC) orbital constellation have completed the translation of the Express-AM33 satellite",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 32500,
+      "operator": "JAXA",
+      "relation": "operator",
+      "sourceUrl": "https://www.jaxa.jp/press/2019/03/20190301a_j.html",
+      "sourceTitle": "JAXA, press release on the end of operation of Kizuna (WINDS), in Japanese",
+      "quote": "宇宙航空研究開発機構（以下、JAXA）は、超高速インターネット衛星「きずな」（WINDS）の通信異常発生後、約2週間に亘って地上局から「きずな」との通信を試みてきました。",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 33414,
+      "operator": "ABAE (Agencia Bolivariana para Actividades Espaciales)",
+      "relation": "operator",
+      "sourceUrl": "https://abae.gob.ve/venezuela-celebra-17-aniversario-lanzamiento-satelite-simon-bolivar/",
+      "sourceTitle": "Agencia Bolivariana para Actividades Espaciales (ABAE), \"Venezuela celebra 17 años del lanzamiento del satélite Simón Bolívar\" (in Spanish)",
+      "quote": "El satélite fue operado de manera profesional por nuestros especialistas, quienes garantizaron su funcionamiento las 24 horas del día durante todo su tiempo de servicio, desde nuestra estación terrena de control satelital",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 37150,
+      "operator": "China Satellite Communications Corp",
+      "relation": "listed as owner",
+      "sourceUrl": "https://www.space.com/9110-chinese-satellite-suffers-life-shortening-leak.html",
+      "sourceTitle": "Space.com (from SpaceNews), \"New Chinese Satellite Suffers Life-Shortening Leak\"",
+      "quote": "Owned by China Satellite Communications Corp of Beijing",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 37779,
+      "operator": "SUPARCO",
+      "relation": "customer (delivered in orbit to SUPARCO)",
+      "sourceUrl": "https://cgwic.com/CommunicationsSatellite/project.html",
+      "sourceTitle": "China Great Wall Industry Corporation, satellite communication projects",
+      "quote": "and was delivered in orbit to SUPARCO",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 37950,
+      "operator": "Spacecom",
+      "relation": "operator",
+      "sourceUrl": "https://spacenews.com/spacecom-stock-tumbles-following-amos-5-failure/",
+      "sourceTitle": "SpaceNews, \"Spacecom Stock Tumbles Following Amos-5 Failure\"",
+      "quote": "Satellite fleet operator Spacecom of Israel on Nov. 22 said its Amos-5 telecommunications satellite had abruptly ceased functioning",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 41308,
+      "operator": "Intelsat",
+      "relation": "operator",
+      "sourceUrl": "https://spaceflightnow.com/2019/04/22/intelsat-declares-drifting-satellite-total-loss/",
+      "sourceTitle": "Spaceflight Now, \"Intelsat declares drifting satellite total loss\"",
+      "quote": "Intelsat has declared the Intelsat 29e communications satellite a total loss",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 41748,
+      "operator": "Intelsat",
+      "relation": "operator",
+      "sourceUrl": "https://www.datacenterdynamics.com/en/news/intelsats-33e-geo-satellite-breaks-up-in-orbit/",
+      "sourceTitle": "DatacenterDynamics, \"Intelsat’s 33e GEO satellite breaks up in orbit\"",
+      "quote": "Intelsat has lost one of its geostationary satellites after it seemingly broke up in orbit.",
+      "openedOn": "2026-11-27"
+    },
+    {
+      "norad": 42763,
+      "operator": "China Satcom",
+      "relation": "owner and operator",
+      "sourceUrl": "https://spaceflightnow.com/2017/07/13/chinese-tv-broadcasting-satellite-reaches-operational-orbit-after-off-target-launch/",
+      "sourceTitle": "Spaceflight Now, \"Chinese TV broadcasting satellite reaches operational orbit after off-target launch\"",
+      "quote": "according to China Satcom, the craft’s owner and operator.",
+      "openedOn": "2026-11-27"
+    }
+  ]
+}

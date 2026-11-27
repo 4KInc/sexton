@@ -3,6 +3,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { figureProblems, sourcesRow } from '../scripts/case-figures.ts';
 import { findHits } from '../scripts/check-language.ts';
 import { DA_23_888, EXTERNAL, perigeeAside } from '../src/ui/external.ts';
 import type { UiRegister } from '../src/ui/register.ts';
@@ -11,8 +12,6 @@ const ROOT = process.cwd();
 const read = (f: string): string => readFileSync(join(ROOT, f), 'utf8');
 const real = JSON.parse(read('data/register.json')) as UiRegister;
 const text = (html: string): string => html.replace(/<[^>]*>/g, '').replace(/&#39;/g, "'");
-// Short names of the cause sources the owner approved on 2026-11-27 (docs/source-review.md). They quote a cause, not an orbit.
-const APPROVED_CAUSE_SOURCES = ['JAXA', 'SatNews/AP', 'SpaceNews', 'Spaceflight Now', 'DatacenterDynamics', 'Via Satellite', 'Seoul Economic Daily', 'CelesTrak SATCAT operational status codes'];
 describe('EchoStar 7 (NORAD 27378)', () => {
   const html = ledgerPageHtml(real, 27378);
   const r = real.records.find((x) => x.norad === 27378)!;
@@ -57,12 +56,28 @@ describe('every outside figure', () => {
       for (const s of [perigeeAside(ext.perigee ?? { km: 0, source: '' }, r.pKm), `${ext.fine?.before}${ext.fine?.linkText}${ext.fine?.after}`]) expect(findHits(s, 'external')).toEqual([]);
     }
   });
-  it('no other case file cites an outside source for an orbit figure (the rule texts give no orbit, so they may stand on a line with one)', () => {
+  it('in every other case file, a distance in km is cited to the register, the methodology, or a Sources row that holds that figure', () => {
+    const methodology = read('docs/methodology.md');
     for (const f of readdirSync(join(ROOT, 'data/cases')).filter((n) => n.endsWith('.md'))) {
-      const norad = Number(f.replace('.md', ''));
-      if (EXTERNAL.has(norad)) continue;
-      const lines = read(`data/cases/${f}`).split('\n').filter((l) => /\d km/.test(l));
-      for (const l of lines) for (const m of l.matchAll(/\[([^\]:]+):/g)) expect(['register', 'docs/methodology.md', 'IADC-02-01 Revision 2', '47 CFR § 25.283', ...APPROVED_CAUSE_SOURCES], `${f}: ${m[1]}`).toContain(m[1]);
+      if (EXTERNAL.has(Number(f.replace('.md', '')))) continue;
+      expect(figureProblems(read(`data/cases/${f}`), methodology), f).toEqual([]);
     }
+  });
+  it('the Kodama note passes because 292 km is cited to the MEXT row, which holds 292', () => {
+    const methodology = read('docs/methodology.md');
+    const kodama = read('data/cases/27516.md');
+    expect(kodama).toContain('約292㎞');
+    expect(figureProblems(kodama, methodology)).toEqual([]);
+    expect(sourcesRow(methodology, 'https://www.mext.go.jp/b_menu/shingi/gijyutu/gijyutu2/059/shiryo/__icsFiles/afieldfile/2017/10/27/1397652_4.pdf')).toContain('292');
+  });
+  it('still fails on an uncited figure, on one cited to a row that does not hold it, and on one cited only to a rule text', () => {
+    const methodology = read('docs/methodology.md');
+    const mext = 'https://www.mext.go.jp/b_menu/shingi/gijyutu/gijyutu2/059/shiryo/__icsFiles/afieldfile/2017/10/27/1397652_4.pdf';
+    expect(figureProblems('- The operator raised the perigee about 300 km.', methodology).map((p) => p.problem)).toEqual(['no citation']);
+    expect(figureProblems('- The perigee is +193 km [register: pKm]. The operator says 300 km.', methodology).map((p) => p.figure)).toEqual(['300']);
+    expect(figureProblems(`- The operator reports about 300 km [JAXA slides for MEXT: ${mext}].`, methodology).map((p) => p.figure)).toEqual(['300']);
+    expect(figureProblems(`- The operator reports about 292 km [JAXA slides for MEXT: ${mext}].`, methodology)).toEqual([]);
+    expect(figureProblems('- A band of 280 km [IADC-02-01 Revision 2: https://orbitaldebris.jsc.nasa.gov/library/IADC-Space-Debris-Guidelines-Revision-2.pdf].', methodology)).toHaveLength(1);
+    expect(figureProblems('- An invented source says 292 km [Made Up: https://example.org/x].', methodology)).toHaveLength(1);
   });
 });

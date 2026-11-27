@@ -219,17 +219,17 @@ Task 22, the final audit, was written before these. Each new page (tasks 24 and 
     - the census coverage line reads back from the register.
   - Do not map codes to names. Do not infer an operator.
   - _Requirements: 13.1, 13.4–13.14_
-- [ ] 24a. Operator sources (owner)
+- [ ] 24a. Operator sources (owner). Batch A, the 36 story stones, is proposed in `docs/source-review.md`; batch B (the other 95) waits for the review.
   - Ask the owner which of the 131 payloads to source first and how. For each, open an operator site, FCC or ITU filing or agency notice, and add an entry to `data/operators.json` with the URL, title and date opened. Unsourced payloads stay null.
   - Record in the journal how many of 131 are sourced.
   - _Requirements: 13.2, 13.3_
-- [x] 25. Case notes: the group and USA 340
+- [x] 25. Case notes: the group and USA 340 (group changed on 2026-11-27 to the 36 story stones; 19 new payloads are being sourced, see `docs/source-review.md`, batch 3)
   - A pure function listing the retired payloads launched after `config.validation.afterLaunchYear` whose verdict is not buried (18 in the 2026-11-22 snapshot), and `causeOf` and `causeCounts` (design 11).
   - Check USA 340 (55138): compare SATCAT with any GP or GPZ-table row in `data/raw/`, record what each says and whether the verdict follows from the engine's rules, in its case file and the journal. Change no verdict by hand. SATCAT's status code "-" means "Nonoperational" (CelesTrak status page), which is why it is a retired payload.
   - Tests: the group list equals a direct filter of the register (property); `causeCounts` adds up to the group size.
   - Sources proposed in `docs/source-review.md`; the owner approved, rejected or recategorised each row on 2026-11-27.
   - _Requirements: 14.1, 14.5, 14.7, 14.9_
-- [x] 26. Case notes: sources and writing
+- [x] 26. Case notes: sources and writing (all 36 done; the 19 of batch 3 were approved on 2026-11-27 and written with the main agent's file tool)
   - The approved rows are in the Sources table of `docs/methodology.md`. Run the orbital-coroner in write mode, one payload at a time. Each case file gets a `# Cause` section: `Cause category:` line, then the verbatim quote or quotes with their link, or "No cause in the sources opened". No web search by the agent. No date of the end of operation or mission.
   - Add the cause table to the case-file list page. Tests: the language check over `data/cases/`; every case file has a Cause category; every quote appears in `docs/source-review.md` as an approved row; the counts read back.
   - _Requirements: 14.1–14.4, 14.7, 14.9_

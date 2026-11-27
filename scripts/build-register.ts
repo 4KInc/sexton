@@ -165,7 +165,7 @@ export function buildRegisterText(setDir: string, casesDir: string): string {
     noOrbitDataCount: result.noOrbitDataCount,
     census: result.census,
   };
-  register.causes = causeCounts(causeGroup(register.records, CONFIG), readCauses(casesDir));
+  register.causes = causeCounts(causeGroup(register.records), readCauses(casesDir));
   return JSON.stringify(register, null, 2) + '\n';
 }
 

@@ -1319,7 +1319,7 @@
     }
   },
   "causes": {
-    "n": 6,
+    "n": 4,
     "byCategory": {
       "failed in orbit or broke up before disposal": 0,
       "disposal reported by operator": 0,
@@ -1327,6 +1327,7 @@
       "no disposal reported": 0,
       "No cause in the sources opened": 0
     },
-    "noCase": 6
+    "noCase": 4,
+    "reportedUnquiet": 0
   }
 }

@@ -26,21 +26,20 @@ const textOf = (html: string): string =>
     .replace(/\s+/g, ' ');
 
 describe('the cause section (R14.7)', () => {
-  const group = causeGroup(real.records, real.config);
+  const group = causeGroup(real.records);
   const k = real.causes!;
-  it('the group is the 18 retired payloads launched after 2007 that are not buried, from the register', () => {
-    const direct = real.records.filter((r) => r.verdict.kind === 'verdict' && r.launchYear !== null && r.launchYear > real.config.validation.afterLaunchYear && r.verdict.verdict !== 'buried');
+  it('the group is the 36 story stones, from the register', () => {
+    const direct = real.records.filter((r) => r.verdict.kind === 'verdict' && r.verdict.era === null && (r.verdict.verdict === 'unquiet' || r.verdict.verdict === 'shallow grave'));
     expect(group.map((r) => r.norad)).toEqual(direct.map((r) => r.norad).sort((a, b) => a - b));
-    expect(k.n).toBe(group.length);
+    expect(k.n).toBe(36);
   });
-  it('every payload in the group has a case file with a valid cause line, and the counts add up', () => {
-    expect(k.noCase).toBe(0);
-    expect(Object.values(k.byCategory).reduce((a, b) => a + b, 0)).toBe(k.n);
+  it('the counts add up, and the payloads with no case file yet are counted apart', () => {
+    expect(Object.values(k.byCategory).reduce((a, b) => a + b, 0) + k.noCase).toBe(k.n);
   });
   it('shows the line "Of the n not buried, k failed in orbit or broke up before they could be moved." with both numbers read back', () => {
     const html = causesHtml(real);
     const failed = k.byCategory['failed in orbit or broke up before disposal'];
-    expect(textOf(html)).toContain(`Of the ${k.n} not buried, ${failed} failed in orbit or broke up before they could be moved.`);
+    expect(textOf(html)).toContain(`Of the ${k.n}, ${failed} failed in orbit or broke up before they could be moved.`);
     for (const c of CAUSE_CATEGORIES) {
       const key = `data-cause="${c}">`;
       const at = html.indexOf(key);
@@ -48,9 +47,16 @@ describe('the cause section (R14.7)', () => {
       expect(Number(html.slice(at + key.length, html.indexOf('<', at + key.length))), c).toBe(k.byCategory[c]);
     }
   });
+  it('shows the second sentence with its count read back, and drops it when the count is 0', () => {
+    const html = causesHtml(real);
+    expect(k.reportedUnquiet).toBe(1);
+    expect(textOf(html)).toContain(`${k.reportedUnquiet} was raised by its operator, as the operator reports, and reads inside the zone in the 22 Nov 2026 snapshot.`);
+    expect(textOf(causesHtml({ ...real, causes: { ...k, reportedUnquiet: 0 } }))).not.toContain('was raised by its operator');
+    expect(findHits(textOf(html), 'census.html')).toEqual([]);
+  });
   it('changes when the case files change', () => {
     const none = { ...real, causes: causeCounts(group, new Map()) };
-    expect(textOf(causesHtml(none))).toContain(`Of the ${k.n} not buried, 0 failed`);
+    expect(textOf(causesHtml(none))).toContain(`Of the ${k.n}, 0 failed`);
     expect(causesHtml(none)).toContain('data-cause="noCase">' + k.n + '<');
   });
   it('the ESA range is not on the census page (R14.6)', () => {

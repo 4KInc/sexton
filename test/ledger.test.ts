@@ -120,7 +120,9 @@ describe('every real ledger', () => {
     }
   });
   it('never states or implies a retirement date', () => {
-    for (const [i, t] of text.entries()) {
+    for (const [i, full] of text.entries()) {
+      // A web address can carry a year and a word like "retire" in its path (a press release's file name). It is not a statement, so addresses are left out of this check.
+      const t = full.replace(/https?:\/\/\S+/g, '');
       // A sentence that talks about retiring must carry no year, and no phrase like "retired in".
       for (const sentence of t.split(/(?<=[a-z)])\.\s|\n/)) {
         if (/retir/i.test(sentence)) expect(sentence, String(retired[i]!.norad)).not.toMatch(/\b(1[89]|20)\d\d\b/);

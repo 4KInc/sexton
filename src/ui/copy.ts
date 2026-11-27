@@ -476,16 +476,26 @@ export const CENSUS_TILES = {
 } as const;
 /** The cause section of the census page (R14.7). Numbers are arguments; none is typed here. */
 export const CAUSES = {
-  line: (n: number, failed: number): string => `Of the ${formatCount(n)} not buried, ${formatCount(failed)} failed in orbit or broke up before they could be moved.`,
-  intro: (year: number): string =>
-    `The group is the retired payloads launched after ${year} whose verdict is not buried. Sexton has no retirement dates, so launch year stands in for them. Each payload has a case file. Its cause line is a quote from a source that was opened and approved, or it says that no cause was found.`,
+  line: (n: number, failed: number): string => `Of the ${formatCount(n)}, ${formatCount(failed)} failed in orbit or broke up before they could be moved.`,
+  /**
+   * The second sentence. The count is the case files that say the operator reported a disposal, among the payloads the register
+   * reads as unquiet. It names the snapshot, because the reading is the register's at that date (SATCAT altitudes, ±25 km), not today's.
+   */
+  reported: (n: number, snapshotSet: string): string => {
+    const date = snapshotLabel(snapshotSet).replace('CelesTrak snapshot, ', '');
+    return n === 1
+      ? `1 was raised by its operator, as the operator reports, and reads inside the zone in the ${date} snapshot.`
+      : `${formatCount(n)} were raised by their operators, as the operators report, and read inside the zone in the ${date} snapshot.`;
+  },
+  intro: (n: number): string =>
+    `The ${formatCount(n)} are the retired payloads launched on or after 18 March 2002 whose verdict is unquiet or shallow grave: the same stones as the headline. Sexton has no retirement dates. Each payload that has a case file shows its cause there, quoted from a source that was opened and approved, or it says that no cause was found.`,
   /** The README sentence after the counts. */
-  readme: (year: number): string =>
-    `The group is the retired payloads launched after ${year} whose verdict is not buried. Each has a case file with its cause, quoted from a source that was opened, or the words "No cause in the sources opened".`,
-  caption: (n: number): string => `Cause category of the ${formatCount(n)} payloads that are not buried`,
+  readme: (n: number): string =>
+    `The ${formatCount(n)} are the retired payloads launched on or after 18 March 2002 whose verdict is unquiet or shallow grave. Each case file gives its cause, quoted from a source that was opened, or the words "No cause in the sources opened".`,
+  caption: (n: number): string => `Cause category of the ${formatCount(n)} payloads in or near the protected zone`,
   columns: { category: 'Cause category', count: 'Payloads' },
   noCase: 'No case file yet',
-  noGroup: (year: number): string => `No retired payload in the register was launched after ${year}.`,
+  noGroup: 'No retired payload in the register is unquiet or shallow grave and launched on or after 18 March 2002.',
   limits:
     'A cause is shown only where an opened source states one. A shorter life, or a launch problem, is not a cause of a missing disposal. The register only sees objects still near GEO, so these counts are not all payloads from that period. No verdict depends on them.',
 } as const;
@@ -523,7 +533,7 @@ export const CENSUS = {
     owner: 'By owner',
     gaps: 'Rows left out',
     blind: 'What the register cannot see',
-    causes: 'Why the payloads that are not buried were not buried',
+    causes: 'What the sources say about the payloads in or near the zone',
     caveat: 'Read the shares with care',
   },
   population: {
