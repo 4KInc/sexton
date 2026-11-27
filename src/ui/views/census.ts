@@ -88,7 +88,7 @@ export function statsHtml(reg: Pick<UiRegister, 'census' | 'records'>): string {
 }
 const paras = (lines: readonly string[]): string => lines.map((l) => `<p>${esc(l)}</p>`).join('');
 const table = (caption: string, head: string, rows: string, extraClass = ''): string =>
-  `<div class="table-wrap census-wrap"><table class="register-table census-table${extraClass}"><caption>${esc(caption)}</caption><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  `<div class="table-wrap census-wrap" role="region" aria-label="${esc(caption)}" tabindex="0"><table class="register-table census-table${extraClass}"><caption>${esc(caption)}</caption><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
 const th = (text: string, numeric = false): string => `<th scope="col"${numeric ? ' class="num-head"' : ''}>${esc(text)}</th>`;
 
 /** Retired payloads whose status came from the GPZ table. Counted from the records. */

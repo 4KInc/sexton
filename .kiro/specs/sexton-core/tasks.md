@@ -239,17 +239,17 @@ Task 22, the final audit, was written before these. Each new page (tasks 24 and 
   - Update the tests that read those pieces. Add a test that "70%" and "ESA" appear in no `src/ui/` file text or README outside methodology.md.
   - Check the main chunk stays at 185 KB or less (it should shrink).
   - _Requirements: 14.6, 14.7, 14.8_
-- [ ] 27. Browser checks: spike and dependency approval
+- [x] 27. Browser checks: spike and dependency approval
   - The owner approved `@playwright/test`, `@axe-core/playwright` and `axe-core` on 2026-11-27, dev only (design 12). They are pinned exactly and recorded in THIRD_PARTY.md under "Development only (not in dist/)". Check that `npm run build` leaves no MPL-2.0 code in `dist/`.
   - Run one spec on `#/census` in all three browsers, with axe. Check axe-core's docs for the `wcag22aa` tag. If it is not supported, use `wcag21aa` and say so in the journal and README. Record GO or NO-GO and the run time in the journal.
   - _Requirements: 15.1, 15.3, 15.9_
 
-- [ ] 28. Browser checks: the suite
+- [x] 28. Browser checks: the suite
   - `playwright.config.ts` and `e2e/`, with `npm run test:e2e` (design 12): every route and width, axe on each, the keyboard path, reduced motion, no sideways scroll at 390 px, the first-screen check and the network check.
   - Fix any real failure it finds in the site, one fix per journal line. Do not switch an axe rule off to pass. A rule that is a false positive is excluded by id, with the reason in the spec file and the journal.
   - _Requirements: 15.2–15.6_
 
-- [ ] 29. Browser checks: workflow and docs
+- [x] 29. Browser checks: workflow and docs
   - `.github/workflows/e2e.yml`, `workflow_dispatch` only, actions pinned by SHA (design 12). Don't run it in this task.
   - README and `docs/` say what the checks do not cover (screen readers, a real phone, Safari). Keep the manual items open in task 8, 11 and 22 where they still are.
   - Test: the workflow has no push or pull_request trigger (as for the refresh workflow's test).

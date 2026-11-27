@@ -27,7 +27,7 @@ The IADC guidelines are voluntary. The FCC rule (47 CFR § 25.283) applies only 
 - [AG Grid Community](https://www.ag-grid.com/) 36.3.0 (MIT) for the desktop table. It loads only when `#/table` opens wider than 600 px. Phones, print and a failed load get the plain HTML table.
 - [marked](https://marked.js.org/) (MIT) renders the method page and the case files.
 - Fonts: IM FELL English, IBM Plex Sans and IBM Plex Mono, self-hosted, SIL Open Font License 1.1.
-- Tests: Vitest and fast-check. `npm test` runs 967 tests in 35 files, then the language check.
+- Tests: Vitest and fast-check. `npm test` runs 1107 tests in 49 files, then the language check.
 
 Every package and its licence is in [THIRD_PARTY.md](THIRD_PARTY.md).
 
@@ -100,13 +100,22 @@ Needs Node 24.
 ```
 npm install
 npm run dev          # local site
-npm test             # type check, 967 Vitest and fast-check tests in 35 files, then the language check
+npm test             # type check, 1107 Vitest and fast-check tests in 49 files, then the language check
 npm run build        # static site in dist/
 npm run census       # rebuild data/register.json and the census block above
+npm run test:e2e     # browser checks (see below); needs `npx playwright install` once, and takes about a minute
 ```
 
 The site is static and never calls CelesTrak. It is deployed to GitHub Pages by [deploy.yml](.github/workflows/deploy.yml) after tests and build pass.
 
+## Browser checks
+`npm run test:e2e` builds the site, serves it under its `/sexton/` base and opens it in Chromium, Firefox and WebKit with Playwright. It visits every route (the churchyard, the table, two ledgers, the census, the method page, and the parish list, one operator and one owner code) at 1440×900, 1024×768 and 390×844. It runs axe-core with the WCAG 2.2 A and AA tags and fails on any rule it reports, checks that the page does not scroll sideways at 390 px and that the chart or the key numbers are on the first screen, walks the keyboard path (skip link, one Tab stop in the chart, arrow keys, Enter, Escape), checks that nothing animates under `prefers-reduced-motion`, and fails on any request that is not the site's own file or `register.json`. It is not part of `npm test`. [e2e.yml](.github/workflows/e2e.yml) runs it, started by hand only.
+
+What these checks do not cover:
+- **Screen readers.** Axe finds only what a machine can test. It does not replace VoiceOver, NVDA or TalkBack.
+- **A real phone.** A 390 px window is not a phone: touch, the on-screen keyboard and the browser's own bars are not tested.
+- **Safari.** WebKit under Playwright is the WebKit engine, not the Safari app. On macOS WebKit leaves links out of the Tab order (as Safari does), so the keyboard test uses Option+Tab there.
+- **WCAG conformance.** A passing run is not a claim of conformance. Many criteria need a person.
 ## Data refresh
 
 The data is a committed snapshot in `data/raw/<date>/`, with a `manifest.json`. The [Refresh snapshot](.github/workflows/refresh-snapshot.yml) GitHub Action is started by hand. It runs `scripts/snapshot.ts`, which fetches SATCAT and the GPZ files from CelesTrak within its usage policy (at most one download per data set per 2 hours, gzip, no retries). Then it runs `scripts/build-register.ts` and opens a pull request with the new register. A person reviews and merges it. Nothing else fetches data.

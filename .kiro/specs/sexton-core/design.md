@@ -682,9 +682,9 @@ Sections 10 to 15 were written before any of their tasks started. What they say 
 
 **Unverified.**
 - (Verified 2026-11-27.) axe-core's API documentation (doc/API.md, "Axe-core Tags") lists `wcag22aa` as WCAG 2.2 Level AA, and the installed `axe.js` contains it. If a run rejects it, use `wcag21aa` and say so.
-- That `ag-grid-community` 36.3.0, which `#/table` loads on wider screens, passes axe. It is the part most likely to fail, and the first run will show.
-- That all three browsers install on the runner image the other workflows use.
-- The run time.
+- (Verified 2026-11-27.) `ag-grid-community` 36.3.0, which `#/table` loads on wider screens, passes axe in all three browsers at the three sizes.
+- That all three browsers install on the runner image the other workflows use. `.github/workflows/e2e.yml` has not been run. It installs them with `npx playwright install --with-deps chromium firefox webkit`.
+- The run time. Locally on an Apple-silicon Mac: the whole suite (240 tests across three browsers) in about 1.1 minutes; the axe specs alone in 46 s; the census spike (9 tests) in 10 s. The runner will be slower.
 
 ## 13. Mutation testing (R16)
 

@@ -19,5 +19,7 @@ describe('the production bundle', () => {
       expect(bytes, `${e.fileName} is ${bytes} bytes`).toBeLessThan(LIMIT);
       expect(e.code, 'the case files are not in the entry chunk').not.toContain('Cause category:');
     }
+    // The browser checks and axe are development tools (MPL-2.0 for axe): none of their code is in the site.
+    for (const o of outputs) if (o.type === 'chunk') expect(o.code, o.fileName).not.toMatch(/axe-core|@axe-core|playwright/i);
   }, 60_000);
 });

@@ -233,7 +233,7 @@ Scope: about 5 days of work. Nothing in this spec downloads data. SATCAT is not 
 ### Acceptance criteria
 
 1. THE repository SHALL have end-to-end tests, run by `npm run test:e2e`, that open the built site served under its `/sexton/` base in Chromium, Firefox and WebKit.
-2. THE tests SHALL visit every route (`#/`, `#/table`, a ledger, `#/census`, `#/method`, an owner page from R13) at 1440×900, 1024×768 and 390×844.
+2. THE tests SHALL visit every route (`#/`, `#/table`, a ledger, `#/census`, `#/method`, the parish list, an operator page and an owner-code page from R13) at 1440×900, 1024×768 and 390×844.
 3. WHEN each page has loaded, THE tests SHALL run axe-core with the WCAG 2.2 A and AA rule tags, and SHALL fail on any violation. A failure SHALL name the route, browser, viewport, rule id and element.
 4. THE tests SHALL check at 390 px that the page has no sideways scroll outside the chart's own scroll box, and at every width that the first screen shows the chart or the key numbers above the fold (design.md steering, Layout).
 5. THE tests SHALL cover the keyboard path (skip link, one Tab stop in the chart, arrow keys, Enter to select, Escape to close the filter panel) and SHALL run once with `prefers-reduced-motion: reduce` and check that no animation is running.

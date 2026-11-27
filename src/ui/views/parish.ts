@@ -50,7 +50,7 @@ function countsHtml(page: ParishPage, reg: UiRegister): string {
     const n = page.byVerdict[v];
     return `<tr><th scope="row">${esc(verdictCopy(v, reg.config).pair)}</th><td class="num-cell" data-parish-count="${esc(v)}"><a href="${esc(tableLink(page.group, { verdicts: [v] }))}">${esc(C.of(n, page.total))}</a></td></tr>`;
   }).join('');
-  return `<div class="table-wrap"><table class="register-table parish-table"><caption>${esc(C.caption)}</caption><thead><tr><th scope="col">${esc(C.verdict)}</th><th scope="col" class="num-head">${esc(C.count)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  return `<div class="table-wrap" role="region" aria-label="${esc(C.caption)}" tabindex="0"><table class="register-table parish-table"><caption>${esc(C.caption)}</caption><thead><tr><th scope="col">${esc(C.verdict)}</th><th scope="col" class="num-head">${esc(C.count)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 function detailsHtml(page: ParishPage, reg: UiRegister): string {
@@ -91,7 +91,7 @@ function rowsHtml(page: ParishPage): string {
     })
     .join('');
   const head = [R.name, R.norad, R.launch, R.verdict, R.p, R.age, R.operator].map((h) => `<th scope="col">${esc(h)}</th>`).join('');
-  return `<div class="table-wrap"><table class="register-table parish-table parish-rows"><caption>${esc(R.caption)}</caption><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  return `<div class="table-wrap" role="region" aria-label="${esc(R.caption)}" tabindex="0"><table class="register-table parish-table parish-rows"><caption>${esc(R.caption)}</caption><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 /** The verdict word alone: its meaning was given once, in the counts table. */
 const verdictShort = (v: VerdictName): string => v.charAt(0).toUpperCase() + v.slice(1);

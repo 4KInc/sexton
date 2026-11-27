@@ -14,7 +14,8 @@
     "test": "tsc --noEmit && vitest run && node scripts/check-language.ts",
     "test:engine": "vitest run test/smoke.test.ts test/orbit.test.ts test/parsers.test.ts test/merge.test.ts test/classify.test.ts test/engine.test.ts",
     "build-register": "node scripts/build-register.ts",
-    "census": "node scripts/census.ts"
+    "census": "node scripts/census.ts",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.1",

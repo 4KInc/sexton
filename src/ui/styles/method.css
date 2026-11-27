@@ -145,7 +145,7 @@
 }
 .toc a {
   display: block;
-  padding: 3px 0;
+  padding: 5px 0;
   color: var(--bone-muted);
   font-family: var(--font-mono);
   font-size: var(--fs-12);
