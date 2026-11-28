@@ -5,11 +5,12 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
 import { findHits } from '../scripts/check-language.ts';
-import { CHURCHYARD_INTRO, LEDGER, LEGEND, SITE, TIP } from '../src/ui/copy.ts';
+import { CAUSE_CATEGORIES } from '../src/engine/causes.ts';
+import { CHURCHYARD_INTRO, EPITAPH, EPITAPH_REGISTER_READS, LEDGER, LEGEND, SITE, TIP, epitaphOf } from '../src/ui/copy.ts';
 import { parseHash } from '../src/ui/router.ts';
 import { ledgerHtml } from '../src/ui/views/ledger.ts';
 import type { UiRegister } from '../src/ui/register.ts';
-import { chartSvg, introHtml, isStory, legendHtml, retiredPayloads, tipHtml } from '../src/ui/views/churchyard.ts';
+import { cardHtml, chartSvg, introHtml, isStory, legendHtml, retiredPayloads, tipHtml } from '../src/ui/views/churchyard.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const real = JSON.parse(readFileSync(join(ROOT, 'data/register.json'), 'utf8')) as UiRegister;
@@ -113,5 +114,51 @@ describe('polish step 4: a citable ledger', () => {
     const cite = text(html.slice(html.indexOf('id="ledger-cite"')));
     expect(findHits(cite, 'cite')).toEqual([]);
     for (const line of LEDGER.citation(r.name, r.norad, real.snapshot.set)) expect(/retire/i.test(line) && /\b(19|20)\d{2}\b/.test(line)).toBe(false);
+  });
+});
+
+describe('the epitaph line', () => {
+  const lines = new Set<string>([...Object.values(EPITAPH), ...Object.values(EPITAPH_REGISTER_READS)]);
+  const withCause = retired.filter((r) => isStory(r) && r.cause !== undefined);
+  const count = (hay: string, needle: string): number => hay.split(needle).length - 1;
+  it('has a plain line for every cause category, so a future case file cannot break the tooltip', () => {
+    for (const c of CAUSE_CATEGORIES) expect(EPITAPH[c], c).toBeTruthy();
+    for (const l of lines) expect(findHits(l, 'epitaph')).toEqual([]);
+  });
+  it('gives every story stone with a cause exactly one line from the copy table, in the tooltip and on the card', () => {
+    expect(withCause.length).toBeGreaterThan(0);
+    for (const r of withCause) {
+      const line = epitaphOf(r)!;
+      expect(lines.has(line), r.name).toBe(true);
+      const tip = text(tipHtml(r, real.config));
+      const card = text(cardHtml(r, real.config));
+      expect([...lines].filter((l) => tip.includes(l)), `tooltip of ${r.norad}`).toEqual([line]);
+      expect([...lines].filter((l) => card.includes(l)), `card of ${r.norad}`).toEqual([line]);
+      expect(count(tip, line)).toBe(1);
+    }
+  });
+  it('gives no line to a stone without a cause', () => {
+    const r = retired.find((x) => x.cause === undefined)!;
+    expect(epitaphOf(r)).toBeNull();
+    expect([...lines].some((l) => text(tipHtml(r, real.config)).includes(l))).toBe(false);
+  });
+  it('Kodama (27516) reads: the operator reports a disposal, the register reads it inside the zone', () => {
+    const r = retired.find((x) => x.norad === 27516)!;
+    expect(r.verdict.verdict).toBe('unquiet');
+    expect(epitaphOf(r)).toBe('Its operator reports a disposal; the register reads it inside the zone.');
+    expect(text(tipHtml(r, real.config))).toContain('the register reads it inside the zone.');
+  });
+  it('the operator line is the short form when the verdict is not unquiet or shallow grave', () => {
+    const r = retired.find((x) => x.norad === 27516)!;
+    expect(epitaphOf({ cause: 'disposal reported by operator', verdict: { ...r.verdict, verdict: 'buried' } })).toBe('Its operator reports a disposal.');
+  });
+  it("puts the line in the stone's aria-label, once", () => {
+    const svg = chartSvg(real, false);
+    for (const r of withCause) {
+      const m = new RegExp(`data-norad="${r.norad}"[^>]*aria-label="([^"]*)"`).exec(svg);
+      expect(m, String(r.norad)).not.toBeNull();
+      const label = m![1]!.replace(/&amp;/g, '&');
+      expect(label).toContain(epitaphOf(r)!.replace(/\.$/, ''));
+    }
   });
 });

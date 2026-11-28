@@ -22289,7 +22289,7 @@ var PARISH = {
 		note: "A SATCAT owner group is shown in parts, split at the FCC rule date, because the rule applies only to satellites launched on or after it. Each part has its own counts."
 	},
 	mapped: {
-		ownerOfOperator: (code) => `Also in the register: the SATCAT owner group ${code}, all launch years. The owner group is larger than this operator group and has a different record.`,
+		ownerOfOperator: (code) => `Also in the register: the SATCAT owner group ${code}, all launch years. The owner group is larger than this operator group and covers more launch years.`,
 		operatorOfOwner: (name) => `The register also has the sourced operator group ${name}, launched on or after 18 March 2002. It is a part of this owner group, not the whole of it.`,
 		blockOperator: "operator, sourced, launched on or after 18 March 2002",
 		blockOwner: (code) => `SATCAT owner ${code} (country or organisation), all launch years`

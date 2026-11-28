@@ -2,6 +2,7 @@
 // Rules: .kiro/steering/language.md. No retirement dates. Churchyard words are always paired
 // with their plain technical meaning.
 import type { Config } from '../engine/config.ts';
+import type { CauseCategory } from '../engine/causes.ts';
 import type { SatRecord, VerdictName } from '../engine/types.ts';
 import { formatCount, formatSigned, MINUS } from './format.ts';
 import { SCALE } from './svg/scale.ts';
@@ -245,6 +246,27 @@ export const TIP = {
   perigee: (absText: string, below: boolean, uncertaintyKm: number): string => `Perigee ${absText} km ${below ? 'below' : 'above'} GEO, \u00B1${uncertaintyKm} km`,
   open: 'Click to select. Double-click opens the ledger.',
 } as const;
+/** The epitaph: one line per cause category, from the case file's `Cause category:` line. Category only, no case text. */
+export const EPITAPH: Record<CauseCategory, string> = {
+  'failed in orbit or broke up before disposal': 'Failed in orbit or broke up before it could be moved.',
+  'disposal reported by operator': 'Its operator reports a disposal.',
+  'disposal attempted, perigee short': 'A disposal was attempted; the perigee came up short.',
+  'no disposal reported': 'No disposal reported.',
+  'No cause in the sources opened': 'No cause in the sources opened.',
+};
+/** Added to the operator line when the register reads the orbit as unquiet or shallow grave. Shallow grave perigees are above the zone, so it says what is true of each. */
+export const EPITAPH_REGISTER_READS = {
+  unquiet: 'Its operator reports a disposal; the register reads it inside the zone.',
+  'shallow grave': 'Its operator reports a disposal; the register reads it below the IADC threshold.',
+} as const;
+/** The epitaph line for a record, or null when it has no cause. */
+export function epitaphOf(r: Pick<SatRecord, 'cause' | 'verdict'>): string | null {
+  if (r.cause === undefined) return null;
+  const verdict = r.verdict.kind === 'verdict' ? r.verdict.verdict : null;
+  if (r.cause === 'disposal reported by operator' && (verdict === 'unquiet' || verdict === 'shallow grave')) return EPITAPH_REGISTER_READS[verdict];
+  return EPITAPH[r.cause];
+}
+
 export const CARD = {
   ledger: 'Open the ledger',
   close: 'Clear selection',
@@ -265,11 +287,13 @@ export function stoneLabel(
   spokenP: string,
   offScale: 'above' | 'below' | null,
   borderline: boolean,
+  epitaph: string | null = null,
 ): string {
   const where = spokenP.startsWith('minus') ? ', below GEO' : ' above GEO';
   const parts = [name, verdict, `perigee ${spokenP} kilometres${where}`];
   if (offScale !== null) parts.push('off the drawn scale');
   if (borderline) parts.push('borderline');
+  if (epitaph !== null) parts.push(epitaph.replace(/\.$/, ''));
   return parts.join(', ');
 }
 

@@ -24,6 +24,17 @@ test('axe: churchyard with a stone selected and its card showing', async ({ page
   expect(problems, problems.join('\n')).toEqual([]);
 });
 
+test('axe: churchyard with a story stone hovered and focused, tooltip showing', async ({ page, browserName }) => {
+  const viewport = VIEWPORTS[0]!;
+  await page.setViewportSize(viewport);
+  await open(page, '#/');
+  const stone = page.locator('a.stone-link[data-norad="27516"]');
+  await stone.focus();
+  await stone.hover();
+  await page.waitForSelector('.tip:not([hidden])', { timeout: 10_000 });
+  const problems = await axeProblems(page, { route: 'churchyard', state: 'story stone hovered and focused', viewport, browser: browserName });
+  expect(problems, problems.join('\n')).toEqual([]);
+});
 for (const [name, hash] of [['churchyard', '#/'], ['table', '#/table']] as const) {
   test(`axe: ${name} with the filter panel open at the phone size`, async ({ page, browserName }) => {
     await page.setViewportSize(PHONE);

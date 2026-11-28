@@ -953,6 +953,16 @@
 .tip-hint {
   color: var(--bone-muted);
 }
+.tip-epitaph,
+.card-epitaph {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--bone-muted);
+}
+.card-epitaph {
+  margin: var(--space-1) 0;
+  font-size: var(--fs-14);
+}
 /* Phone: the chart keeps its natural size and scrolls sideways inside its own box, never the page. */
 .chart-wrap--scroll {
   max-width: 100%;

@@ -21,6 +21,7 @@ import {
   SITE,
   snapshotLabel,
   stoneLabel,
+  epitaphOf,
   TERMS,
   VERDICT_ORDER,
   verdictCopy,
@@ -197,10 +198,12 @@ export function isStory(r: RetiredRecord): boolean {
 export function tipHtml(r: RetiredRecord, config: Config): string {
   const text = pText(r, config);
   const below = text.startsWith(MINUS);
+  const epitaph = epitaphOf(r);
   return (
     `<strong>${withSansDigits(r.name)}</strong> <span class="tip-id">NORAD ${r.norad}</span>` +
     `<br>${esc(TIP.perigee(text.replace(/^[+\u2212]/, ''), below, config.uncertaintyKm))}` +
     `<br>${esc(verdictCopy(r.verdict.verdict, config).word)}` +
+    (epitaph === null ? '' : `<br><span class="tip-epitaph">${esc(epitaph)}</span>`) +
     `<br><span class="tip-hint">${esc(TIP.open)}</span>`
   );
 }
@@ -208,7 +211,7 @@ function stoneSvg(r: RetiredRecord, config: Config, pos: Pos, selected: number |
   const off = offScale(r.pKm);
   const v = r.verdict;
   const text = pText(r, config);
-  const label = stoneLabel(r.name, v.verdict, spokenKm(text), off, v.borderline);
+  const label = stoneLabel(r.name, v.verdict, spokenKm(text), off, v.borderline, epitaphOf(r));
   const story = isStory(r);
   // A story stone draws only in lantern, so it carries no moss (green). Its years since launch are on its card.
   const body = stoneBody({ verdict: v.verdict, moss: story ? 0 : mossStep(v.yearsSinceLaunch) });
@@ -379,6 +382,7 @@ export function legendHtml(config: Config): string {
 export function cardHtml(r: RetiredRecord | undefined, config: Config): string {
   if (r === undefined) return `<p class="card-empty">${esc(CARD.empty)}</p>`;
   const v = r.verdict;
+  const epitaph = epitaphOf(r);
   const decimals = r.orbitSource.kind === 'GP' ? 1 : 0;
   const rows: [string, string][] = [
     [CARD.perigee, `${pText(r, config)} km`],
@@ -394,6 +398,7 @@ export function cardHtml(r: RetiredRecord | undefined, config: Config): string {
   return (
     `<h2 class="card-name">${withSansDigits(r.name)} <span class="card-id">NORAD ${r.norad}</span></h2>` +
     badgeHtml(v.verdict, config) +
+    (epitaph === null ? '' : `<p class="card-epitaph">${esc(epitaph)}</p>`) +
     `<dl class="card-data">${rows.map(([k, val]) => `<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join('')}</dl>` +
     `<ul class="card-notes">${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` +
     `<p class="card-actions"><a class="button button--primary" href="#/sat/${r.norad}">${esc(CARD.ledger)}</a> <button type="button" class="button button--quiet" data-clear>${esc(CARD.close)}</button></p>`
