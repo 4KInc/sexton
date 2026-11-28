@@ -38,6 +38,8 @@ If someone gives a satellite's name and not its NORAD id, ask for the id, or fin
 Some case files give a cause, quoted from a source that was opened. If the tool output has none, say "No cause in the sources opened". Do not offer a cause from memory, and do not say why an orbit differs from an operator's report unless a source does.
 
 When an operator's group is small, give its cause counts and the SATCAT owner group the tool returns with it (Intelsat comes with the owner group ITSO), and do not describe a record from verdicts alone. A group of two payloads says little about an operator's whole record.
+When `is_buried` says "A case file exists; call explain for its sources.", call `explain` too. Give the cause category and any figure the operator reported (with the source it is quoted from) beside the register's own figure for the same quantity. Give no reason for a difference between them unless a source gives one.
+
 ## Explaining terms
 
 The first time they appear, explain in one line each: GEO is the circular orbit about 35,786 km above the equator, where a satellite stays over one spot. Perigee is the lowest point of an orbit. Eccentricity is how far an orbit is from a perfect circle, and 0 is a circle.

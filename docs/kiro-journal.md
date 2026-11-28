@@ -107,6 +107,7 @@ A row is "seen" only when it has a date, the Kiro client, the action, where it w
 | `language-check-on-save.json` | Language check on save (failing run) | 2026-11-27 | Kiro IDE 1.4.236 | `fs_write` created `docs/scratch-hook-check.md` holding a banned stem from language.md (18:52:02) | Kiro log (`~/Library/Application Support/Kiro/logs/20261119T090607/window2/exthost/kiro.kiroAgent/Kiro Logs.log`): one entry at 18:52:02.891 | not returned to the agent. The same command run by hand printed a hit for line 3 of the scratch file (`docs/scratch-hook-check.md:3`, with the stem in quotes) and "Language check failed: 1 hit(s)" and exited 1, which is what the hook should report. The agent then deleted the scratch file with `rm` in the same task and carried on; `git status` was clean afterwards | not yet seen |
 | `language-check-on-save.json` | Language check on save | 2026-11-23 | Kiro IDE (version not recorded then) | `str_replace` of `docs/methodology.md` by the agent (task S1) | Chat UI: "Run Command Hook — Language check on save"; Kiro log: two `ContextualHookInvoked` entries (23:55:39, 23:55:41) | the result did not reach the agent, so it was not quoted | not yet seen |
 
+| `language-check-on-save.json` | Language check on save (user save) | 2026-11-27 | Kiro IDE 1.4.236 | The owner saved `docs/kiro-journal.md` by hand (Cmd+S) in the sexton window at about 23:46 | Kiro log (window4): `hooks.reload.loaded {read:4, registered:4}` at 23:44:24 and "v2 hooks cache initialized (hooks load at session start)", then no hook entry after the save. Chat UI: nothing appeared | nothing to quote: no hook entry in the log and nothing in the chat, so a user save did not fire the hook | not yet seen |
 What could not be seen (R18.7): on 2026-11-23, and on every save since, a hook fired but its result was not returned to the agent. Whether the hook ran its command and what it printed is for the owner to read in the chat UI. No cause is stated. A save made by the shell (`rm` of the scratch file, `python3`, `sed`) is not counted as evidence.
 
 ## What surprised us
@@ -118,6 +119,7 @@ What could not be seen (R18.7): on 2026-11-23, and on every save since, a hook f
 - The orbital-coroner agent was missing from the registry because it was created mid-session.
 - The same ESA PDF returned 404 to curl's default user agent and 200 to a browser user agent, and the 2025 report's 70–95% became 70–90% in the 2026 edition.
 - Hooks fire only on the agent's own file edits, not on manual saves, and the agent can't see their output; the chat UI shows it.
+- A hand save (Cmd+S) of `docs/kiro-journal.md` at about 23:46 on 2026-11-27 left no hook entry in the Kiro log (window4, after "hooks.reload.loaded {read:4, registered:4}" at 23:44:24) and nothing in the chat, so in Kiro IDE 1.4.236 hooks fire on the agent's file-tool writes, not on a user's save.
 
 ## MCP
 
@@ -267,3 +269,60 @@ The register only sees objects still near GEO. Satellites sent much higher, or t
 2026-11-27: R17, tasks 32 and 33, the Sexton Kiro power in `powers/sexton/`. Format re-read on kiro.dev (Create powers, page updated 8 October 2026) and in the Agent Plugins 1.0.0 specification and mcp schema: `plugin.json`, `skills/<name>/SKILL.md`, `mcp.json` at the root. Paths, settled by the specification and tested rather than assumed: `command` is a bare `node` (not expanded), and `args` and `cwd` expand `${PLUGIN_ROOT}`; `test/power.test.ts` copies the power to a folder outside the repo (with spaces in the name), expands the placeholders itself, starts the server over stdio with the MCP SDK client, lists the tools, calls `is_buried` 27516, `explain` (the case file is found through `--cases`) and `parish` Intelsat, and repeats from another working directory and with a missing register. autoApprove: not allowed. The schema's stdio server is closed (type, command, args, env, cwd) and the specification says an unknown field invalidates the entry, so the power has none (the workspace's own `.kiro/settings/mcp.json` keeps its list, unchanged). Because the power must run from an installed copy, `scripts/build-power.ts` bundles `scripts/mcp/server.ts` with Vite (790 kB) and copies `data/register.json` and `data/cases/` into the power, with the licence notices of the eight packages inside the bundle; `--check` and a test fail when the copy is stale. A fifth tool, `parish(name, kind?)`, was added to the MCP server because "What is Intelsat's disposal record?" cannot be answered from the four existing tools; it gives an operator's or owner code's counts "n of N", assumptions, data age and limits, with its own tests (every operator and owner code passes the language check). The skill (`skills/sexton-verdicts/SKILL.md`) holds language.md's rules without listing the banned stems, and `powers/` is now in the language check's scan folders. README has "Install the Sexton power". Task 34, the install in a fresh Kiro chat with the two questions, is the owner's and is open: its two replies go in this journal. 1,135 tests pass.
 2026-11-27: Context fix after R17. "Intelsat: 2 of 2 unquiet" read as a record, but both payloads (41308, 41748) failed in orbit or broke up, and the SATCAT owner ITSO has 60 retired payloads with a mixed record. Parish pages now show cause counts ("n of N", adding up to the group size, with "no case file, or no cause note in it" for the rest) beside verdict counts; records carry an optional `cause` set from the case file. `src/engine/operator-owners.ts` maps Intelsat to ITSO only, and a test checks every sourced Intelsat payload has owner ITSO (no source opened says the two are the same, so no other mapping is inferred). The `parish` tool returns both labelled blocks for Intelsat or ITSO when `kind` is not given. SKILL.md says to give cause counts and the owner group for a small group. Owner approved `parish` and it is now in autoApprove in `.kiro/settings/mcp.json`. Power rebuilt. Note: 15873 has a case file with no cause section, so the label for the last row is not just "no case file". 1,145 unit tests and 240 e2e tests pass.
 2026-11-27: Three fixes after checking c2e995c. (1) A SATCAT owner group is now split at 18 March 2002, in the page and the `parish` tool, each part with its own verdict counts and cause counts (ITSO: on or after, 7 payloads, buried 4, uncertain 1, unquiet 2 [41308, 41748, both failed in orbit or broke up]; before, 53). Operator groups are one part, as they only hold payloads launched on or after the date. (2) The last cause row is now "cause not researched (case files cover the 36 story stones)"; "No cause in the sources opened" stays for case files whose sources were searched. NORAD 15873 has a case file with no cause section, so it is in the not-researched row, and a test pins that and the 36. (3) `operator-owners.ts` now cites test/parish-causes.test.ts, which exists. The first version cited a test file I had not written. Power rebuilt.
+
+2026-11-27: Task 34, power install check (owner). Kiro IDE 1.4.236, Kiro Agent 0.66.119 (VS Code 1.145.0, macOS arm64). Opened an empty folder, `~/Projects/sexton-power-test`, in a new window. The folder was in Restricted Mode (not trusted) and the chat mode was Supervised. Powers panel → Add Custom Power → Import power from a folder → `powers/sexton`. The power page listed the 12 keywords, "Open powers config" under MCP Configuration, and the skill `sexton-verdicts`. Approval prompts: none. Tool calls showed as `@sexton/sexton/<tool>` (for example `@sexton/sexton/parish` with `{"name": "Intelsat"}`), after a "Tool Load" call, so the power's server answered, not the workspace one. The MCP server ran although the folder was in Restricted Mode. Screenshots: `docs/evidence/power-page.png`, `power-kodama.png`, `power-intelsat-1.png`, `power-intelsat-2.png`, `power-kiro-version.png`. Both replies below were copied with the chat's copy button. In the second reply, the screenshot reads "17 payloads use GP mean elements" where the copied text read "17 loads"; the screenshot wording is kept.
+
+Q: Is NORAD 27516 buried? (3 tool calls, 0.16 credits, 10 s)
+
+> The register gives NORAD 27516 (KODAMA, also called DRTS) the verdict **unquiet**. That means its orbit reaches the protected zone around GEO, with a perigee at most 200 km above GEO. So it is not "buried" in the register's terms.
+>
+> - **Perigee:** 193 km above GEO. Perigee is the lowest point of an orbit, and GEO is the circular orbit about 35,786 km above the equator where a satellite stays over one spot.
+> - **Apogee:** 374 km above GEO.
+> - **Disposal threshold:** The perigee is below the IADC disposal threshold under the stated assumptions. The threshold runs from 247 to 280 km above GEO, so the perigee is 54 to 87 km short of it.
+> - **Borderline:** Yes. The perigee is 7 km short of the 200 km protected-zone edge, which is inside the ±25 km uncertainty. A small change in the orbit could move the verdict to "shallow grave".
+> - **Assumptions:** C_R·A/m (a measure of solar radiation pressure on the satellite) from 0.012 to 0.045 m²/kg, and a mean-element uncertainty of ±25 km.
+> - **Data age:** The orbit comes from SATCAT whole-kilometre apogee and perigee values, with no element date. The snapshot is dated 2026-11-22.
+>
+> The IADC guidelines are voluntary. The FCC minimum-perigee rule (47 CFR § 25.283) applies only to satellites the FCC authorizes that launched on or after 18 March 2002. The register cannot tell whether the FCC authorized this one. The register also only sees objects still near GEO.
+
+Owner's check: margins, assumptions and data age are right. Missing: the case file's cause ("disposal reported by operator") and JAXA's reported perigee raise of about 292 km beside the register's +193 km.
+
+Q: What is Intelsat's disposal record? (2 tool calls, 0.33 credits, 13 s)
+
+> The register has no single disposal record for Intelsat. It holds two groups, and the Intelsat operator group is only two payloads.
+>
+> **Intelsat, operator named by a source that was opened (2 payloads launched on or after 18 March 2002)**
+> - Both are **unquiet**, meaning the orbit reaches the protected zone around GEO. GEO is the circular orbit about 35,786 km above the equator. Perigee is the lowest point of an orbit.
+> - INTELSAT 29E (NORAD 41308): perigee 114.0 km below GEO. The cited source is a Spaceflight Now article from 2019 about a drifting satellite declared a total loss.
+> - INTELSAT 33E (NORAD 41748): perigee 100.7 km below GEO. The cited source is a DatacenterDynamics article about the satellite breaking up in orbit.
+> - The case files give the cause for both as "failed in orbit or broke up before disposal". Both come from those sources.
+> - Neither is borderline.
+> - Two payloads say little about an operator's whole record.
+>
+> **SATCAT owner ITSO, a separate group (60 payloads)**
+> SATCAT's owner field names a country or organisation, not the operator. Only 2 of the 60 have a sourced operator. The group is split at the FCC rule date.
+>
+> | Part | Payloads | Unquiet | Shallow grave | Restless | Uncertain | Buried |
+> |---|---|---|---|---|---|---|
+> | Launched on or after 18 March 2002 | 7 | 2 | 0 | 0 | 1 | 4 |
+> | Launched before 18 March 2002 (no disposal rule then) | 53 | 22 | 5 | 2 | 6 | 18 |
+>
+> - No payload in either part has the verdict "fallen".
+> - The 2 unquiet payloads in the newer part are the two Intelsat payloads above. The other 5 newer payloads and all 53 older ones have no cause in the case files, because those files cover only 36 payloads.
+> - 18 of the 60 are borderline. That means the perigee is within 25 km of a band edge, so the verdict could change.
+>
+> **Assumptions and data age**
+> - The verdicts assume C_R·A/m from 0.012 to 0.045 m²/kg and a mean-element uncertainty of ±25 km.
+> - The two Intelsat payloads use GP mean elements with epochs on 2026-11-22, at 12:33 and 09:58 UTC.
+> - In the ITSO group, 17 payloads use GP mean elements with epochs from 2026-11-21 16:12 UTC to 2026-11-22 12:33 UTC. The other 43 use SATCAT whole-kilometre altitudes with no element date.
+> - The snapshot is dated 2026-11-22.
+>
+> **Limits**
+> - The register sees only retired payloads still near GEO. Satellites sent much higher, or that left GEO, may be missing, so these counts are not all of anyone's satellites.
+> - The register holds launch dates and current orbits, but not when a satellite retired.
+> - The IADC guidelines are voluntary. The FCC minimum-perigee rule (47 CFR § 25.283) applies only to satellites the FCC authorizes that launched on or after 18 March 2002. The register cannot tell which satellites the FCC authorized.
+
+Owner's check: matches the three expected blocks and the register (ITSO since the rule: 7, buried 4; before: 53). No ranking or judging words.
+
+
+2026-11-27: Task 34 fix after the owner's check of the 27516 reply. `is_buried` returned nothing from the case file, so the reply could not give the cause or JAXA's figure. It now adds, for a record with a case file, the line "Cause category: <category>" (for 27516, "disposal reported by operator") and "A case file exists; call explain for its sources." The operator figure (about 292 km) and its quote stay in `explain`. SKILL.md now says: when a record has a case file, call `explain` and give the cause category and any operator-reported figure beside the register's figure, with no reason for a difference unless a source gives one. New tests in `test/mcp.test.ts` and `test/power.test.ts` (27516 contains "disposal reported by operator"); power rebuilt.

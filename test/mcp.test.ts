@@ -30,7 +30,7 @@ const casesDir = join(work, 'cases');
 const CASE_TEXT = 'This is test text for the case file of 27378.';
 writeFileSync(caseRegister, JSON.stringify(withCase));
 mkdirSync(casesDir);
-writeFileSync(join(casesDir, '27378.md'), `---\nnorad: 27378\ntitle: Test case file\nprovisional: false\n---\n${CASE_TEXT}\n`);
+writeFileSync(join(casesDir, '27378.md'), `---\nnorad: 27378\ntitle: Test case file\nprovisional: false\n---\n${CASE_TEXT}\n# Cause\nCause category: disposal reported by operator\nThe operator reports a perigee raised about 292 km.\n`);
 
 const paths: Paths = { registerPath: FIXTURE_REGISTER, casesDir: join(ROOT, 'test/fixtures/cases') };
 const casePaths: Paths = { registerPath: caseRegister, casesDir };
@@ -47,6 +47,13 @@ const seen = (out: ToolOutput): ToolOutput => {
 };
 
 describe('is_buried', () => {
+  it('gives the cause category and a pointer to explain when the record has a case file, and no operator figure', () => {
+    const text = isBuried(casePaths, 27378).text;
+    expect(text).toContain('Cause category: disposal reported by operator');
+    expect(text).toContain('A case file exists; call explain for its sources.');
+    expect(text).not.toContain('292');
+    expect(isBuried(paths, 90002).text).not.toContain('A case file exists');
+  });
   it('gives the verdict word, the borderline flag, p, q, margins and data age for every retired fixture object', () => {
     for (const r of retired) {
       const out = seen(isBuried(paths, r.norad));

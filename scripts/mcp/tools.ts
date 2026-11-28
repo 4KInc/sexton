@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { VERDICT_NAMES } from '../../src/engine/census.ts';
-import { CAUSE_CATEGORIES } from '../../src/engine/causes.ts';
+import { CAUSE_CATEGORIES, causeOf } from '../../src/engine/causes.ts';
 import { operatorOfOwner, ownerCodeOf } from '../../src/engine/operator-owners.ts';
 import type { ParishPart } from '../../src/engine/parish.ts';
 import { OWNER_NOT_GIVEN, parishGroups, parishOf } from '../../src/engine/parish.ts';
@@ -66,6 +66,18 @@ function caseFileFor(r: SatRecord, paths: Paths): { file?: CaseFile; note?: stri
   }
 }
 
+/** For is_buried: the cause category line of a record's case file and a pointer to explain. Empty when there is no case file. */
+function caseLines(r: SatRecord, paths: Paths): string[] {
+  if (!r.caseFile) return [];
+  let cause: string | null = null;
+  try {
+    cause = causeOf(readFileSync(join(paths.casesDir, `${r.norad}.md`), 'utf8'));
+  } catch {
+    cause = null;
+  }
+  return [...(cause === null ? [] : [`Cause category: ${cause}`]), 'A case file exists; call explain for its sources.'];
+}
+
 /** What every total or share is read against. */
 const blindSpot = (): string => CHURCHYARD_INTRO.blindSpot;
 
@@ -120,6 +132,7 @@ export function isBuried(paths: Paths, norad: unknown): ToolOutput {
     `Data age: ${dataAgeOf(r)}`,
     `Snapshot: ${reg.snapshot.set}${reg.sample ? `. ${LEDGER.sampleNote}` : ''}`,
     verdictSentence(r, config),
+    ...caseLines(r, paths),
     assumptionsLine(config),
     CHURCHYARD_INTRO.voluntary,
   ];

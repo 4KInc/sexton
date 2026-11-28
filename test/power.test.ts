@@ -110,6 +110,9 @@ describe('installed in a folder outside the repository', () => {
       const buried = text(await client.callTool({ name: 'is_buried', arguments: { norad: 27516 } }));
       expect(buried).toMatch(/unquiet/i);
       expect(buried).toContain('0.012');
+      expect(buried).toContain('disposal reported by operator');
+      expect(buried).toContain('A case file exists; call explain for its sources.');
+      expect(buried).not.toContain('292');
       const explain = text(await client.callTool({ name: 'explain', arguments: { norad: 27516 } }));
       expect(explain, 'the case file is found through --cases').toContain('disposal reported by operator');
       const parish = text(await client.callTool({ name: 'parish', arguments: { name: 'Intelsat' } }));

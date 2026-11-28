@@ -279,7 +279,7 @@ Task 22, the final audit, was written before these. Each new page (tasks 24 and 
   - Test: the bundle and the copy are up to date, and the server's four tools answer from the copy with the snapshot date. If the bundle cannot run, record it in the journal and stop for the owner's decision.
   - _Requirements: 17.4, 17.5_
 
-- [ ] 34. Power: install check (owner)
+- [x] 34. Power: install check (owner; done 2026-11-27 on Kiro IDE 1.4.236, Kiro Agent 0.66.119: folder in Restricted Mode, chat Supervised, no approval prompts, tools shown as @sexton/sexton/<tool>; two replies and screenshots in docs/evidence/power-*.png recorded at the bottom of docs/kiro-journal.md; the 27516 reply lacked the cause, so is_buried now returns the cause category line and SKILL.md says to call explain)
   - Install the power from the folder in Kiro (Powers panel, Add Custom Power), ask one question that its keywords should trigger, and check the answer gives the snapshot date and assumptions.
   - Record the Kiro version, the steps, what the path and approval behaviour were (design 14, unverified list) and any change needed. Do not list the power in a registry.
   - _Requirements: 17.8_

@@ -21627,6 +21627,21 @@ var CAUSE_CATEGORIES = [
 	"no disposal reported",
 	"No cause in the sources opened"
 ];
+/** The category a case file's `# Cause` section names on its `Cause category:` line, or null if it has none. */
+function causeOf(body) {
+	const lines = body.split(/\r?\n/);
+	const start = lines.findIndex((l) => l.trim() === "# Cause");
+	if (start < 0) return null;
+	for (let i = start + 1; i < lines.length; i++) {
+		const line = lines[i].trim();
+		if (line.startsWith("#")) return null;
+		const m = /^Cause category:\s*(.+)$/.exec(line);
+		if (m === null) continue;
+		const name = m[1].trim();
+		return CAUSE_CATEGORIES.includes(name) ? name : null;
+	}
+	return null;
+}
 // src/engine/operator-owners.ts
 /** Operator name (as in data/operators.json) to the SATCAT owner code that the register shows for that operator's payloads. */
 var OPERATOR_OWNER_CODE = { Intelsat: "ITSO" };
@@ -22383,6 +22398,17 @@ function caseFileFor(r, paths) {
 		return { note: `The register lists a case file for NORAD ${r.norad}, but it could not be read: ${e.message}` };
 	}
 }
+/** For is_buried: the cause category line of a record's case file and a pointer to explain. Empty when there is no case file. */
+function caseLines(r, paths) {
+	if (!r.caseFile) return [];
+	let cause = null;
+	try {
+		cause = causeOf(readFileSync(join(paths.casesDir, `${r.norad}.md`), "utf8"));
+	} catch {
+		cause = null;
+	}
+	return [...cause === null ? [] : [`Cause category: ${cause}`], "A case file exists; call explain for its sources."];
+}
 /** What every total or share is read against. */
 var blindSpot = () => CHURCHYARD_INTRO.blindSpot;
 var dataAgeOf = (r) => r.orbitSource.kind === "GP" ? dataAge(r) : LEDGER.satcatSource;
@@ -22429,6 +22455,7 @@ function isBuried(paths, norad) {
 		`Data age: ${dataAgeOf(r)}`,
 		`Snapshot: ${reg.snapshot.set}${reg.sample ? `. ${LEDGER.sampleNote}` : ""}`,
 		verdictSentence(r, config),
+		...caseLines(r, paths),
 		assumptionsLine(config),
 		CHURCHYARD_INTRO.voluntary
 	].join("\n"));
