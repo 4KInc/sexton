@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { VERDICT_NAMES } from '../../src/engine/census.ts';
 import { CAUSE_CATEGORIES } from '../../src/engine/causes.ts';
 import { operatorOfOwner, ownerCodeOf } from '../../src/engine/operator-owners.ts';
+import type { ParishPart } from '../../src/engine/parish.ts';
 import { OWNER_NOT_GIVEN, parishGroups, parishOf } from '../../src/engine/parish.ts';
 import type { SatRecord, VerdictName } from '../../src/engine/types.ts';
 import { parseCaseFile } from '../../src/ui/case-file.ts';
@@ -258,6 +259,16 @@ export function parish(paths: Paths, name: unknown, kind?: unknown): ToolOutput 
   const tail = [PARISH.caveats.counts, blindSpot(), CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.noRetirementDate];
   return done([...out.flatMap((b) => [...b, '']), ...tail].join('\n'));
 }
+/** The verdict counts and cause counts of one part, each "n of N" against the part's size. A null label is the whole group. */
+function partLines(reg: UiRegister, part: ParishPart, label: string | null): string[] {
+  return [
+    label === null ? 'Retired payloads in this group, by verdict:' : `Part: ${label}: ${PARISH.groupCount(part.total)}. By verdict:`,
+    ...VERDICT_NAMES.map((v) => `- ${verdictCopy(v, reg.config).word}: ${PARISH.counts.of(part.byVerdict[v], part.total)}`),
+    'By cause named in the case files:',
+    ...CAUSE_CATEGORIES.map((c) => `- ${c}: ${PARISH.counts.of(part.byCause[c], part.total)}`),
+    `- ${PARISH.causes.noCase}: ${PARISH.counts.of(part.noCase, part.total)}`,
+  ];
+}
 /** One group's lines. `labelled` adds the line that says which kind of group this is, for answers that hold two. */
 function parishBlock(reg: UiRegister, scope: 'operator' | 'owner', key: string, labelled: boolean): string[] {
   const page = parishOf(reg.records, { kind: scope, key });
@@ -268,11 +279,9 @@ function parishBlock(reg: UiRegister, scope: 'operator' | 'owner', key: string, 
     ...(labelled ? [`${label}: ${PARISH.counts.of(page.total, page.total)}`] : []),
     `${PARISH.kind[scope]}: ${title}. Snapshot set ${reg.snapshot.set}.`,
     scope === 'owner' ? PARISH.ownerNote(key, page.withOperator, page.total) : PARISH.operatorNote(page.total),
-    `Retired payloads in this group, by verdict:`,
-    ...VERDICT_NAMES.map((v) => `- ${verdictCopy(v, reg.config).word}: ${PARISH.counts.of(page.byVerdict[v], page.total)}`),
-    `By cause named in the case files:`,
-    ...CAUSE_CATEGORIES.map((c) => `- ${c}: ${PARISH.counts.of(page.byCause[c], page.total)}`),
-    `- ${PARISH.causes.noCase}: ${PARISH.counts.of(page.noCase, page.total)}`,
+    ...(scope === 'operator'
+      ? partLines(reg, page, null)
+      : [PARISH.parts.note, ...(['onOrAfter', 'before', 'unknown'] as const).filter((k) => k !== 'unknown' || page.parts[k].total > 0).flatMap((k) => partLines(reg, page.parts[k], PARISH.parts[k]))]),
     PARISH.details.borderline(page.borderline, page.total, reg.config.uncertaintyKm),
     PARISH.dataAge(gp, page.orbitSource.SATCAT),
     assumptionsLine(reg.config),

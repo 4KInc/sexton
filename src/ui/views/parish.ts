@@ -1,7 +1,7 @@
 // The parish register (R13, design 10): one operator or one SATCAT owner code, its retired payloads by verdict.
 // Pure string builders plus mountParish. Every number comes from `parishOf` and the register; the words are in parish-copy.ts.
 // The two kinds of group are never merged, and nothing here ranks, scores or compares groups.
-import type { Group, ParishPage } from '../../engine/parish.ts';
+import type { EraPart, Group, ParishPage, ParishPart } from '../../engine/parish.ts';
 import { CAUSE_CATEGORIES } from '../../engine/causes.ts';
 import { operatorOfOwner, ownerCodeOf } from '../../engine/operator-owners.ts';
 import { OWNER_NOT_GIVEN, parishGroups, parishOf } from '../../engine/parish.ts';
@@ -46,21 +46,37 @@ export function parishIndexHtml(reg: UiRegister): string {
 }
 
 /** One verdict row: the word with its plain meaning (its first appearance on the page), and a count that links to the filtered table. */
-function countsHtml(page: ParishPage, reg: UiRegister): string {
+function countsHtml(g: Group, part: ParishPart, reg: UiRegister, era: EraFilter | null, label: string): string {
   const C = PARISH.counts;
+  const caption = label === '' ? C.caption : `${C.caption} ${label}.`;
   const rows = VERDICT_ORDER.map((v: VerdictName) => {
-    const n = page.byVerdict[v];
-    return `<tr><th scope="row">${esc(verdictCopy(v, reg.config).pair)}</th><td class="num-cell" data-parish-count="${esc(v)}"><a href="${esc(tableLink(page.group, { verdicts: [v] }))}">${esc(C.of(n, page.total))}</a></td></tr>`;
+    const n = part.byVerdict[v];
+    const extra: Partial<Filters> = era === null ? { verdicts: [v] } : { verdicts: [v], era };
+    return `<tr><th scope="row">${esc(verdictCopy(v, reg.config).pair)}</th><td class="num-cell" data-parish-count="${esc(v)}"><a href="${esc(tableLink(g, extra))}">${esc(C.of(n, part.total))}</a></td></tr>`;
   }).join('');
-  return `<div class="table-wrap" role="region" aria-label="${esc(C.caption)}" tabindex="0"><table class="register-table parish-table"><caption>${esc(C.caption)}</caption><thead><tr><th scope="col">${esc(C.verdict)}</th><th scope="col" class="num-head">${esc(C.count)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  return `<div class="table-wrap" role="region" aria-label="${esc(caption)}" tabindex="0"><table class="register-table parish-table"><caption>${esc(caption)}</caption><thead><tr><th scope="col">${esc(C.verdict)}</th><th scope="col" class="num-head">${esc(C.count)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
-
-/** Cause counts beside the verdict counts: five categories and "no case file". Adds up to the group size. */
-function causesHtml(page: ParishPage): string {
+/** Cause counts beside the verdict counts: five categories and the not-researched row. Adds up to the part's size. */
+function causesHtml(part: ParishPart, label: string): string {
   const C = PARISH.causes;
-  const row = (label: string, n: number, key: string): string => `<tr><th scope="row">${esc(label)}</th><td class="num-cell" data-parish-cause="${esc(key)}">${esc(PARISH.counts.of(n, page.total))}</td></tr>`;
-  const rows = CAUSE_CATEGORIES.map((c) => row(c.charAt(0).toUpperCase() + c.slice(1), page.byCause[c], c)).join('') + row(C.noCase.charAt(0).toUpperCase() + C.noCase.slice(1), page.noCase, 'no case file');
-  return `<div class="table-wrap" role="region" aria-label="${esc(C.caption)}" tabindex="0"><table class="register-table parish-table parish-causes"><caption>${esc(C.caption)}</caption><thead><tr><th scope="col">${esc(C.cause)}</th><th scope="col" class="num-head">${esc(PARISH.counts.count)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  const caption = label === '' ? C.caption : `${C.caption} ${label}.`;
+  const row = (name: string, n: number, key: string): string => `<tr><th scope="row">${esc(name)}</th><td class="num-cell" data-parish-cause="${esc(key)}">${esc(PARISH.counts.of(n, part.total))}</td></tr>`;
+  const rows = CAUSE_CATEGORIES.map((c) => row(c.charAt(0).toUpperCase() + c.slice(1), part.byCause[c], c)).join('') + row(C.noCase.charAt(0).toUpperCase() + C.noCase.slice(1), part.noCase, 'cause not researched');
+  return `<div class="table-wrap" role="region" aria-label="${esc(caption)}" tabindex="0"><table class="register-table parish-table parish-causes"><caption>${esc(caption)}</caption><thead><tr><th scope="col">${esc(C.cause)}</th><th scope="col" class="num-head">${esc(PARISH.counts.count)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+const wholePart = (page: ParishPage): ParishPart => ({ total: page.total, byVerdict: page.byVerdict, byCause: page.byCause, noCase: page.noCase });
+/** The verdict and cause counts. An operator group is one part. A SATCAT owner group is split at the FCC rule date, each part with its own counts. */
+function countsBlockHtml(page: ParishPage, reg: UiRegister): string {
+  if (page.group.kind === 'operator') return countsHtml(page.group, wholePart(page), reg, null, '') + causesHtml(wholePart(page), '');
+  const P = PARISH.parts;
+  const parts: [EraPart, EraFilter, string][] = [['onOrAfter', 'after', P.onOrAfter], ['before', 'before', P.before], ['unknown', 'unknown', P.unknown]];
+  return (
+    `<p data-parish="parts-note">${esc(P.note)}</p>` +
+    parts
+      .filter(([k]) => page.parts[k].total > 0 || k !== 'unknown')
+      .map(([k, era, label]) => `<section class="parish-part" data-parish-part="${k}"><h2>${esc(label)}: ${esc(PARISH.groupCount(page.parts[k].total))}</h2>${countsHtml(page.group, page.parts[k], reg, era, label)}${causesHtml(page.parts[k], label)}</section>`)
+      .join('')
+  );
 }
 /** A link between an operator group and the owner group the mapping table pairs with it. */
 function mappedHtml(g: Group, reg: UiRegister): string {
@@ -126,8 +142,7 @@ export function parishPageHtml(reg: UiRegister, scope: Exclude<ParishScope, 'ind
     `<p class="print-title">${esc(PARISH.printTitle)}: ${esc(titleOf(g))}</p>` +
     `<p class="kicker">${esc(PARISH.kind[scope])}</p>` +
     `<p class="parish-note" data-parish="note">${esc(note)}</p>` +
-    countsHtml(page, reg) +
-    causesHtml(page) +
+    countsBlockHtml(page, reg) +
     mappedHtml(g, reg) +
     assumptionsHtml(page, reg) +
     detailsHtml(page, reg) +
@@ -189,7 +204,7 @@ export function parishJson(reg: UiRegister, scope: Exclude<ParishScope, 'index'>
       group: { kind: PARISH.kind[scope], name: titleOf(g), key },
       assumptions: { crAmRangeM2PerKg: [c.iadc.crAmMin, c.iadc.crAmMax], meanElementUncertaintyKm: c.uncertaintyKm },
       notes: [CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.blindSpot, CHURCHYARD_INTRO.noRetirementDate],
-      counts: { total: page.total, byVerdict: page.byVerdict, byCause: page.byCause, noCase: page.noCase, borderline: page.borderline, era: page.era, orbitSource: page.orbitSource },
+      counts: { total: page.total, byVerdict: page.byVerdict, byCause: page.byCause, noCase: page.noCase, parts: page.parts, borderline: page.borderline, era: page.era, orbitSource: page.orbitSource },
       rows: page.rows.map((r) => ({
         norad: r.norad,
         name: r.name,

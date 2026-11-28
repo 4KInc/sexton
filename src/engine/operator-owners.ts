@@ -1,6 +1,6 @@
 // The one operator whose SATCAT owner code is known from a test, not from its name (R13 context fix).
 // Nothing else is mapped. No source that was opened says that the owner code ITSO is the operator Intelsat;
-// the mapping holds because every sourced Intelsat payload in the register carries owner ITSO (see test/operator-owners.test.ts).
+// the mapping holds because every sourced Intelsat payload in the register carries owner ITSO (see test/parish-causes.test.ts).
 /** Operator name (as in data/operators.json) to the SATCAT owner code that the register shows for that operator's payloads. */
 export const OPERATOR_OWNER_CODE: Readonly<Record<string, string>> = { Intelsat: 'ITSO' };
 /** The owner code mapped to an operator, or null. */

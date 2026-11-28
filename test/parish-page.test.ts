@@ -61,16 +61,21 @@ describe('the table\u2019s operator filter', () => {
 });
 
 describe('every group page', () => {
-  it('has all six verdicts, each count written "n of N" and linking to a table with that many rows', () => {
+  it('has all six verdicts, each count written "n of N" against its part, and linking to a table with that many rows', () => {
+    const fmt = (n: number, t: number): string => `${n} of ${t}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     for (const g of all) {
       const html = parishPageHtml(real, g.scope, g.key);
       const page = parishOf(real.records, { kind: g.scope, key: g.key });
+      // An operator group is one part. A SATCAT owner group is split at the FCC rule date, and the part that is empty and unknown is left out.
+      const parts = g.scope === 'operator' ? [page] : [page.parts.onOrAfter, page.parts.before, ...(page.parts.unknown.total > 0 ? [page.parts.unknown] : [])];
       for (const v of VERDICT_ORDER) {
-        const m = new RegExp(`data-parish-count="${v}"><a href="([^"]+)">([^<]+)</a>`).exec(html);
-        expect(m, `${g.key} ${v}`).not.toBeNull();
-        expect(m![2]).toBe(`${page.byVerdict[v]} of ${page.total}`.replace(/\B(?=(\d{3})+(?!\d))/g, ','));
-        const query = new URLSearchParams(m![1]!.replace(/^#\/table\??/, '').replace(/&amp;/g, '&'));
-        expect(applyFilters(real.records, parseFilters(query)).length, `${g.key} ${v}`).toBe(page.byVerdict[v]);
+        const ms = [...html.matchAll(new RegExp(`data-parish-count="${v}"><a href="([^"]+)">([^<]+)</a>`, 'g'))];
+        expect(ms.length, `${g.key} ${v}`).toBe(parts.length);
+        ms.forEach((m, i) => {
+          expect(m[2]).toBe(fmt(parts[i]!.byVerdict[v], parts[i]!.total));
+          const query = new URLSearchParams(m[1]!.replace(/^#\/table\??/, '').replace(/&amp;/g, '&'));
+          expect(applyFilters(real.records, parseFilters(query)).length, `${g.key} ${v} part ${i}`).toBe(parts[i]!.byVerdict[v]);
+        });
       }
     }
   });

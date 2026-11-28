@@ -24,6 +24,28 @@ export function inGroup(r: SatRecord, group: Group): boolean {
   return group.key === OWNER_NOT_GIVEN ? r.owner === null : r.owner === group.key;
 }
 
+/** The counts of one launch-era part of a group. */
+export interface ParishPart {
+  total: number;
+  byVerdict: VerdictCounts;
+  byCause: Record<CauseCategory, number>;
+  /** Members with no case file, or a case file with no cause section: the cause was not researched. */
+  noCase: number;
+}
+export type EraPart = 'onOrAfter' | 'before' | 'unknown';
+const eraPartOf = (r: Retired): EraPart => (r.verdict.era === 'before FCC rule' ? 'before' : r.verdict.era === 'unknown' ? 'unknown' : 'onOrAfter');
+/** One part's counts, from the group's rows. */
+function partOf(rows: readonly Retired[]): ParishPart {
+  const byVerdict = zero();
+  const byCause = Object.fromEntries(CAUSE_CATEGORIES.map((c) => [c, 0])) as Record<CauseCategory, number>;
+  let noCase = 0;
+  for (const r of rows) {
+    byVerdict[r.verdict.verdict]++;
+    if (r.cause === undefined) noCase++;
+    else byCause[r.cause]++;
+  }
+  return { total: rows.length, byVerdict, byCause, noCase };
+}
 export interface ParishPage {
   group: Group;
   /** Retired payloads in the group. */
@@ -37,6 +59,8 @@ export interface ParishPage {
   byCause: Record<CauseCategory, number>;
   /** Members with no case file, or a case file with no cause line. */
   noCase: number;
+  /** The group split at the FCC rule date. The three parts add up to the group. */
+  parts: Record<EraPart, ParishPart>;
   /** The group's retired payloads, by NORAD id. */
   rows: Retired[];
   /** The earliest and latest GP epoch among the group's GP orbits, or null when none is from GP. */
@@ -73,7 +97,7 @@ export function parishOf(records: readonly SatRecord[], group: Group): ParishPag
     }
     if (typeof r.operator === 'string') withOperator++;
   }
-  return { group, total: rows.length, byVerdict, borderline, era, orbitSource, byCause, noCase, rows, gpEpochs: first === null || last === null ? null : { first, last }, withOperator };
+  return { group, total: rows.length, byVerdict, borderline, era, orbitSource, parts: { onOrAfter: partOf(rows.filter((r) => eraPartOf(r) === 'onOrAfter')), before: partOf(rows.filter((r) => eraPartOf(r) === 'before')), unknown: partOf(rows.filter((r) => eraPartOf(r) === 'unknown')) }, byCause, noCase, rows, gpEpochs: first === null || last === null ? null : { first, last }, withOperator };
 }
 
 export interface GroupCount {

@@ -32,8 +32,14 @@ export const PARISH = {
   causes: {
     caption: 'Retired payloads in this group, by the cause named in the case files. A case file names a cause only where a source that was opened does.',
     cause: 'Cause named in the case file',
-    noCase: 'no case file, or no cause note in it',
+    noCase: 'cause not researched (case files cover the 36 story stones)',
     heading: 'Cause, from the case files',
+  },
+  parts: {
+    onOrAfter: 'launched on or after 18 March 2002',
+    before: 'launched before 18 March 2002 (no disposal rule then)',
+    unknown: 'launch date unknown',
+    note: 'A SATCAT owner group is shown in parts, split at the FCC rule date, because the rule applies only to satellites launched on or after it. Each part has its own counts.',
   },
   mapped: {
     ownerOfOperator: (code: string): string => `Also in the register: the SATCAT owner group ${code}, all launch years. The owner group is larger than this operator group and has a different record.`,

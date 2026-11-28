@@ -21653,6 +21653,24 @@ function inGroup(r, group) {
 	if (group.kind === "operator") return typeof r.operator === "string" && r.operator === group.key;
 	return group.key === "unknown" ? r.owner === null : r.owner === group.key;
 }
+var eraPartOf = (r) => r.verdict.era === "before FCC rule" ? "before" : r.verdict.era === "unknown" ? "unknown" : "onOrAfter";
+/** One part's counts, from the group's rows. */
+function partOf(rows) {
+	const byVerdict = zero();
+	const byCause = Object.fromEntries(CAUSE_CATEGORIES.map((c) => [c, 0]));
+	let noCase = 0;
+	for (const r of rows) {
+		byVerdict[r.verdict.verdict]++;
+		if (r.cause === void 0) noCase++;
+		else byCause[r.cause]++;
+	}
+	return {
+		total: rows.length,
+		byVerdict,
+		byCause,
+		noCase
+	};
+}
 /** One group's counts and rows. The result does not depend on the order of `records`. */
 function parishOf(records, group) {
 	const rows = records.filter((r) => inGroup(r, group)).sort((a, b) => a.norad - b.norad);
@@ -21695,6 +21713,11 @@ function parishOf(records, group) {
 		borderline,
 		era,
 		orbitSource,
+		parts: {
+			onOrAfter: partOf(rows.filter((r) => eraPartOf(r) === "onOrAfter")),
+			before: partOf(rows.filter((r) => eraPartOf(r) === "before")),
+			unknown: partOf(rows.filter((r) => eraPartOf(r) === "unknown"))
+		},
 		byCause,
 		noCase,
 		rows,
@@ -22241,8 +22264,14 @@ var PARISH = {
 	causes: {
 		caption: "Retired payloads in this group, by the cause named in the case files. A case file names a cause only where a source that was opened does.",
 		cause: "Cause named in the case file",
-		noCase: "no case file, or no cause note in it",
+		noCase: "cause not researched (case files cover the 36 story stones)",
 		heading: "Cause, from the case files"
+	},
+	parts: {
+		onOrAfter: "launched on or after 18 March 2002",
+		before: "launched before 18 March 2002 (no disposal rule then)",
+		unknown: "launch date unknown",
+		note: "A SATCAT owner group is shown in parts, split at the FCC rule date, because the rule applies only to satellites launched on or after it. Each part has its own counts."
 	},
 	mapped: {
 		ownerOfOperator: (code) => `Also in the register: the SATCAT owner group ${code}, all launch years. The owner group is larger than this operator group and has a different record.`,
@@ -22532,6 +22561,16 @@ function parish(paths, name, kind) {
 	];
 	return done([...out.flatMap((b) => [...b, ""]), ...tail].join("\n"));
 }
+/** The verdict counts and cause counts of one part, each "n of N" against the part's size. A null label is the whole group. */
+function partLines(reg, part, label) {
+	return [
+		label === null ? "Retired payloads in this group, by verdict:" : `Part: ${label}: ${PARISH.groupCount(part.total)}. By verdict:`,
+		...VERDICT_NAMES.map((v) => `- ${verdictCopy(v, reg.config).word}: ${PARISH.counts.of(part.byVerdict[v], part.total)}`),
+		"By cause named in the case files:",
+		...CAUSE_CATEGORIES.map((c) => `- ${c}: ${PARISH.counts.of(part.byCause[c], part.total)}`),
+		`- ${PARISH.causes.noCase}: ${PARISH.counts.of(part.noCase, part.total)}`
+	];
+}
 /** One group's lines. `labelled` adds the line that says which kind of group this is, for answers that hold two. */
 function parishBlock(reg, scope, key, labelled) {
 	const page = parishOf(reg.records, {
@@ -22548,11 +22587,11 @@ function parishBlock(reg, scope, key, labelled) {
 		...labelled ? [`${label}: ${PARISH.counts.of(page.total, page.total)}`] : [],
 		`${PARISH.kind[scope]}: ${title}. Snapshot set ${reg.snapshot.set}.`,
 		scope === "owner" ? PARISH.ownerNote(key, page.withOperator, page.total) : PARISH.operatorNote(page.total),
-		`Retired payloads in this group, by verdict:`,
-		...VERDICT_NAMES.map((v) => `- ${verdictCopy(v, reg.config).word}: ${PARISH.counts.of(page.byVerdict[v], page.total)}`),
-		`By cause named in the case files:`,
-		...CAUSE_CATEGORIES.map((c) => `- ${c}: ${PARISH.counts.of(page.byCause[c], page.total)}`),
-		`- ${PARISH.causes.noCase}: ${PARISH.counts.of(page.noCase, page.total)}`,
+		...scope === "operator" ? partLines(reg, page, null) : [PARISH.parts.note, ...[
+			"onOrAfter",
+			"before",
+			"unknown"
+		].filter((k) => k !== "unknown" || page.parts[k].total > 0).flatMap((k) => partLines(reg, page.parts[k], PARISH.parts[k]))],
 		PARISH.details.borderline(page.borderline, page.total, reg.config.uncertaintyKm),
 		PARISH.dataAge(gp, page.orbitSource.SATCAT),
 		assumptionsLine(reg.config),

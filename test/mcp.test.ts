@@ -9,6 +9,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { beforeAll, describe, expect, it } from 'vitest';
 import { checkFiles, findHits } from '../scripts/check-language.ts';
 import { TOOL_NAMES, createServer, parseArgs } from '../scripts/mcp/server.ts';
+import { parishOf } from '../src/engine/parish.ts';
 import { census, explain, isBuried, list, parish, pathsFor } from '../scripts/mcp/tools.ts';
 import type { Paths, ToolOutput } from '../scripts/mcp/tools.ts';
 import { VERDICT_NAMES } from '../src/engine/census.ts';
@@ -291,10 +292,16 @@ describe('parish', () => {
     expect(jpn.text).toContain('It may name a country or an organisation, and not the operator.');
     expect(parish(realPaths, 'JPN', 'owner').ok).toBe(true);
   });
-  it('the counts equal the register\'s own count for that owner', () => {
+  it('the parts of an owner group add up to the register\'s own count for that owner', () => {
     const counts = real.census.retired.byOwner['JPN']!;
     const out = parish(realPaths, 'JPN', 'owner').text;
-    for (const v of VERDICT_NAMES) expect(out).toContain(`${v.charAt(0).toUpperCase()}${v.slice(1)}: ${counts[v]} of ${Object.values(counts).reduce((a, b) => a + b, 0)}`);
+    const page = parishOf(real.records, { kind: 'owner', key: 'JPN' });
+    for (const v of VERDICT_NAMES) {
+      expect(page.parts.onOrAfter.byVerdict[v] + page.parts.before.byVerdict[v] + page.parts.unknown.byVerdict[v]).toBe(counts[v]);
+      const word = `${v.charAt(0).toUpperCase()}${v.slice(1)}`;
+      expect(out).toContain(`- ${word}: ${page.parts.onOrAfter.byVerdict[v]} of ${page.parts.onOrAfter.total}`);
+      expect(out).toContain(`- ${word}: ${page.parts.before.byVerdict[v]} of ${page.parts.before.total}`);
+    }
   });
   it('says plainly when a name is not found, or matches several, or the kind is wrong, and lists the names', () => {
     const none = parish(realPaths, 'No Such Operator');
