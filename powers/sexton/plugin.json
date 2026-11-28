@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "sexton",
+  "version": "0.1.0",
+  "description": "Ask the Sexton register of retired geostationary satellites whether a satellite was buried in the graveyard orbit above GEO, as the IADC debris guidelines ask. Every answer is a verdict word with its assumptions and the age of its data.",
+  "author": {
+    "name": "Sexton",
+    "url": "https://4kinc.github.io/sexton/"
+  },
+  "keywords": ["geostationary", "GEO", "graveyard orbit", "disposal orbit", "satellite disposal", "disposal record", "space debris", "IADC", "NORAD", "retired satellite", "satellite verdict", "Sexton"],
+  "homepage": "https://4kinc.github.io/sexton/",
+  "repository": "https://github.com/4KInc/sexton",
+  "license": "MIT"
+}

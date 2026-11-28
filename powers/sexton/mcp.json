@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "sexton": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${PLUGIN_ROOT}/server/sexton-mcp.mjs", "--register", "${PLUGIN_ROOT}/data/register.json", "--cases", "${PLUGIN_ROOT}/data/cases"],
+      "cwd": "${PLUGIN_ROOT}"
+    }
+  }
+}

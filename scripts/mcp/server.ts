@@ -9,7 +9,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { isMain } from '../is-main.ts';
-import { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT, census, explain, isBuried, list, pathsFor } from './tools.ts';
+import { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT, census, explain, isBuried, list, parish, pathsFor } from './tools.ts';
 import type { Paths, ToolOutput } from './tools.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -17,8 +17,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const SERVER_NAME = 'sexton';
 export const SERVER_VERSION = '0.0.0';
 
-/** The four tools, by name. The README and .kiro/settings/mcp.json (autoApprove) list the same names. */
-export const TOOL_NAMES = ['is_buried', 'census', 'explain', 'list'] as const;
+/** The five tools, by name. The README and .kiro/settings/mcp.json (autoApprove) list the same names. */
+export const TOOL_NAMES = ['is_buried', 'census', 'explain', 'list', 'parish'] as const;
 
 const INSTRUCTIONS =
   'Sexton is a register of retired geostationary satellites. Each retired payload has one of six verdicts: ' +
@@ -93,6 +93,22 @@ export function createServer(paths: Paths = pathsFor(ROOT)): McpServer {
     ({ verdict, limit }) => reply(list(paths, verdict, limit)),
   );
 
+  server.registerTool(
+    'parish',
+    {
+      title: 'The disposal record of one operator or SATCAT owner code',
+      description:
+        'Gives the retired payloads of one operator (named only where a source that was opened names one, for example Intelsat) or of one SATCAT owner code (a country or organisation, for example JPN), ' +
+        'with the six verdict counts as "n of N", the borderline count, each payload\'s verdict and perigee, the data age, the assumptions, and what the register cannot see. ' +
+        'The operator list is short: it holds only payloads launched on or after 18 March 2002, so it is not all of an operator\'s satellites. A name that is not found gets the list of names.',
+      inputSchema: {
+        name: z.string().describe('An operator name such as "Intelsat", or a SATCAT owner code such as "JPN". Any case.'),
+        kind: z.enum(['operator', 'owner']).optional().describe('Say which, when a name could be both. Default: an operator is looked for first, then an owner code.'),
+      },
+      annotations: { title: 'The disposal record of one operator or SATCAT owner code', ...READ_ONLY },
+    },
+    ({ name, kind }) => reply(parish(paths, name, kind)),
+  );
   return server;
 }
 

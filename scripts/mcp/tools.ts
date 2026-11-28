@@ -1,10 +1,11 @@
-// The four read-only tools of the Sexton MCP server, as plain functions that return text.
+// The five read-only tools of the Sexton MCP server, as plain functions that return text.
 // They read data/register.json and the case files in data/cases/. No network, no writes.
 // Every sentence comes from src/ui/copy.ts, src/ui/ledger-text.ts or the lines below, and the tests
 // run every output through scripts/check-language.ts.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { VERDICT_NAMES } from '../../src/engine/census.ts';
+import { OWNER_NOT_GIVEN, parishGroups, parishOf } from '../../src/engine/parish.ts';
 import type { SatRecord, VerdictName } from '../../src/engine/types.ts';
 import { parseCaseFile } from '../../src/ui/case-file.ts';
 import type { CaseFile } from '../../src/ui/case-file.ts';
@@ -12,6 +13,7 @@ import { CARD, CHURCHYARD_INTRO, LEDGER, assumptionsLine, dataAge, verdictCopy }
 import { formatCount, formatGap, formatP, formatShare, formatSigned } from '../../src/ui/format.ts';
 import { edgesOf, isRetired, ledgerText, verdictSentence } from '../../src/ui/ledger-text.ts';
 import type { Retired } from '../../src/ui/ledger-text.ts';
+import { PARISH } from '../../src/ui/parish-copy.ts';
 import { isRegister } from '../../src/ui/register.ts';
 import type { UiRegister } from '../../src/ui/register.ts';
 
@@ -195,6 +197,73 @@ export function list(paths: Paths, verdict: unknown, limit?: unknown): ToolOutpu
     ...shown.map((r) => listLine(r, reg)),
     assumptionsLine(reg.config),
     blindSpot(),
+  ];
+  return done(lines.join('\n'));
+}
+
+/** The group a name asks for: an exact name or code first (any case), then a name that starts with it, then one that holds it. One match only. */
+function findGroup(names: readonly string[], asked: string): string | null | 'many' {
+  const q = asked.trim().toLowerCase();
+  if (q === '') return null;
+  for (const test of [(n: string) => n.toLowerCase() === q, (n: string) => n.toLowerCase().startsWith(q), (n: string) => n.toLowerCase().includes(q)]) {
+    const hits = names.filter(test);
+    if (hits.length === 1) return hits[0]!;
+    if (hits.length > 1) return 'many';
+  }
+  return null;
+}
+
+/**
+ * The retired payloads of one operator (named by a source that was opened) or one SATCAT owner code, by verdict.
+ * An operator is looked for first, then an owner code, unless `kind` says which.
+ */
+export function parish(paths: Paths, name: unknown, kind?: unknown): ToolOutput {
+  const reg = loadRegister(paths);
+  if (isOutput(reg)) return reg;
+  if (typeof name !== 'string' || name.trim() === '') return fail('Give the name of an operator or a SATCAT owner code, for example "Intelsat" or "JPN".');
+  if (kind !== undefined && kind !== 'operator' && kind !== 'owner') return fail(`"${String(kind)}" is not a kind. Use "operator" or "owner".`);
+  const groups = parishGroups(reg.records);
+  const opNames = groups.operators.map((g) => g.key);
+  const ownerNames = groups.owners.map((g) => g.key);
+  let scope: 'operator' | 'owner' | null = null;
+  let key: string | null = null;
+  for (const [candidate, names] of [['operator', opNames], ['owner', ownerNames]] as const) {
+    if (kind !== undefined && kind !== candidate) continue;
+    const hit = findGroup(names, name);
+    if (hit === 'many') return fail(`"${name}" matches more than one ${candidate}. Give the full name. The ${candidate}s are: ${names.join('; ')}.`);
+    if (hit !== null) {
+      scope = candidate;
+      key = hit;
+      break;
+    }
+  }
+  if (scope === null || key === null) {
+    return fail(
+      `No operator or SATCAT owner code in the register matches "${name}". ` +
+        `Operators (named only where a source that was opened names one): ${opNames.join('; ') || 'none'}. ` +
+        `SATCAT owner codes: ${ownerNames.join(', ')}.`,
+    );
+  }
+  const page = parishOf(reg.records, { kind: scope, key });
+  const title = scope === 'owner' && key === OWNER_NOT_GIVEN ? PARISH.notGiven : key;
+  const gp = page.gpEpochs === null ? null : { ...page.gpEpochs, n: page.orbitSource.GP };
+  const lines = [
+    `${PARISH.kind[scope]}: ${title}. Snapshot set ${reg.snapshot.set}.`,
+    scope === 'owner' ? PARISH.ownerNote(key, page.withOperator, page.total) : PARISH.operatorNote(page.total),
+    `Retired payloads in this group, by verdict:`,
+    ...VERDICT_NAMES.map((v) => `- ${verdictCopy(v, reg.config).word}: ${PARISH.counts.of(page.byVerdict[v], page.total)}`),
+    PARISH.details.borderline(page.borderline, page.total, reg.config.uncertaintyKm),
+    PARISH.dataAge(gp, page.orbitSource.SATCAT),
+    assumptionsLine(reg.config),
+    'The payloads:',
+    ...page.rows.map((r) => {
+      const op = typeof r.operator === 'string' ? `; operator ${PARISH.relation(r.operator, r.operatorRelation ?? 'operator')}, source ${r.operatorSource ?? 'not given'}` : r.operator === null ? '; operator not sourced' : '';
+      return `- ${r.name} (NORAD ${r.norad}): ${verdictCopy(r.verdict.verdict, reg.config).word}${r.verdict.borderline ? ', borderline' : ''}, p ${formatP(r.pKm, r.orbitSource.kind, edgesOf(reg.config))} km, ${dataAgeOf(r)}${op}`;
+    }),
+    PARISH.caveats.counts,
+    blindSpot(),
+    CHURCHYARD_INTRO.voluntary,
+    CHURCHYARD_INTRO.noRetirementDate,
   ];
   return done(lines.join('\n'));
 }

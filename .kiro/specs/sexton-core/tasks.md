@@ -268,13 +268,13 @@ Task 22, the final audit, was written before these. Each new page (tasks 24 and 
   - Fill the survivor triage. For each real gap, add a test or leave it listed as open. Count each new test in the journal, and say which survivor it kills.
   - _Requirements: 16.1–16.7_
 
-- [ ] 32. Power: format check and layout
+- [x] 32. Power: format check and layout
   - Open https://kiro.dev/docs/powers/create/ again and note anything that changed since 2026-11-27. Create `power/sexton/` with `plugin.json`, the three skills and `mcp.json` (design 14). Settle the keywords.
   - The skills carry language.md's rules and the verdict table, and tell the agent to give assumptions and data age with every count and never a retirement date.
   - Test: the offline manifest and skill checks (R17.7), and the language check over `power/`.
   - _Requirements: 17.1–17.3, 17.6, 17.7, 17.9_
 
-- [ ] 33. Power: bundled server and register
+- [x] 33. Power: bundled server and register
   - `scripts/build-power.ts`: bundle the MCP server with Vite's SSR build and copy `data/register.json` (design 14). Check that the bundle runs under plain `node` from another folder.
   - Test: the bundle and the copy are up to date, and the server's four tools answer from the copy with the snapshot date. If the bundle cannot run, record it in the journal and stop for the owner's decision.
   - _Requirements: 17.4, 17.5_

@@ -21,7 +21,7 @@ export const BANNED_STEMS: readonly string[] = [
 /** Text file types that are scanned. */
 export const TEXT_EXTENSIONS: readonly string[] = ['.ts', '.css', '.html', '.md', '.json', '.svg'];
 /** Folders scanned recursively, relative to the repo root. */
-export const SCAN_DIRS: readonly string[] = ['src/ui', 'data/cases', 'docs'];
+export const SCAN_DIRS: readonly string[] = ['src/ui', 'data/cases', 'docs', 'powers'];
 /** Single files scanned, relative to the repo root. */
 export const SCAN_FILES: readonly string[] = ['README.md', 'index.html'];
 /** The one file with a skipped section, and the heading that starts it. */

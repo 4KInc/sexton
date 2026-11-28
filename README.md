@@ -131,14 +131,15 @@ The data is a committed snapshot in `data/raw/<date>/`, with a `manifest.json`. 
 
 `scripts/mcp/server.ts` is a small [MCP](https://modelcontextprotocol.io) server. It talks over stdio, reads `data/register.json` and `data/cases/` only, and makes no network calls and no writes. It needs Node 24 and `npm install`.
 
-It has four read-only tools:
+It has five read-only tools:
 
 - `is_buried(norad)`: the verdict word, the borderline flag, p and q, the margins and the data age. "Buried" is one of six verdicts, so the answer is never a bare yes or no.
 - `census()`: verdict counts as "n of N", the borderline count, and where orbits and statuses come from.
 - `explain(norad)`: the ledger text, with assumptions and data age, and the case file if there is one.
 - `list(verdict, limit?)`: objects with one verdict, sorted by NORAD id, with the total.
+- `parish(name, kind?)`: the retired payloads of one operator (named only where a source that was opened names one, for example Intelsat) or one SATCAT owner code, by verdict.
 
-In Kiro, put this in `.kiro/settings/mcp.json`. Other MCP clients use the same `command` and `args`. `autoApprove` lists tool names, and these four only read.
+In Kiro, put this in `.kiro/settings/mcp.json`. Other MCP clients use the same `command` and `args`. `autoApprove` lists tool names, and these only read. The list below has the first four; add `parish` to it if you want that one approved too.
 
 ```json
 {
@@ -154,3 +155,12 @@ In Kiro, put this in `.kiro/settings/mcp.json`. Other MCP clients use the same `
 ```
 
 The replies carry the same assumptions as the site: a C_R·A/m range and a ±25 km mean-element uncertainty. The IADC guidelines are voluntary. The register only sees objects still near GEO.
+
+## Install the Sexton power
+`powers/sexton/` is a [Kiro power](https://kiro.dev/docs/powers/create/): a `plugin.json`, a skill and an `mcp.json`, in the Agent Plugins format. It gives Kiro the five tools above and a skill that tells the agent how to answer: always a verdict word with its assumptions and data age, never a bare yes or no, no words that judge, no retirement dates, and a reminder that the register only sees objects near GEO.
+1. Clone this repository. You need Node 24 on your path, because the power starts `node`.
+2. In Kiro, open the Powers panel, choose **Add Custom Power**, then **Import power from a folder**, and select `powers/sexton`.
+3. Start a chat and ask, for example, "Is NORAD 27516 buried?" or "What is Intelsat's disposal record?". The power's keywords (geostationary, graveyard orbit, disposal record, NORAD and others) bring it in.
+
+The power carries its own copy of the server (`server/sexton-mcp.mjs`, one file that runs under plain `node`) and of `data/register.json` and `data/cases/`, so it does not reach back into the repository. After a new snapshot or new case files, run `node scripts/build-power.ts`; a test fails while the copy is out of date. `mcp.json` uses `${PLUGIN_ROOT}` for every path, as the specification says clients must expand it. The format has no `autoApprove` field (an unknown field makes the server entry invalid), so the tool calls follow Kiro's default approval.
+Not checked: how Kiro itself resolves those paths. A test starts the server from a copy of the power in another folder, with `${PLUGIN_ROOT}` expanded as the specification says, and gets answers. The install in Kiro is checked by hand and recorded in `docs/kiro-journal.md`.

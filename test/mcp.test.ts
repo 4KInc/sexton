@@ -9,7 +9,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { beforeAll, describe, expect, it } from 'vitest';
 import { checkFiles, findHits } from '../scripts/check-language.ts';
 import { TOOL_NAMES, createServer, parseArgs } from '../scripts/mcp/server.ts';
-import { census, explain, isBuried, list, pathsFor } from '../scripts/mcp/tools.ts';
+import { census, explain, isBuried, list, parish, pathsFor } from '../scripts/mcp/tools.ts';
 import type { Paths, ToolOutput } from '../scripts/mcp/tools.ts';
 import { VERDICT_NAMES } from '../src/engine/census.ts';
 import type { SatRecord } from '../src/engine/types.ts';
@@ -267,6 +267,63 @@ describe('real register', () => {
   });
 });
 
+describe('parish', () => {
+  const realPaths = pathsFor(ROOT);
+  it('gives an operator\'s verdict counts as "n of N", the data age, the assumptions, each source and what the register cannot see', () => {
+    const out = parish(realPaths, 'Intelsat');
+    expect(out.ok).toBe(true);
+    expect(out.text).toContain('Operator (sourced): Intelsat. Snapshot set 2026-11-22.');
+    expect(out.text).toContain('- Unquiet: 2 of 2');
+    expect(out.text).toContain('- Buried: 0 of 2');
+    expect(out.text).toContain('Data age: GP mean elements, epochs from');
+    expect(out.text).toContain('Assumes C_R·A/m from 0.012 to 0.045 m²/kg and a mean-element uncertainty of ±25 km.');
+    expect(out.text).toContain('operator Intelsat, source https://spaceflightnow.com/');
+    expect(out.text).toContain('only sees objects still near GEO');
+    expect(out.text).toContain('The IADC guidelines are voluntary');
+    expect(out.text).toContain('We do not know when a satellite retired.');
+  });
+  it('finds a name in any case, by its start, and an owner code', () => {
+    expect(parish(realPaths, 'intelsat').text).toContain('Operator (sourced): Intelsat.');
+    expect(parish(realPaths, 'RSCC').text).toContain('RSCC (Russian Satellite Communications Company)');
+    const jpn = parish(realPaths, 'jpn');
+    expect(jpn.ok).toBe(true);
+    expect(jpn.text).toContain('SATCAT owner (country or organisation): JPN.');
+    expect(jpn.text).toContain('It may name a country or an organisation, and not the operator.');
+    expect(parish(realPaths, 'JPN', 'owner').ok).toBe(true);
+  });
+  it('the counts equal the register\'s own count for that owner', () => {
+    const counts = real.census.retired.byOwner['JPN']!;
+    const out = parish(realPaths, 'JPN', 'owner').text;
+    for (const v of VERDICT_NAMES) expect(out).toContain(`${v.charAt(0).toUpperCase()}${v.slice(1)}: ${counts[v]} of ${Object.values(counts).reduce((a, b) => a + b, 0)}`);
+  });
+  it('says plainly when a name is not found, or matches several, or the kind is wrong, and lists the names', () => {
+    const none = parish(realPaths, 'No Such Operator');
+    expect(none.ok).toBe(false);
+    expect(none.text).toContain('Operators (named only where a source that was opened names one):');
+    const many = parish(realPaths, 'S', 'operator');
+    expect(many.ok).toBe(false);
+    expect(many.text).toContain('matches more than one operator');
+    expect(parish(realPaths, 'Intelsat', 'owner').ok).toBe(false);
+    expect(parish(realPaths, 'Intelsat', 'company').text).toContain('is not a kind');
+    expect(parish(realPaths, '   ').ok).toBe(false);
+    expect(parish(realPaths, 42).ok).toBe(false);
+  });
+  it('does not say a satellite has an operator where none is sourced', () => {
+    const out = parish(realPaths, 'ITSO', 'owner').text;
+    expect(out).toContain('SATCAT owner (country or organisation): ITSO.');
+    expect(out).toContain('operator not sourced');
+  });
+  it('passes the language check, for every operator and owner code, and with no ranking words', () => {
+    const groups = [...new Set(real.records.flatMap((r) => (typeof r.operator === 'string' ? [r.operator] : [])))];
+    const owners = Object.keys(real.census.retired.byOwner);
+    for (const [name, kind] of [...groups.map((g) => [g, 'operator'] as const), ...owners.map((o) => [o, 'owner'] as const)]) {
+      const out = parish(realPaths, name, kind);
+      expect(out.ok, name).toBe(true);
+      expect(findHits(out.text, `parish-${name}`), name).toEqual([]);
+      expect(out.text, name).not.toMatch(/\b(rank|ranking|score|grade|best|worst)\b/i);
+    }
+  });
+});
 describe('language', () => {
   it('no tool output has a banned word (scripts/check-language.ts)', () => {
     expect(outputs.length).toBeGreaterThan(40);
@@ -314,7 +371,7 @@ describe('over stdio', () => {
     return content.map((c) => c.text).join('\n');
   };
 
-  it('lists the four tools, each read-only and with a description and an input schema', async () => {
+  it('lists the five tools, each read-only and with a description and an input schema', async () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([...TOOL_NAMES].sort());
     for (const t of tools) {
@@ -327,6 +384,8 @@ describe('over stdio', () => {
     expect(Object.keys(byName.is_buried!.inputSchema.properties ?? {})).toEqual(['norad']);
     expect(Object.keys(byName.list!.inputSchema.properties ?? {})).toEqual(['verdict', 'limit']);
     expect(byName.list!.inputSchema.required).toEqual(['verdict']);
+    expect(Object.keys(byName.parish!.inputSchema.properties ?? {})).toEqual(['name', 'kind']);
+    expect(byName.parish!.inputSchema.required).toEqual(['name']);
   });
 
   it('calls explain and gets the ledger and the case file', async () => {

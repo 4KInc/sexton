@@ -60,6 +60,10 @@ Direct dependencies (from `package.json`):
 
 Transitive dependencies: `package-lock.json` lists 346 packages in all (the 16 direct ones and 330 others, counting each platform build of a package; recounted 2026-11-27 after adding the five development-only packages below, which brought 147 of them). By licence, as read from the lock file: MIT 262, Apache-2.0 41, ISC 15, MPL-2.0 14, 0BSD 5, BSD-3-Clause 5, BSD-2-Clause 2, CC-BY-4.0 1, BlueOak-1.0.0 1. Twelve of the 14 MPL-2.0 packages are builds of `lightningcss`, a build-time tool that Vite uses. The other two are `axe-core` and `@axe-core/playwright`, below. None of the 14 is part of the shipped site. Each package's own licence file is in `node_modules/<name>` after `npm install`.
 
+## The Kiro power's bundled server (not in dist/)
+
+`powers/sexton/server/sexton-mcp.mjs` is `scripts/mcp/server.ts` bundled with the packages it imports, so the power runs under plain `node` from any folder. It is built by `node scripts/build-power.ts` and is not part of the site. The packages inside it are already direct or transitive dependencies of the repository: `@modelcontextprotocol/sdk` (MIT), `zod` (MIT), `ajv` (MIT), `ajv-formats` (MIT), `fast-deep-equal` (MIT), `json-schema-traverse` (MIT), `fast-uri` (BSD-3-Clause) and `zod-to-json-schema` (ISC). Their licence notices are in `powers/sexton/server/THIRD_PARTY_LICENSES.txt`, and a test checks that the file is current and that no other package enters the bundle.
+
 ## Development only (not in dist/)
 
 Added 2026-11-27 for requirements R15 and R16. All five are `devDependencies`, pinned to an exact version. Versions and licences were read from the npm registry and from the installed packages. No test or script in `src/` imports them, so the Vite build never bundles them. `npm run build` was run after installing them, and `dist/` holds no `axe-core`, `@axe-core`, `playwright` or `stryker` text (searched with grep). The one match for "lightningcss" is the CSS variable name `--lightningcss-light` that the build tool writes into the minified stylesheet. It is not that tool's code.
