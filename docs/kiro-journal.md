@@ -108,6 +108,7 @@ A row is "seen" only when it has a date, the Kiro client, the action, where it w
 | `language-check-on-save.json` | Language check on save | 2026-11-23 | Kiro IDE (version not recorded then) | `str_replace` of `docs/methodology.md` by the agent (task S1) | Chat UI: "Run Command Hook — Language check on save"; Kiro log: two `ContextualHookInvoked` entries (23:55:39, 23:55:41) | the result did not reach the agent, so it was not quoted | not yet seen |
 
 | `language-check-on-save.json` | Language check on save (user save) | 2026-11-27 | Kiro IDE 1.4.236 | The owner saved `docs/kiro-journal.md` by hand (Cmd+S) in the sexton window at about 23:46 | Kiro log (window4): `hooks.reload.loaded {read:4, registered:4}` at 23:44:24 and "v2 hooks cache initialized (hooks load at session start)", then no hook entry after the save. Chat UI: nothing appeared | nothing to quote: no hook entry in the log and nothing in the chat, so a user save did not fire the hook | not yet seen |
+| `language-check-on-save.json` | Language check on save (agent edit) | 2026-11-27 | Kiro IDE 1.4.236 | The agent edited `docs/kiro-journal.md` with its file tools (the user-save row, the "What surprised us" line and the task 34 entry), about 23:49 | Chat UI: the line "Run Command Hook — Language check on save" and the label "5 tool calls · 2 hooks triggered" (screenshot `docs/evidence/hook-language-check.png`); Kiro log: `ContextualHookInvoked` at 23:49:07, 23:49:24 and 23:49:27 | not visible: the hook's line is collapsed in the screenshot, so its output is not quoted. It stays "not yet seen" until an expanded screenshot shows it | not yet seen |
 What could not be seen (R18.7): on 2026-11-23, and on every save since, a hook fired but its result was not returned to the agent. Whether the hook ran its command and what it printed is for the owner to read in the chat UI. No cause is stated. A save made by the shell (`rm` of the scratch file, `python3`, `sed`) is not counted as evidence.
 
 ## What surprised us
@@ -326,3 +327,30 @@ Owner's check: matches the three expected blocks and the register (ITSO since th
 
 
 2026-11-27: Task 34 fix after the owner's check of the 27516 reply. `is_buried` returned nothing from the case file, so the reply could not give the cause or JAXA's figure. It now adds, for a record with a case file, the line "Cause category: <category>" (for 27516, "disposal reported by operator") and "A case file exists; call explain for its sources." The operator figure (about 292 km) and its quote stay in `explain`. SKILL.md now says: when a record has a case file, call `explain` and give the cause category and any operator-reported figure beside the register's figure, with no reason for a difference unless a source gives one. New tests in `test/mcp.test.ts` and `test/power.test.ts` (27516 contains "disposal reported by operator"); power rebuilt.
+
+Q, after the fix: Is NORAD 27516 buried? Asked again in the test window (`sexton-power-test`) after Check for updates on the power page (3 tool calls, then "The skill says to call explain when a case file exists.", then 2 tool calls; so it called `explain`; 0.34 credits, 26 s). Screenshot: `docs/evidence/power-kodama-after-fix.png`.
+
+> The register gives NORAD 27516 (KODAMA, DRTS) the verdict **unquiet**, so it is not "buried". Unquiet means the orbit reaches the protected zone, which extends 200 km either side of GEO. GEO is the circular orbit about 35,786 km above the equator, where a satellite stays over one spot.
+>
+> **Orbit**
+> - Perigee, the lowest point of the orbit, is 193 km above GEO. That is 7 km inside the zone edge and 54 km below the lowest IADC disposal threshold of 247 km. Under the stated assumptions, the perigee is below the IADC disposal threshold.
+> - Apogee is 374 km above GEO.
+> - Eccentricity is 0.00213. Eccentricity is how far an orbit is from a perfect circle, and 0 is a circle. The IADC limit is 0.003.
+>
+> **Borderline:** yes. The perigee is within the ±25 km uncertainty of the protected-zone edge, so the verdict could change with better data.
+>
+> **Assumptions:** C_R·A/m from 0.012 to 0.045 m²/kg, which gives a threshold of 247 to 280 km. The mean-element uncertainty is ±25 km. These are Sexton's assumptions, not measurements for this satellite.
+>
+> **Data age:** The orbit comes from SATCAT whole-kilometre altitudes, with no element date. It does not come from GP mean elements. The snapshot is 2026-11-22.
+>
+> **Case file:** The cause category is "disposal reported by operator". Slides from JAXA for MEXT report that the perigee was raised about 292 km above the geostationary altitude, and that the eccentricity was adjusted to 0.003 or less. They also report that venting of 26.258 kg of propellant was confirmed. The slides are in Japanese, and the English reading is the register's own. The register reads +193 km from SATCAT. That differs from the operator's 292 km by more than the ±25 km uncertainty. No source opened gives a reason for the difference.
+>
+> **Limits**
+> - The IADC guidelines are voluntary.
+> - The FCC rule (47 CFR § 25.283) applies only to satellites the FCC authorizes that launched on or after 18 March 2002. The register cannot tell whether the FCC authorized this one.
+> - The register holds no date for when the satellite stopped working or was moved.
+> - The register sees only objects still near GEO.
+>
+> Source: https://4kinc.github.io/sexton/#/sat/27516
+
+Owner's check: the reply gives the cause, JAXA's about 292 km beside the register's +193 km, the margins, assumptions and data age, and says no source opened gives a reason for the difference.
