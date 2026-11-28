@@ -2,6 +2,8 @@
 // Pure string builders plus mountParish. Every number comes from `parishOf` and the register; the words are in parish-copy.ts.
 // The two kinds of group are never merged, and nothing here ranks, scores or compares groups.
 import type { Group, ParishPage } from '../../engine/parish.ts';
+import { CAUSE_CATEGORIES } from '../../engine/causes.ts';
+import { operatorOfOwner, ownerCodeOf } from '../../engine/operator-owners.ts';
 import { OWNER_NOT_GIVEN, parishGroups, parishOf } from '../../engine/parish.ts';
 import type { SatRecord, VerdictName } from '../../engine/types.ts';
 import { assumptionsLine, CHURCHYARD_INTRO, dataAge, PAGE_TITLES, SITE, snapshotLabel, VERDICT_ORDER, verdictCopy } from '../copy.ts';
@@ -53,6 +55,22 @@ function countsHtml(page: ParishPage, reg: UiRegister): string {
   return `<div class="table-wrap" role="region" aria-label="${esc(C.caption)}" tabindex="0"><table class="register-table parish-table"><caption>${esc(C.caption)}</caption><thead><tr><th scope="col">${esc(C.verdict)}</th><th scope="col" class="num-head">${esc(C.count)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
+/** Cause counts beside the verdict counts: five categories and "no case file". Adds up to the group size. */
+function causesHtml(page: ParishPage): string {
+  const C = PARISH.causes;
+  const row = (label: string, n: number, key: string): string => `<tr><th scope="row">${esc(label)}</th><td class="num-cell" data-parish-cause="${esc(key)}">${esc(PARISH.counts.of(n, page.total))}</td></tr>`;
+  const rows = CAUSE_CATEGORIES.map((c) => row(c.charAt(0).toUpperCase() + c.slice(1), page.byCause[c], c)).join('') + row(C.noCase.charAt(0).toUpperCase() + C.noCase.slice(1), page.noCase, 'no case file');
+  return `<div class="table-wrap" role="region" aria-label="${esc(C.caption)}" tabindex="0"><table class="register-table parish-table parish-causes"><caption>${esc(C.caption)}</caption><thead><tr><th scope="col">${esc(C.cause)}</th><th scope="col" class="num-head">${esc(PARISH.counts.count)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+/** A link between an operator group and the owner group the mapping table pairs with it. */
+function mappedHtml(g: Group, reg: UiRegister): string {
+  const other = g.kind === 'operator' ? ownerCodeOf(g.key) : operatorOfOwner(g.key);
+  if (other === null) return '';
+  const target = g.kind === 'operator' ? parishHash('owner', other) : parishHash('operator', other);
+  if (parishOf(reg.records, { kind: g.kind === 'operator' ? 'owner' : 'operator', key: other }).total === 0) return '';
+  const text = g.kind === 'operator' ? PARISH.mapped.ownerOfOperator(other) : PARISH.mapped.operatorOfOwner(other);
+  return `<p class="parish-mapped" data-parish="mapped">${esc(text)} <a href="${esc(target)}">${esc(other)}</a></p>`;
+}
 function detailsHtml(page: ParishPage, reg: UiRegister): string {
   const D = PARISH.details;
   const era = (key: EraFilter, label: string, n: number): string =>
@@ -109,6 +127,8 @@ export function parishPageHtml(reg: UiRegister, scope: Exclude<ParishScope, 'ind
     `<p class="kicker">${esc(PARISH.kind[scope])}</p>` +
     `<p class="parish-note" data-parish="note">${esc(note)}</p>` +
     countsHtml(page, reg) +
+    causesHtml(page) +
+    mappedHtml(g, reg) +
     assumptionsHtml(page, reg) +
     detailsHtml(page, reg) +
     rowsHtml(page) +
@@ -142,6 +162,7 @@ export function parishCsv(reg: UiRegister, scope: Exclude<ParishScope, 'index'>,
         typeof r.operator === 'string' ? (r.operatorSource ?? '') : '',
         r.launchDate ?? '',
         verdictCopy(r.verdict.verdict, c).word,
+        r.cause ?? PARISH.causes.noCase,
         r.verdict.borderline ? 'yes' : 'no',
         r.pKm.toFixed(orbitDecimals(r)),
         r.qKm.toFixed(orbitDecimals(r)),
@@ -168,7 +189,7 @@ export function parishJson(reg: UiRegister, scope: Exclude<ParishScope, 'index'>
       group: { kind: PARISH.kind[scope], name: titleOf(g), key },
       assumptions: { crAmRangeM2PerKg: [c.iadc.crAmMin, c.iadc.crAmMax], meanElementUncertaintyKm: c.uncertaintyKm },
       notes: [CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.blindSpot, CHURCHYARD_INTRO.noRetirementDate],
-      counts: { total: page.total, byVerdict: page.byVerdict, borderline: page.borderline, era: page.era, orbitSource: page.orbitSource },
+      counts: { total: page.total, byVerdict: page.byVerdict, byCause: page.byCause, noCase: page.noCase, borderline: page.borderline, era: page.era, orbitSource: page.orbitSource },
       rows: page.rows.map((r) => ({
         norad: r.norad,
         name: r.name,
@@ -176,6 +197,7 @@ export function parishJson(reg: UiRegister, scope: Exclude<ParishScope, 'index'>
         operator: typeof r.operator === 'string' ? { name: r.operator, relation: r.operatorRelation ?? null, source: r.operatorSource ?? null } : null,
         launchDate: r.launchDate,
         verdict: r.verdict.verdict,
+        cause: r.cause ?? null,
         borderline: r.verdict.borderline,
         pKm: r.pKm,
         qKm: r.qKm,

@@ -29,6 +29,18 @@ export const PARISH = {
     count: 'Retired payloads',
     of: (n: number, total: number): string => `${formatCount(n)} of ${formatCount(total)}`,
   },
+  causes: {
+    caption: 'Retired payloads in this group, by the cause named in the case files. A case file names a cause only where a source that was opened does.',
+    cause: 'Cause named in the case file',
+    noCase: 'no case file, or no cause note in it',
+    heading: 'Cause, from the case files',
+  },
+  mapped: {
+    ownerOfOperator: (code: string): string => `Also in the register: the SATCAT owner group ${code}, all launch years. The owner group is larger than this operator group and has a different record.`,
+    operatorOfOwner: (name: string): string => `The register also has the sourced operator group ${name}, launched on or after 18 March 2002. It is a part of this owner group, not the whole of it.`,
+    blockOperator: 'operator, sourced, launched on or after 18 March 2002',
+    blockOwner: (code: string): string => `SATCAT owner ${code} (country or organisation), all launch years`,
+  },
   details: {
     borderline: (n: number, total: number, u: number): string => `Borderline (the perigee is within ${u} km of a band edge): ${formatCount(n)} of ${formatCount(total)}.`,
     era: 'Launch era',
@@ -80,6 +92,7 @@ export const PARISH = {
     'Operator source',
     'Launch date',
     'Verdict',
+    'Cause category',
     'Borderline',
     'Perigee above GEO (km)',
     'Apogee above GEO (km)',

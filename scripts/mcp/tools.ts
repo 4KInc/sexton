@@ -5,6 +5,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { VERDICT_NAMES } from '../../src/engine/census.ts';
+import { CAUSE_CATEGORIES } from '../../src/engine/causes.ts';
+import { operatorOfOwner, ownerCodeOf } from '../../src/engine/operator-owners.ts';
 import { OWNER_NOT_GIVEN, parishGroups, parishOf } from '../../src/engine/parish.ts';
 import type { SatRecord, VerdictName } from '../../src/engine/types.ts';
 import { parseCaseFile } from '../../src/ui/case-file.ts';
@@ -244,14 +246,33 @@ export function parish(paths: Paths, name: unknown, kind?: unknown): ToolOutput 
         `SATCAT owner codes: ${ownerNames.join(', ')}.`,
     );
   }
+  const blocks: { scope: 'operator' | 'owner'; key: string }[] = [{ scope, key }];
+  // An operator and its mapped SATCAT owner group are both returned when the caller did not say which. The pairing is the test-backed table only.
+  if (kind === undefined) {
+    const other = scope === 'operator' ? ownerCodeOf(key) : operatorOfOwner(key);
+    const otherScope = scope === 'operator' ? 'owner' : 'operator';
+    if (other !== null && (otherScope === 'owner' ? ownerNames : opNames).includes(other)) blocks.push({ scope: otherScope, key: other });
+  }
+  const ordered = blocks.sort((a, b) => (a.scope === b.scope ? 0 : a.scope === 'operator' ? -1 : 1));
+  const out = ordered.map((b) => parishBlock(reg, b.scope, b.key, ordered.length > 1));
+  const tail = [PARISH.caveats.counts, blindSpot(), CHURCHYARD_INTRO.voluntary, CHURCHYARD_INTRO.noRetirementDate];
+  return done([...out.flatMap((b) => [...b, '']), ...tail].join('\n'));
+}
+/** One group's lines. `labelled` adds the line that says which kind of group this is, for answers that hold two. */
+function parishBlock(reg: UiRegister, scope: 'operator' | 'owner', key: string, labelled: boolean): string[] {
   const page = parishOf(reg.records, { kind: scope, key });
   const title = scope === 'owner' && key === OWNER_NOT_GIVEN ? PARISH.notGiven : key;
   const gp = page.gpEpochs === null ? null : { ...page.gpEpochs, n: page.orbitSource.GP };
-  const lines = [
+  const label = scope === 'operator' ? PARISH.mapped.blockOperator : PARISH.mapped.blockOwner(key);
+  return [
+    ...(labelled ? [`${label}: ${PARISH.counts.of(page.total, page.total)}`] : []),
     `${PARISH.kind[scope]}: ${title}. Snapshot set ${reg.snapshot.set}.`,
     scope === 'owner' ? PARISH.ownerNote(key, page.withOperator, page.total) : PARISH.operatorNote(page.total),
     `Retired payloads in this group, by verdict:`,
     ...VERDICT_NAMES.map((v) => `- ${verdictCopy(v, reg.config).word}: ${PARISH.counts.of(page.byVerdict[v], page.total)}`),
+    `By cause named in the case files:`,
+    ...CAUSE_CATEGORIES.map((c) => `- ${c}: ${PARISH.counts.of(page.byCause[c], page.total)}`),
+    `- ${PARISH.causes.noCase}: ${PARISH.counts.of(page.noCase, page.total)}`,
     PARISH.details.borderline(page.borderline, page.total, reg.config.uncertaintyKm),
     PARISH.dataAge(gp, page.orbitSource.SATCAT),
     assumptionsLine(reg.config),
@@ -260,10 +281,5 @@ export function parish(paths: Paths, name: unknown, kind?: unknown): ToolOutput 
       const op = typeof r.operator === 'string' ? `; operator ${PARISH.relation(r.operator, r.operatorRelation ?? 'operator')}, source ${r.operatorSource ?? 'not given'}` : r.operator === null ? '; operator not sourced' : '';
       return `- ${r.name} (NORAD ${r.norad}): ${verdictCopy(r.verdict.verdict, reg.config).word}${r.verdict.borderline ? ', borderline' : ''}, p ${formatP(r.pKm, r.orbitSource.kind, edgesOf(reg.config))} km, ${dataAgeOf(r)}${op}`;
     }),
-    PARISH.caveats.counts,
-    blindSpot(),
-    CHURCHYARD_INTRO.voluntary,
-    CHURCHYARD_INTRO.noRetirementDate,
   ];
-  return done(lines.join('\n'));
 }

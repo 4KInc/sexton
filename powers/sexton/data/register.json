@@ -29039,6 +29039,7 @@
         "yearsSinceLaunch": 24
       },
       "caseFile": true,
+      "cause": "disposal reported by operator",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -29117,6 +29118,7 @@
         "yearsSinceLaunch": 24
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "Hispasat",
       "operatorRelation": "by implication",
       "operatorSource": "https://www.hispasat.com/es/flota-e-infraestructura/flota-de-satelites/hispasat-30w-6"
@@ -29157,6 +29159,7 @@
         "yearsSinceLaunch": 24
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -29455,6 +29458,7 @@
         "yearsSinceLaunch": 23
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "ISRO",
       "operatorRelation": "listed as owner",
       "operatorSource": "https://new1.isro.gov.in/INSAT_3A.html"
@@ -29562,6 +29566,7 @@
         "yearsSinceLaunch": 23
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -29630,6 +29635,7 @@
         "yearsSinceLaunch": 23
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "ISRO",
       "operatorRelation": "listed as owner",
       "operatorSource": "https://www.isro.gov.in/GSAT_2.html"
@@ -29698,6 +29704,7 @@
         "yearsSinceLaunch": 23
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -30102,6 +30109,7 @@
         "yearsSinceLaunch": 23
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "ISRO",
       "operatorRelation": "listed as owner",
       "operatorSource": "https://www.isro.gov.in/INSAT_3E.html"
@@ -30239,6 +30247,7 @@
         "yearsSinceLaunch": 22
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": "Gazprom Space Systems",
       "operatorRelation": "listed as owner",
       "operatorSource": "https://satnews.com/2014/07/16/russia-the-seasoned-yamal-201-goes-nowhere-satellite/"
@@ -30334,6 +30343,7 @@
         "yearsSinceLaunch": 22
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "Spacecom",
       "operatorRelation": "operator",
       "operatorSource": "https://www.timesofisrael.com/after-loss-of-satellite-in-spacex-blast-israeli-company-brings-in-replacement/"
@@ -30373,6 +30383,7 @@
         "yearsSinceLaunch": 22
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "RSCC (Russian Satellite Communications Company)",
       "operatorRelation": "operator",
       "operatorSource": "https://www.satellitetoday.com/technology/2015/07/14/rscc-transfers-traffic-from-express-am22-to-express-am6-satellite/"
@@ -30670,6 +30681,7 @@
         "yearsSinceLaunch": 22
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -30709,6 +30721,7 @@
         "yearsSinceLaunch": 22
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -32357,6 +32370,7 @@
         "yearsSinceLaunch": 20
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "NOAA",
       "operatorRelation": "operates it; U.S. Space Force mission",
       "operatorSource": "https://cimss.ssec.wisc.edu/satellite-blog/archives/55455"
@@ -32695,6 +32709,7 @@
         "yearsSinceLaunch": 20
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -33004,6 +33019,7 @@
         "yearsSinceLaunch": 19
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": "MEASAT Global Berhad",
       "operatorRelation": "operator",
       "operatorSource": "https://www.satelliteevolution.com/post/measat-to-retire-measat-3"
@@ -33136,6 +33152,7 @@
         "yearsSinceLaunch": 19
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -33331,6 +33348,7 @@
         "yearsSinceLaunch": 19
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": "Nigerian Communications Satellite Ltd (NigComSat)",
       "operatorRelation": "operator",
       "operatorSource": "https://www.satellitetoday.com/connectivity/2008/11/20/report-nigcomsat-1-declared-total-loss/"
@@ -33797,6 +33815,7 @@
         "yearsSinceLaunch": 18
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -33934,6 +33953,7 @@
         "yearsSinceLaunch": 18
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "RSCC (Russian Satellite Communications Company)",
       "operatorRelation": "operator",
       "operatorSource": "https://satnews.com/2021/08/17/rscc-alters-the-express-am33-satellites-orbital-slot/"
@@ -34030,6 +34050,7 @@
         "yearsSinceLaunch": 18
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": "JAXA",
       "operatorRelation": "operator",
       "operatorSource": "https://www.jaxa.jp/press/2019/03/20190301a_j.html"
@@ -34398,6 +34419,7 @@
         "yearsSinceLaunch": 18
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -34727,6 +34749,7 @@
         "yearsSinceLaunch": 18
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": "ABAE (Agencia Bolivariana para Actividades Espaciales)",
       "operatorRelation": "operator",
       "operatorSource": "https://abae.gob.ve/venezuela-celebra-17-aniversario-lanzamiento-satelite-simon-bolivar/"
@@ -35379,6 +35402,7 @@
         "yearsSinceLaunch": 17
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -36514,6 +36538,7 @@
         "yearsSinceLaunch": 16
       },
       "caseFile": true,
+      "cause": "disposal reported by operator",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -36727,6 +36752,7 @@
         "yearsSinceLaunch": 16
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "China Satellite Communications Corp",
       "operatorRelation": "listed as owner",
       "operatorSource": "https://www.space.com/9110-chinese-satellite-suffers-life-shortening-leak.html"
@@ -37150,6 +37176,7 @@
         "yearsSinceLaunch": 15
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -37707,6 +37734,7 @@
         "yearsSinceLaunch": 15
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "SUPARCO",
       "operatorRelation": "customer (delivered in orbit to SUPARCO)",
       "operatorSource": "https://cgwic.com/CommunicationsSatellite/project.html"
@@ -37747,6 +37775,7 @@
         "yearsSinceLaunch": 15
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -37787,6 +37816,7 @@
         "yearsSinceLaunch": 15
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -38087,6 +38117,7 @@
         "yearsSinceLaunch": 14
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": "Spacecom",
       "operatorRelation": "operator",
       "operatorSource": "https://spacenews.com/spacecom-stock-tumbles-following-amos-5-failure/"
@@ -38395,6 +38426,7 @@
         "yearsSinceLaunch": 14
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -43161,6 +43193,7 @@
         "yearsSinceLaunch": 10
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": "Intelsat",
       "operatorRelation": "operator",
       "operatorSource": "https://spaceflightnow.com/2019/04/22/intelsat-declares-drifting-satellite-total-loss/"
@@ -43915,6 +43948,7 @@
         "yearsSinceLaunch": 10
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": "Intelsat",
       "operatorRelation": "operator",
       "operatorSource": "https://www.datacenterdynamics.com/en/news/intelsats-33e-geo-satellite-breaks-up-in-orbit/"
@@ -44825,6 +44859,7 @@
         "yearsSinceLaunch": 9
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": "China Satcom",
       "operatorRelation": "owner and operator",
       "operatorSource": "https://spaceflightnow.com/2017/07/13/chinese-tv-broadcasting-satellite-reaches-operational-orbit-after-off-target-launch/"
@@ -45298,6 +45333,7 @@
         "yearsSinceLaunch": 8
       },
       "caseFile": true,
+      "cause": "failed in orbit or broke up before disposal",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null
@@ -50412,6 +50448,7 @@
         "yearsSinceLaunch": 4
       },
       "caseFile": true,
+      "cause": "No cause in the sources opened",
       "operator": null,
       "operatorRelation": null,
       "operatorSource": null

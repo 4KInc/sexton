@@ -137,9 +137,9 @@ It has five read-only tools:
 - `census()`: verdict counts as "n of N", the borderline count, and where orbits and statuses come from.
 - `explain(norad)`: the ledger text, with assumptions and data age, and the case file if there is one.
 - `list(verdict, limit?)`: objects with one verdict, sorted by NORAD id, with the total.
-- `parish(name, kind?)`: the retired payloads of one operator (named only where a source that was opened names one, for example Intelsat) or one SATCAT owner code, by verdict.
+- `parish(name, kind?)`: the retired payloads of one operator (named only where a source that was opened names one, for example Intelsat) or one SATCAT owner code, by verdict and by the cause named in the case files. For Intelsat or ITSO it returns both groups, each labelled.
 
-In Kiro, put this in `.kiro/settings/mcp.json`. Other MCP clients use the same `command` and `args`. `autoApprove` lists tool names, and these only read. The list below has the first four; add `parish` to it if you want that one approved too.
+In Kiro, put this in `.kiro/settings/mcp.json`. Other MCP clients use the same `command` and `args`. `autoApprove` lists tool names, and these only read. All five are listed.
 
 ```json
 {
@@ -148,7 +148,7 @@ In Kiro, put this in `.kiro/settings/mcp.json`. Other MCP clients use the same `
       "command": "node",
       "args": ["scripts/mcp/server.ts"],
       "disabled": false,
-      "autoApprove": ["is_buried", "census", "explain", "list"]
+      "autoApprove": ["is_buried", "census", "explain", "list", "parish"]
     }
   }
 }

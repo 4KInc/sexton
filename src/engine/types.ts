@@ -1,5 +1,5 @@
 // Shared types for the engine and the register (design 2.3, 2.7, 2.8, 3.1).
-import type { CauseCounts } from './causes.ts';
+import type { CauseCategory, CauseCounts } from './causes.ts';
 
 export type VerdictName = 'fallen' | 'unquiet' | 'shallow grave' | 'restless' | 'uncertain' | 'buried';
 
@@ -91,6 +91,8 @@ export interface SatRecord extends MergedRecord {
   operatorRelation?: string | null;
   /** The URL of the opened source. Null when `operator` is null. */
   operatorSource?: string | null;
+  /** The cause category named by the record's case file. Absent when there is no case file or it has no valid cause line. */
+  cause?: CauseCategory;
 }
 export type VerdictCounts = Record<VerdictName, number>;
 

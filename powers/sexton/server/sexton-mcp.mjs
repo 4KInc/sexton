@@ -21618,6 +21618,22 @@ var VERDICT_NAMES = [
 	"uncertain",
 	"buried"
 ];
+// src/engine/causes.ts
+/** The five categories, in the order they are shown. */
+var CAUSE_CATEGORIES = [
+	"failed in orbit or broke up before disposal",
+	"disposal reported by operator",
+	"disposal attempted, perigee short",
+	"no disposal reported",
+	"No cause in the sources opened"
+];
+// src/engine/operator-owners.ts
+/** Operator name (as in data/operators.json) to the SATCAT owner code that the register shows for that operator's payloads. */
+var OPERATOR_OWNER_CODE = { Intelsat: "ITSO" };
+/** The owner code mapped to an operator, or null. */
+var ownerCodeOf = (operator) => Object.hasOwn(OPERATOR_OWNER_CODE, operator) ? OPERATOR_OWNER_CODE[operator] : null;
+/** The operator mapped to an owner code, or null. */
+var operatorOfOwner = (code) => Object.entries(OPERATOR_OWNER_CODE).find(([, c]) => c === code)?.[0] ?? null;
 // src/engine/parish.ts
 /** The key of the owner group for retired payloads whose SATCAT owner is not given. It matches `census.retired.byOwner`. */
 var OWNER_NOT_GIVEN = "unknown";
@@ -21650,12 +21666,16 @@ function parishOf(records, group) {
 		GP: 0,
 		SATCAT: 0
 	};
+	const byCause = Object.fromEntries(CAUSE_CATEGORIES.map((c) => [c, 0]));
+	let noCase = 0;
 	let borderline = 0;
 	let withOperator = 0;
 	let first = null;
 	let last = null;
 	for (const r of rows) {
 		byVerdict[r.verdict.verdict]++;
+		if (r.cause === void 0) noCase++;
+		else byCause[r.cause]++;
 		if (r.verdict.borderline) borderline++;
 		if (r.verdict.era === "before FCC rule") era.beforeRule++;
 		else if (r.verdict.era === "unknown") era.unknown++;
@@ -21675,6 +21695,8 @@ function parishOf(records, group) {
 		borderline,
 		era,
 		orbitSource,
+		byCause,
+		noCase,
 		rows,
 		gpEpochs: first === null || last === null ? null : {
 			first,
@@ -22216,6 +22238,18 @@ var PARISH = {
 		count: "Retired payloads",
 		of: (n, total) => `${formatCount(n)} of ${formatCount(total)}`
 	},
+	causes: {
+		caption: "Retired payloads in this group, by the cause named in the case files. A case file names a cause only where a source that was opened does.",
+		cause: "Cause named in the case file",
+		noCase: "no case file, or no cause note in it",
+		heading: "Cause, from the case files"
+	},
+	mapped: {
+		ownerOfOperator: (code) => `Also in the register: the SATCAT owner group ${code}, all launch years. The owner group is larger than this operator group and has a different record.`,
+		operatorOfOwner: (name) => `The register also has the sourced operator group ${name}, launched on or after 18 March 2002. It is a part of this owner group, not the whole of it.`,
+		blockOperator: "operator, sourced, launched on or after 18 March 2002",
+		blockOwner: (code) => `SATCAT owner ${code} (country or organisation), all launch years`
+	},
 	details: {
 		borderline: (n, total, u) => `Borderline (the perigee is within ${u} km of a band edge): ${formatCount(n)} of ${formatCount(total)}.`,
 		era: "Launch era",
@@ -22265,6 +22299,7 @@ var PARISH = {
 		"Operator source",
 		"Launch date",
 		"Verdict",
+		"Cause category",
 		"Borderline",
 		"Perigee above GEO (km)",
 		"Apogee above GEO (km)",
@@ -22475,6 +22510,30 @@ function parish(paths, name, kind) {
 		}
 	}
 	if (scope === null || key === null) return fail(`No operator or SATCAT owner code in the register matches "${name}". Operators (named only where a source that was opened names one): ${opNames.join("; ") || "none"}. SATCAT owner codes: ${ownerNames.join(", ")}.`);
+	const blocks = [{
+		scope,
+		key
+	}];
+	if (kind === void 0) {
+		const other = scope === "operator" ? ownerCodeOf(key) : operatorOfOwner(key);
+		const otherScope = scope === "operator" ? "owner" : "operator";
+		if (other !== null && (otherScope === "owner" ? ownerNames : opNames).includes(other)) blocks.push({
+			scope: otherScope,
+			key: other
+		});
+	}
+	const ordered = blocks.sort((a, b) => a.scope === b.scope ? 0 : a.scope === "operator" ? -1 : 1);
+	const out = ordered.map((b) => parishBlock(reg, b.scope, b.key, ordered.length > 1));
+	const tail = [
+		PARISH.caveats.counts,
+		blindSpot(),
+		CHURCHYARD_INTRO.voluntary,
+		CHURCHYARD_INTRO.noRetirementDate
+	];
+	return done([...out.flatMap((b) => [...b, ""]), ...tail].join("\n"));
+}
+/** One group's lines. `labelled` adds the line that says which kind of group this is, for answers that hold two. */
+function parishBlock(reg, scope, key, labelled) {
 	const page = parishOf(reg.records, {
 		kind: scope,
 		key
@@ -22484,11 +22543,16 @@ function parish(paths, name, kind) {
 		...page.gpEpochs,
 		n: page.orbitSource.GP
 	};
-	return done([
+	const label = scope === "operator" ? PARISH.mapped.blockOperator : PARISH.mapped.blockOwner(key);
+	return [
+		...labelled ? [`${label}: ${PARISH.counts.of(page.total, page.total)}`] : [],
 		`${PARISH.kind[scope]}: ${title}. Snapshot set ${reg.snapshot.set}.`,
 		scope === "owner" ? PARISH.ownerNote(key, page.withOperator, page.total) : PARISH.operatorNote(page.total),
 		`Retired payloads in this group, by verdict:`,
 		...VERDICT_NAMES.map((v) => `- ${verdictCopy(v, reg.config).word}: ${PARISH.counts.of(page.byVerdict[v], page.total)}`),
+		`By cause named in the case files:`,
+		...CAUSE_CATEGORIES.map((c) => `- ${c}: ${PARISH.counts.of(page.byCause[c], page.total)}`),
+		`- ${PARISH.causes.noCase}: ${PARISH.counts.of(page.noCase, page.total)}`,
 		PARISH.details.borderline(page.borderline, page.total, reg.config.uncertaintyKm),
 		PARISH.dataAge(gp, page.orbitSource.SATCAT),
 		assumptionsLine(reg.config),
@@ -22496,12 +22560,8 @@ function parish(paths, name, kind) {
 		...page.rows.map((r) => {
 			const op = typeof r.operator === "string" ? `; operator ${PARISH.relation(r.operator, r.operatorRelation ?? "operator")}, source ${r.operatorSource ?? "not given"}` : r.operator === null ? "; operator not sourced" : "";
 			return `- ${r.name} (NORAD ${r.norad}): ${verdictCopy(r.verdict.verdict, reg.config).word}${r.verdict.borderline ? ", borderline" : ""}, p ${formatP(r.pKm, r.orbitSource.kind, edgesOf(reg.config))} km, ${dataAgeOf(r)}${op}`;
-		}),
-		PARISH.caveats.counts,
-		blindSpot(),
-		CHURCHYARD_INTRO.voluntary,
-		CHURCHYARD_INTRO.noRetirementDate
-	].join("\n"));
+		})
+	];
 }
 // scripts/mcp/server.ts
 var ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");

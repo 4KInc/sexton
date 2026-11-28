@@ -1,5 +1,7 @@
 // The parish register (R13, design 10): the retired payloads of one group, counted by verdict. Pure: no DOM, network or clock.
 // A group is an operator (named by a source that was opened, never inferred) or a SATCAT owner code. The two are never merged.
+import { CAUSE_CATEGORIES } from './causes.ts';
+import type { CauseCategory } from './causes.ts';
 import type { SatRecord, VerdictCounts, VerdictName } from './types.ts';
 
 export type GroupKind = 'operator' | 'owner';
@@ -31,6 +33,10 @@ export interface ParishPage {
   borderline: number;
   era: { beforeRule: number; onOrAfterRule: number; unknown: number };
   orbitSource: { GP: number; SATCAT: number };
+  /** Members by the cause category of their case file. All five categories, zeros kept. With `noCase` this adds up to `total`. */
+  byCause: Record<CauseCategory, number>;
+  /** Members with no case file, or a case file with no cause line. */
+  noCase: number;
   /** The group's retired payloads, by NORAD id. */
   rows: Retired[];
   /** The earliest and latest GP epoch among the group's GP orbits, or null when none is from GP. */
@@ -45,12 +51,16 @@ export function parishOf(records: readonly SatRecord[], group: Group): ParishPag
   const byVerdict = zero();
   const era = { beforeRule: 0, onOrAfterRule: 0, unknown: 0 };
   const orbitSource = { GP: 0, SATCAT: 0 };
+  const byCause = Object.fromEntries(CAUSE_CATEGORIES.map((c) => [c, 0])) as Record<CauseCategory, number>;
+  let noCase = 0;
   let borderline = 0;
   let withOperator = 0;
   let first: string | null = null;
   let last: string | null = null;
   for (const r of rows) {
     byVerdict[r.verdict.verdict]++;
+    if (r.cause === undefined) noCase++;
+    else byCause[r.cause]++;
     if (r.verdict.borderline) borderline++;
     if (r.verdict.era === 'before FCC rule') era.beforeRule++;
     else if (r.verdict.era === 'unknown') era.unknown++;
@@ -63,7 +73,7 @@ export function parishOf(records: readonly SatRecord[], group: Group): ParishPag
     }
     if (typeof r.operator === 'string') withOperator++;
   }
-  return { group, total: rows.length, byVerdict, borderline, era, orbitSource, rows, gpEpochs: first === null || last === null ? null : { first, last }, withOperator };
+  return { group, total: rows.length, byVerdict, borderline, era, orbitSource, byCause, noCase, rows, gpEpochs: first === null || last === null ? null : { first, last }, withOperator };
 }
 
 export interface GroupCount {

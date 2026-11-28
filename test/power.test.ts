@@ -114,6 +114,8 @@ describe('installed in a folder outside the repository', () => {
       expect(explain, 'the case file is found through --cases').toContain('disposal reported by operator');
       const parish = text(await client.callTool({ name: 'parish', arguments: { name: 'Intelsat' } }));
       expect(parish).toContain('Unquiet: 2 of 2');
+      expect(parish).toContain('failed in orbit or broke up before disposal: 2 of 2');
+      expect(parish).toContain('SATCAT owner ITSO (country or organisation), all launch years: 60 of 60');
     } finally {
       await client.close();
     }
@@ -164,6 +166,7 @@ describe('the skill', () => {
       'Never state or imply when a satellite retired',
       'Never rank, score or grade',
       "Never work out an operator from a satellite's name or from its SATCAT owner code",
+      'do not describe a record from verdicts alone',
       'GEO is the circular orbit about 35,786 km above the equator',
     ]) expect(skill, must).toContain(must);
     for (const tool of TOOL_NAMES) expect(skill, tool).toContain(`\`${tool}\``);

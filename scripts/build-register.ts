@@ -191,6 +191,7 @@ export function buildRegisterText(setDir: string, casesDir: string, operatorsPat
     snapshotDate,
   });
   const withCase = caseNorads(casesDir);
+  const causes = readCauses(casesDir);
   const operators = readOperators(operatorsPath);
   // Only a retired payload launched on or after the FCC rule date can carry an operator. Every other record gets none of these fields.
   const postRule = new Set(result.records.filter((r) => r.verdict.kind === 'verdict' && r.verdict.era === null).map((r) => r.norad));
@@ -203,7 +204,8 @@ export function buildRegisterText(setDir: string, casesDir: string, operatorsPat
     snapshot: { set: snapshotDate, sources },
     config: CONFIG,
     records: result.records.map((r) => {
-      const base = { ...r, caseFile: withCase.has(r.norad) };
+      const cause = causes.get(r.norad) ?? null;
+      const base = { ...r, caseFile: withCase.has(r.norad), ...(cause === null ? {} : { cause }) };
       if (!postRule.has(r.norad)) return base;
       const op = operators.get(r.norad);
       return op === undefined ? { ...base, operator: null, operatorRelation: null, operatorSource: null } : { ...base, operator: op.operator, operatorRelation: op.relation, operatorSource: op.sourceUrl };
@@ -212,7 +214,7 @@ export function buildRegisterText(setDir: string, casesDir: string, operatorsPat
     noOrbitDataCount: result.noOrbitDataCount,
     census: result.census,
   };
-  register.causes = causeCounts(causeGroup(register.records), readCauses(casesDir));
+  register.causes = causeCounts(causeGroup(register.records), causes);
   return JSON.stringify(register, null, 2) + '\n';
 }
 

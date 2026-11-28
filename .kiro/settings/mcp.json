@@ -4,7 +4,7 @@
         "command": "node",
         "args": ["scripts/mcp/server.ts"],
         "disabled": false,
-        "autoApprove": ["is_buried", "census", "explain", "list"]
+        "autoApprove": ["is_buried", "census", "explain", "list", "parish"]
       }
     }
   }
